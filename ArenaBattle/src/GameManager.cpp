@@ -1,4 +1,6 @@
 #include "GameManager.h"
+#include "Tank.h"
+#include "utils.h"
 #include <fstream>
 #include <sstream>
 #include <iostream>
