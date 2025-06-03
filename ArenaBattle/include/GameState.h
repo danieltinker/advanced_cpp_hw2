@@ -74,15 +74,12 @@ private:
     bool gameOver_{false};
     std::string resultStr_;
 
-    // All tanks in birth order:
     std::vector<TankState> all_tanks_;
     // Map (player_index, tank_index) → index in all_tanks_
     std::vector<std::vector<std::size_t>> tankIdMap_;
 
-    // All TankAlgorithm instances (in birth order) to ask getAction/updateBattleInfo:
     std::vector<std::unique_ptr<common::TankAlgorithm>> all_tank_algorithms_;
 
-    // All Players (just two):
     std::unique_ptr<common::Player> player1_, player2_;
     std::unique_ptr<common::PlayerFactory> player_factory_;
     std::unique_ptr<common::TankAlgorithmFactory> tank_factory_;
