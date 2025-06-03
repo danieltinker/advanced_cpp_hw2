@@ -1,0 +1,26 @@
+ArenaBattle/
+├── common/
+│   ├── ActionRequest.h
+│   ├── TankAlgorithm.h
+│   ├── BattleInfo.h
+│   ├── SatelliteView.h
+│   ├── Player.h
+│   ├── PlayerFactory.h
+│   └── TankAlgorithmFactory.h
+├── include/
+│   ├── Board.h
+│   ├── GameState.h
+│   ├── GameManager.h
+│   ├── MyPlayer.h
+│   ├── MyTankAlgorithm.h
+│   ├── MyBattleInfo.h
+│   └── MySatelliteView.h
+└── src/
+    ├── Board.cpp
+    ├── GameState.cpp
+    ├── GameManager.cpp
+    ├── MyPlayer.cpp
+    ├── MyTankAlgorithm.cpp
+    ├── MyBattleInfo.cpp
+    ├── MySatelliteView.cpp
+    └── main.cpp
