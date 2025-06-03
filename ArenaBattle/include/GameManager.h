@@ -37,6 +37,7 @@ public:
     void run();
 
 private:
+    int nextTankIndex_[3] = {0, 0, 0}; 
     struct TankState {
         int player_index;
         int tank_index;

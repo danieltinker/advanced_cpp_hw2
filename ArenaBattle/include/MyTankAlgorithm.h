@@ -5,6 +5,13 @@
 
 #include <cstddef>
 
+namespace arena {
+
+/*
+  A simple TankAlgorithm that:
+    1. On the first getAction(), returns GetBattleInfo.
+    2. After updateBattleInfo(), always returns RotateRight90.
+*/
 class MyTankAlgorithm : public common::TankAlgorithm {
 public:
     MyTankAlgorithm(int player_index, int tank_index, std::size_t num_shells)
@@ -17,6 +24,7 @@ public:
           has_new_info_(false)
     {}
 
+    // First call returns GetBattleInfo; second call returns RotateRight90
     virtual common::ActionRequest getAction() override {
         if (!has_new_info_) {
             has_new_info_ = true;
@@ -26,6 +34,7 @@ public:
         return common::ActionRequest::RotateRight90;
     }
 
+    // Receives a MyBattleInfo; extracts the '%' position
     virtual void updateBattleInfo(common::BattleInfo& rawInfo) override {
         MyBattleInfo& info = static_cast<MyBattleInfo&>(rawInfo);
         bool found = false;
@@ -42,6 +51,7 @@ public:
         has_new_info_ = true;
     }
 
+    // Accessors for testing/debugging (not strictly required)
     std::size_t getX() const { return pos_x_; }
     std::size_t getY() const { return pos_y_; }
     int getDirection() const { return direction_; }
@@ -52,8 +62,10 @@ public:
 private:
     int player_index_;
     int tank_index_;
-    int direction_;
+    int direction_;            // 0..7
     std::size_t shells_left_;
     std::size_t pos_x_, pos_y_;
     bool has_new_info_;
 };
+
+} // namespace arena

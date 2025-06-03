@@ -8,9 +8,14 @@
 #include "Tank.h"
 #include "Projectile.h"
 
+
 #include "MyBattleInfo.h"
 #include "MySatelliteView.h"
 
+#include "common/TankAlgorithm.h"
+#include "common/Player.h"
+#include "common/PlayerFactory.h"
+#include "common/TankAlgorithmFactory.h"
 #include "common/ActionRequest.h"
 #include "common/SatelliteView.h"
 

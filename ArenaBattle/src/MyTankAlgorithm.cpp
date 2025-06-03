@@ -1,18 +1,17 @@
-#include "MyTankAlgorithm.h"
+#include "MyTankAlgorithmFactory.h"
 
-using namespace arena;
+namespace arena {
 
-MyTankAlgorithm::MyTankAlgorithm(int player_index, int tank_index)
-    : common::TankAlgorithm(player_index, tank_index)  // invoke base‐class ctor
+std::unique_ptr<common::TankAlgorithm> MyTankAlgorithmFactory::create(
+    int player_index,
+    int tank_index) const
 {
-    // Any additional initialization for your AI can go here.
+    // ⚠️ Include num_shells_ here (third argument)
+    return std::make_unique<MyTankAlgorithm>(
+        player_index,
+        tank_index,
+        num_shells_   // ← this was missing
+    );
 }
 
-common::ActionRequest MyTankAlgorithm::getAction() {
-    // TODO: return next action, default DoNothing
-    return common::ActionRequest::DoNothing;
-}
-
-void MyTankAlgorithm::updateBattleInfo(common::BattleInfo& info) {
-    // TODO: cast `info` to your MyBattleInfo and update internal state
-}
+} // namespace arena

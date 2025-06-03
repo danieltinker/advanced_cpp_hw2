@@ -6,6 +6,9 @@
 #include <vector>
 #include <cstddef>
 
+
+
+namespace arena{
 /*
   MyPlayer’s only job is: when GameManager sees a tank return GetBattleInfo,
   it calls:
@@ -40,3 +43,4 @@ public:
 private:
     std::size_t rows_, cols_;
 };
+}//namespace

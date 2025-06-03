@@ -3,8 +3,10 @@
 #include <sstream>
 #include <iostream>
 
-using namespace arena;
-using namespace common;
+namespace arena{
+
+
+// using namespace common;
 
 GameState::GameState() = default;
 GameState::~GameState() = default;
@@ -69,7 +71,7 @@ void GameState::initialize(const Board& board, std::size_t maxSteps, std::size_t
     currentStep_ = 0;
     gameOver_ = false;
     resultStr_.clear();
-    consecutive_no_shells_ = 0;
+    // TODO: consecutive_no_shells_ = 0;   fix logic
 }
 
 void GameState::step(common::ActionRequest action1, common::ActionRequest action2) {
@@ -128,7 +130,7 @@ std::unique_ptr<common::SatelliteView> GameState::createSatelliteView() const {
 
 void GameState::applyTankActions(common::ActionRequest action1, common::ActionRequest action2) {
     // Apply rotations first:
-    for (NSUInteger k = 0; k < all_tanks_.size(); ++k) {
+    for (int k = 0; k < all_tanks_.size(); ++k) {
         if (!all_tanks_[k].alive) continue;
         common::ActionRequest act = (k == 0 ? action1 : action2);
         int& dir = all_tanks_[k].direction;
@@ -221,3 +223,6 @@ void GameState::checkGameEndConditions(common::ActionRequest action1, common::Ac
                      ", player2 has " + std::to_string(alive2);
     }
 }
+
+}//namespace arena
+

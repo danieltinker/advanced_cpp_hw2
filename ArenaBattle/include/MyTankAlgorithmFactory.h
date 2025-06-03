@@ -6,23 +6,24 @@
 #include <cstddef>
 #include <memory>
 
+namespace arena {
+
 /*
   MyTankAlgorithmFactory just remembers num_shells so it can create each MyTankAlgorithm.
-  GameManager constructs this with the correct num_shells.
+  GameManager constructs this factory with the correct num_shells.
 */
 class MyTankAlgorithmFactory : public common::TankAlgorithmFactory {
 public:
     MyTankAlgorithmFactory(std::size_t num_shells)
         : num_shells_(num_shells) {}
 
-    virtual std::unique_ptr<common::TankAlgorithm> create(
+    // Declaration only; definition will be in the .cpp
+    std::unique_ptr<common::TankAlgorithm> create(
         int player_index,
-        int tank_index) const override
-    {
-        return std::make_unique<MyTankAlgorithm>(
-            player_index, tank_index, num_shells_);
-    }
+        int tank_index) const override;
 
 private:
     std::size_t num_shells_;
 };
+
+} // namespace arena

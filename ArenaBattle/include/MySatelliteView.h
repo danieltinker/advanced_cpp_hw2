@@ -4,6 +4,8 @@
 #include <vector>
 #include <cstddef>
 
+
+namespace arena{
 /*
   A concrete SatelliteView implementation that holds a full 2D grid of chars.
   GameManager builds one of these each time a tank requests GetBattleInfo,
@@ -33,3 +35,4 @@ private:
     std::size_t rows_, cols_;
     std::vector<std::vector<char>> grid_;
 };
+}
