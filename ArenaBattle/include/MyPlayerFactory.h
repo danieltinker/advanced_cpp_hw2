@@ -1,6 +1,6 @@
 #pragma once
 
-#include "common/PlayerFactory.h"
+#include "PlayerFactory.h"
 #include "MyPlayer.h"
 
 #include <cstddef>

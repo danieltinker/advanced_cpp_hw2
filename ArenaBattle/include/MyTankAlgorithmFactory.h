@@ -1,6 +1,6 @@
 #pragma once
 
-#include "common/TankAlgorithmFactory.h"
+#include "TankAlgorithmFactory.h"
 #include "MyTankAlgorithm.h"
 
 #include <cstddef>

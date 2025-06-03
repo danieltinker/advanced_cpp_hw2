@@ -11,8 +11,8 @@
 #include "MyBattleInfo.h"
 #include "MySatelliteView.h"
 
-#include "common/ActionRequest.h"
-#include "common/SatelliteView.h"
+#include "ActionRequest.h"
+#include "SatelliteView.h"
 
 namespace arena {
 

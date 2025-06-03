@@ -1,6 +1,6 @@
 #pragma once
 
-#include "common/SatelliteView.h"
+#include "SatelliteView.h"
 #include <vector>
 #include <cstddef>
 

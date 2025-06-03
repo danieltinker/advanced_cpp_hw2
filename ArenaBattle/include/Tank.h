@@ -1,6 +1,6 @@
 #pragma once
 
-#include "common/ActionRequest.h"
+#include "ActionRequest.h"
 
 /*
  A Tank wraps a TankAlgorithm (AI) and has position, direction, shells, etc.

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "common/BattleInfo.h"
+#include "BattleInfo.h"
 #include <vector>
 #include <cstddef>
 

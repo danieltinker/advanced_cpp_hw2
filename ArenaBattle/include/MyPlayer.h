@@ -1,6 +1,6 @@
 #pragma once
 
-#include "common/Player.h"
+#include "Player.h"
 #include "MyBattleInfo.h"
 
 #include <vector>

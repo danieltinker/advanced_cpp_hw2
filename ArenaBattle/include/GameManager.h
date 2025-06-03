@@ -11,10 +11,10 @@
 #include "MyBattleInfo.h"
 #include "MySatelliteView.h"
 
-#include "common/ActionRequest.h"
-#include "common/PlayerFactory.h"
-#include "common/TankAlgorithmFactory.h"
-#include "common/SatelliteView.h"
+#include "ActionRequest.h"
+#include "PlayerFactory.h"
+#include "TankAlgorithmFactory.h"
+#include "SatelliteView.h"
 
 namespace arena {
 

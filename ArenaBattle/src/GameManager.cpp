@@ -1,8 +1,8 @@
 #include "GameManager.h"
+#include "utils.h"
 #include <fstream>
 #include <sstream>
 #include <iostream>
-
 using namespace arena;
 using namespace common;
 
