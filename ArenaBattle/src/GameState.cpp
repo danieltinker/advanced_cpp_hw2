@@ -21,7 +21,7 @@ GameState::~GameState() = default;
 //------------------------------------------------------------------------------
 // initialize:
 //   1) copy board_, rows_, cols_, maxSteps_, num_shells_
-//   2) scan board for '1'/'2' cells → build TankState + tankIdMap_
+//   2) scan the board for '1'/'2' cells → build TankState + tankIdMap_
 //   3) create two Player instances via player_factory_->create(...)
 //   4) create one TankAlgorithm instance per TankState via tank_factory_->create(...)
 //   5) set currentStep_ = 0, gameOver_ = false
@@ -93,15 +93,15 @@ void GameState::initialize(const Board& board, std::size_t maxSteps, std::size_t
 // advanceOneTurn:
 //   1) For each alive tank k, call tankAlg->getAction().  If it returns GetBattleInfo,
 //      build a MySatelliteView (copy of board_.getGrid() with '%' at that tank’s (x,y)),
-//      then call the proper Player->updateTankWithBattleInfo(...) so the AI can see the grid.
+//      then call the correct Player->updateTankWithBattleInfo(...) so the AI can see the grid.
 //      Then call getAction() again to get the “real” move this turn.  Store in actions[k].
 //   2) applyTankRotations(actions)
 //   3) handleTankMineCollisions()
 //   4) updateTankCooldowns()
-//   5) confirmBackwardMoves(...)  (marks “ignored” for illegal backward moves)
-//   6) updateTankPositionsOnBoard(...)  (per‐tank move, updates board_ and marks “ignored”/“killed”)
+//   5) confirmBackwardMoves(ignored, actions)  (marks “ignored” for illegal backward moves)
+//   6) updateTankPositionsOnBoard(ignored, killedThisTurn, actions)
 //   7) advanceProjectiles()
-//   8) resolveProjectileCollisions(...) (marks “killed” for any tank hit)
+//   8) resolveProjectileCollisions(killedThisTurn)
 //   9) handleShooting(actions, killedThisTurn)
 //  10) cleanupDestroyedEntities()
 //  11) checkGameEndConditions()
@@ -111,7 +111,7 @@ void GameState::initialize(const Board& board, std::size_t maxSteps, std::size_t
 //      "RotateRight90, MoveForward (ignored), Shoot (killed), DoNothing"
 //------------------------------------------------------------------------------
 std::string GameState::advanceOneTurn() {
-    // 0) If already gameOver_, return empty string
+    // If already gameOver_, return an empty string
     if (gameOver_) return "";
 
     std::size_t N = all_tanks_.size();
@@ -127,18 +127,21 @@ std::string GameState::advanceOneTurn() {
         // First call:
         common::ActionRequest req = alg->getAction();
         if (req == common::ActionRequest::GetBattleInfo) {
-            // Build a MySatelliteView for THIS tank
-            MyBattleInfo info(rows_, cols_);
-            info.grid = board_.getGrid();
-            info.grid[all_tanks_[k].x][all_tanks_[k].y] = '%';
+            // Build a MySatelliteView for THIS tank:
+            MySatelliteView satView(
+                board_.getGrid(),    // full grid
+                rows_, cols_,        // dimensions
+                static_cast<int>(all_tanks_[k].x),
+                static_cast<int>(all_tanks_[k].y)
+            );
 
             // Send to the correct Player:
             if (all_tanks_[k].player_index == 1) {
-                player1_->updateTankWithBattleInfo(*alg, info);
+                player1_->updateTankWithBattleInfo(*alg, satView);
             } else {
-                player2_->updateTankWithBattleInfo(*alg, info);
+                player2_->updateTankWithBattleInfo(*alg, satView);
             }
-            // Now second call:
+            // Now get the “real” action:
             req = alg->getAction();
         }
         actions[k] = req;
@@ -147,13 +150,13 @@ std::string GameState::advanceOneTurn() {
     // --- (2) Rotations ---
     applyTankRotations(actions);
 
-    // --- (3) Mines collision (e.g. tank moved onto a mine in a previous tick) ---
+    // --- (3) Mines collision ---
     handleTankMineCollisions();
 
     // --- (4) Cooldowns (if you implement any) ---
     updateTankCooldowns();
 
-    // --- (5) Confirm backward‐move legality (mark ignored if illegal) ---
+    // --- (5) Confirm backward‐move legality ---
     confirmBackwardMoves(ignored, actions);
 
     // --- (6) Update tank positions on the board (forward/backward) ---
@@ -162,16 +165,16 @@ std::string GameState::advanceOneTurn() {
     // --- (7) Advance all projectiles one step ---
     advanceProjectiles();
 
-    // --- (8) Resolve projectile collisions (wall, tank).  Mark killedThisTurn for any tank hit. ---
+    // --- (8) Resolve projectile collisions (wall, tank) ---
     resolveProjectileCollisions(killedThisTurn);
 
     // --- (9) Handle shooting (spawn new projectiles) ---
     handleShooting(actions, killedThisTurn);
 
-    // --- (10) Cleanup destroyed entities (remove dead tanks from board_, purge projectiles off‐board) ---
+    // --- (10) Cleanup destroyed entities ---
     cleanupDestroyedEntities();
 
-    // --- (11) Check end‐of‐game conditions (zero tanks, maxSteps) ---
+    // --- (11) Check end‐of‐game conditions ---
     checkGameEndConditions();
 
     // --- (12) Increment step counter ---
@@ -181,15 +184,10 @@ std::string GameState::advanceOneTurn() {
     std::ostringstream oss;
     for (std::size_t k = 0; k < N; ++k) {
         if (!all_tanks_[k].alive) {
-            if (killedThisTurn[k]) {
-                // died *this* turn
-                oss << /*action string*/ "killed";
-            } else {
-                oss << "killed";
-            }
+            // This tank is dead now
+            oss << "killed";
         } else {
-            // Still alive
-            // Convert actions[k] → string
+            // Still alive → convert actions[k] to a string
             std::string s;
             switch (actions[k]) {
                 case common::ActionRequest::MoveForward:   s = "MoveForward";   break;
@@ -202,8 +200,10 @@ std::string GameState::advanceOneTurn() {
                 case common::ActionRequest::GetBattleInfo: s = "GetBattleInfo"; break;
                 default:                                  s = "DoNothing";     break;
             }
-            if (ignored[k] && (actions[k] == common::ActionRequest::MoveForward ||
-                               actions[k] == common::ActionRequest::MoveBackward)) {
+            if (ignored[k] &&
+                (actions[k] == common::ActionRequest::MoveForward ||
+                 actions[k] == common::ActionRequest::MoveBackward))
+            {
                 s += " (ignored)";
             }
             if (killedThisTurn[k]) {
@@ -283,7 +283,7 @@ void GameState::handleTankMineCollisions() {
 
 //------------------------------------------------------------------------------
 // (C) Cooldowns
-//     (Not implemented: placeholder if tanks had a per‐tick cooldown counter.)
+//     (Not implemented in this version.)
 //------------------------------------------------------------------------------
 void GameState::updateTankCooldowns() {
     // No per‐tank cooldown in this version.
@@ -298,11 +298,9 @@ void GameState::confirmBackwardMoves(std::vector<bool>& ignored,
     for (std::size_t k = 0; k < all_tanks_.size(); ++k) {
         if (!all_tanks_[k].alive) continue;
         if (actions[k] == common::ActionRequest::MoveBackward) {
-            // Compute the “backward” direction cell:
             int backDir = (all_tanks_[k].direction + 4) & 7;
             int newX = static_cast<int>(all_tanks_[k].x) + Tank::DX[backDir];
             int newY = static_cast<int>(all_tanks_[k].y) + Tank::DY[backDir];
-            // If out‐of‐bounds or wall, mark ignored:
             if (newX < 0 || newY < 0 ||
                 static_cast<std::size_t>(newX) >= rows_ ||
                 static_cast<std::size_t>(newY) >= cols_ ||
@@ -310,7 +308,6 @@ void GameState::confirmBackwardMoves(std::vector<bool>& ignored,
             {
                 ignored[k] = true;
             }
-            // Otherwise, let it pass; the actual move happens in updateTankPositionsOnBoard().
         }
     }
 }
@@ -354,7 +351,6 @@ void GameState::updateTankPositionsOnBoard(std::vector<bool>& ignored,
 
         int newX = static_cast<int>(all_tanks_[k].x) + dx;
         int newY = static_cast<int>(all_tanks_[k].y) + dy;
-        // Bounds/wall already checked in confirmBackwardMoves for backward. For forward, check now:
         if (newX < 0 || newY < 0 ||
             static_cast<std::size_t>(newX) >= rows_ ||
             static_cast<std::size_t>(newY) >= cols_)
@@ -367,7 +363,7 @@ void GameState::updateTankPositionsOnBoard(std::vector<bool>& ignored,
             continue;
         }
 
-        // If the destination has a mine '@', kill the tank:
+        // If the destination has a mine '@', kill the tank
         if (board_.getCell(newX, newY) == '@') {
             killedThisTurn[k] = true;
             all_tanks_[k].alive = false;
@@ -376,7 +372,7 @@ void GameState::updateTankPositionsOnBoard(std::vector<bool>& ignored,
             continue;
         }
 
-        // Legal move: clear old cell, update tank coordinates, set new cell to '1' or '2'
+        // Legal move
         board_.setCell(all_tanks_[k].x, all_tanks_[k].y, ' ');
         all_tanks_[k].x = static_cast<std::size_t>(newX);
         all_tanks_[k].y = static_cast<std::size_t>(newY);
@@ -395,9 +391,6 @@ void GameState::advanceProjectiles() {
 
 //------------------------------------------------------------------------------
 // (G) Resolve projectile collisions
-//     – If a projectile hits a wall '#', it is removed.
-//     – If it encounters a mine '@', it “ignores” the mine (continues).
-//     – If it hits a tank '1' or '2', kill that tank and remove projectile.
 //------------------------------------------------------------------------------
 void GameState::resolveProjectileCollisions(std::vector<bool>& killedThisTurn) {
     std::vector<std::unique_ptr<Projectile>> survivors;
@@ -424,16 +417,13 @@ void GameState::resolveProjectileCollisions(std::vector<bool>& killedThisTurn) {
         }
         if (cell == '1' || cell == '2') {
             // projectile hits a tank → kill that tank
-            std::size_t victimIdx = tankIdMap_[ (cell == '1' ? 1 : 2 ) ]
-                                            [ /*need to map (px,py)→tank_index*/ 0 ];
-            // We need a helper to find which TankState sits at (px,py):
-            for (std::size_t k = 0; k < all_tanks_.size(); ++k) {
-                if (all_tanks_[k].alive &&
-                    all_tanks_[k].x == px &&
-                    all_tanks_[k].y == py)
+            for (std::size_t kk = 0; kk < all_tanks_.size(); ++kk) {
+                if (all_tanks_[kk].alive &&
+                    all_tanks_[kk].x == px &&
+                    all_tanks_[kk].y == py)
                 {
-                    killedThisTurn[k] = true;
-                    all_tanks_[k].alive = false;
+                    killedThisTurn[kk] = true;
+                    all_tanks_[kk].alive = false;
                     board_.setCell(px, py, ' ');
                     break;
                 }
@@ -449,8 +439,7 @@ void GameState::resolveProjectileCollisions(std::vector<bool>& killedThisTurn) {
 }
 
 //------------------------------------------------------------------------------
-// (H) Handle shooting: for each tank whose action==Shoot AND has shells_left>0,
-//     – decrement shells_left, spawn a new Projectile at (x,y) moving in tank.direction.
+// (H) Handle shooting
 //------------------------------------------------------------------------------
 void GameState::handleShooting(const std::vector<common::ActionRequest>& actions,
                                std::vector<bool>& killedThisTurn)
@@ -476,15 +465,12 @@ void GameState::handleShooting(const std::vector<common::ActionRequest>& actions
 // (I) Cleanup dead tanks & out‐of‐bounds projectiles
 //------------------------------------------------------------------------------
 void GameState::cleanupDestroyedEntities() {
-    // Tanks: any TankState.alive==false was already removed from board_ when killed.
-    // (Nothing more to do here for tanks.)
-
-    // Projectiles: those that moved off‐board or collided were removed in resolveProjectileCollisions.
-    // (No additional cleanup needed here.)
+    // Tanks: already removed from board_ when killed.
+    // Projectiles: those off‐board or collided were removed above.
 }
 
 //------------------------------------------------------------------------------
-// (J) Check game‐over: zero tanks on a side or maxSteps reached
+// (J) Check game‐over conditions
 //------------------------------------------------------------------------------
 void GameState::checkGameEndConditions() {
     int alive1 = 0, alive2 = 0;
@@ -513,5 +499,3 @@ void GameState::checkGameEndConditions() {
                      ", player2 has " + std::to_string(alive2);
     }
 }
-
-} // namespace arena

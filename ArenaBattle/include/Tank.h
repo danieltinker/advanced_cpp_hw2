@@ -38,7 +38,10 @@ public:
 
     // Kill the tank immediately:
     void destroy();
-
+    
+    // For applyAction, move deltas for each direction index:
+    static constexpr int DX[8] = { -1, -1,  0, +1, +1, +1,  0, -1 };
+    static constexpr int DY[8] = {  0, +1, +1, +1,  0, -1, -1, -1 };
 private:
     int playerIndex_;
     std::size_t x_, y_;
@@ -48,9 +51,6 @@ private:
     bool alive_;
     int directionIndex_;  // 0=Up, 1=Up-Right, 2=Right, 3=Down-Right, 4=Down, 5=Down-Left, 6=Left, 7=Up-Left
 
-    // For applyAction, move deltas for each direction index:
-    static constexpr int DX[8] = { -1, -1,  0, +1, +1, +1,  0, -1 };
-    static constexpr int DY[8] = {  0, +1, +1, +1,  0, -1, -1, -1 };
 };
 
 } // namespace arena

@@ -8,8 +8,7 @@
 #include "Projectile.h"
 #include "Tank.h"
 
-#include "MyBattleInfo.h"
-#include "MySatelliteView.h"
+#include "MySatelliteView.h"            // ← we only need MySatelliteView here
 
 #include "common/TankAlgorithm.h"
 #include "common/Player.h"
@@ -29,7 +28,7 @@ namespace arena {
     • Two Player objects (player1_, player2_) that handle GetBattleInfo calls
     • A parallel vector of TankAlgorithm instances (one per tank)
     • maxSteps_, currentStep_, gameOver_, resultStr_
-    • Rows/cols/num_shells_ and a two‐dimensional tankIdMap_ for lookups
+    • rows_/cols_/num_shells_ and a two‐dimensional tankIdMap_ for lookups
 
   Public interface:
     - GameState(factory1, factory2)
@@ -37,7 +36,9 @@ namespace arena {
     - advanceOneTurn() → string describing exactly what every tank did
     - isGameOver() / getResultString()
 
-  All of the old “move‐resolve‐shoot” code has been centralized here.
+  Whenever a tank’s algorithm returns GetBattleInfo, we build a MySatelliteView,
+  pass it to the Player; the Player then constructs a MyBattleInfo internally and
+  calls the TankAlgorithm’s updateBattleInfo(...) as needed.
 */
 class GameState {
 public:
@@ -47,12 +48,6 @@ public:
     ~GameState();
 
     /// Initialize from a parsed Board, maxSteps, and shells per tank.
-    /// This will:
-    ///   1) copy in `board`, store rows_/cols_, maxSteps_, num_shells_
-    ///   2) scan the board for '1'/'2' to build all_tanks_ and tankIdMap_
-    ///   3) create two Player instances via pFac->create(...)
-    ///   4) create one TankAlgorithm per tank via tFac->create(...)
-    ///   5) set currentStep_=0, gameOver_=false
     void initialize(const Board& board, std::size_t maxSteps, std::size_t numShells);
 
     /// Advance exactly one tick for *all* tanks:
@@ -64,7 +59,7 @@ public:
     bool isGameOver() const;
     std::string getResultString() const;
 
-    /// (Optional) If some tank needs a raw SatelliteView, you can call this with that tank’s (x,y).
+    /// If a tank needs a raw SatelliteView (rare), this returns one marking (queryX, queryY) with '%'.
     std::unique_ptr<common::SatelliteView>
     createSatelliteViewFor(int queryX, int queryY) const;
 

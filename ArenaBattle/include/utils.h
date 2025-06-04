@@ -4,10 +4,11 @@
 #include <sstream>
 #include <iostream>
 #include <cctype>
-
+#include "common/ActionRequest.h"
 /*
   Utility: parse lines like "Key = Value" and convert Value → size_t.
 */
+namespace arena {
 inline bool parseKeyValue(const std::string& line,
                           const std::string& key,
                           std::size_t& outVar)
@@ -51,4 +52,5 @@ inline std::string actionToString(common::ActionRequest a) {
         case common::ActionRequest::DoNothing:     return "DoNothing";
         default:                                   return "DoNothing";
     }
+}
 }
