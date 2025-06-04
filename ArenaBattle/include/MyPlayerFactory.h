@@ -9,22 +9,22 @@
 namespace arena {
 
 /*
-  MyPlayerFactory simply remembers (rows,cols) so it can pass them into each MyPlayer.
-  GameManager constructs this factory with knowledge of rows, cols.
+  MyPlayerFactory remembers (rows,cols).  GameManager will call create(
+    player_index, rows, cols, max_steps, num_shells ).
 */
 class MyPlayerFactory : public common::PlayerFactory {
 public:
-    // Just declare constructor here; define it in MyPlayerFactory.cpp
-    MyPlayerFactory(std::size_t rows, std::size_t cols);
+    MyPlayerFactory(std::size_t rows, std::size_t cols)
+        : rows_(rows), cols_(cols) {}
 
-    // Match the signature in common/PlayerFactory.h, but drop 'override'
-    std::unique_ptr<common::Player> create(
+    // Now matches the five‐parameter signature:
+    virtual std::unique_ptr<common::Player> create(
         int player_index,
         std::size_t x,
         std::size_t y,
         std::size_t max_steps,
         std::size_t num_shells
-    ) const;
+    ) const override;
 
 private:
     std::size_t rows_, cols_;

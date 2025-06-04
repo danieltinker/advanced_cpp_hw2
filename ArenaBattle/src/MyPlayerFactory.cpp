@@ -2,10 +2,6 @@
 
 namespace arena {
 
-MyPlayerFactory::MyPlayerFactory(std::size_t rows, std::size_t cols)
-    : rows_(rows), cols_(cols)
-{}
-
 std::unique_ptr<common::Player> MyPlayerFactory::create(
     int player_index,
     std::size_t x,
@@ -13,13 +9,16 @@ std::unique_ptr<common::Player> MyPlayerFactory::create(
     std::size_t max_steps,
     std::size_t num_shells
 ) const {
-    // (x,y) parameters are just placeholders; we use stored rows_, cols_
+    // x == rows, y == cols (passed in by GameManager), but
+    // we also have rows_ and cols_ stored here. Typically you'd verify:
+    //   if (x != rows_ || y != cols_) { /* handle mismatch */ }
+    // For now, just forward into MyPlayer’s constructor:
     return std::make_unique<MyPlayer>(
         player_index,
         max_steps,
         num_shells,
-        rows_,
-        cols_
+        x,  // board rows
+        y   // board cols
     );
 }
 

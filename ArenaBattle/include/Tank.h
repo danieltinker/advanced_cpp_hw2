@@ -1,58 +1,56 @@
 #pragma once
 
 #include "common/ActionRequest.h"
+#include <cstddef>
+
+namespace arena {
 
 /*
- A Tank wraps a TankAlgorithm (AI) and has position, direction, shells, etc.
- applyAction(...) will take an ActionRequest and update the tank's own state
- (position/direction) if legal, or note that it was “ignored” if illegal.
+  A Tank holds its player index, (x,y) position, facing direction (0..7),
+  number of shells left, a cooldown, and an alive flag.  It can apply one
+  of the ActionRequest commands to update its own state.
 */
 class Tank {
 public:
-    Tank(int playerIndex, int tankIndex)
-        : playerIndex_(playerIndex),
-          tankIndex_(tankIndex),
-          x_(0), y_(0),
-          direction_((playerIndex == 1) ? 6 : 2), // Player1 faces Left(6), Player2 faces Right(2)
-          alive_(false),
-          shellsLeft_(0)
-    {}
+    // Constructor: (playerIndex, initial x, initial y, maxSteps—unused here, but stored, numShells)
+    Tank(int playerIndex,
+         std::size_t x,
+         std::size_t y,
+         std::size_t maxSteps,
+         std::size_t numShells);
 
-    void setPosition(std::size_t r, std::size_t c) {
-        x_ = r; y_ = c; alive_ = true;
-    }
-    void setShells(std::size_t s) { shellsLeft_ = s; }
+    ~Tank();
 
-    std::size_t getX() const { return x_; }
-    std::size_t getY() const { return y_; }
-    int getDirection() const { return direction_; }
-    bool isAlive() const { return alive_; }
-    std::size_t getShellsLeft() const { return shellsLeft_; }
-    int getPlayerIndex() const { return playerIndex_; }
-    int getTankIndex() const { return tankIndex_; }
+    // Accessors:
+    int getPlayerIndex() const;
+    std::size_t getX() const;
+    std::size_t getY() const;
+    bool isAlive() const;
+    std::size_t getShellsRemaining() const;
+    int getCooldown() const;
+    int getDirectionIndex() const;
 
-    // Called by GameManager to apply a single ActionRequest to this tank.
-    void applyAction(common::ActionRequest action) {
-        // 1) If action == RotateLeft90, direction_ = (direction_ + 6) % 8, etc.
-        // 2) If MoveForward: compute (newR,newC) based on direction_, etc.
-        // 3) If Shoot: decrement shellsLeft_ if >0; GameManager handles actual shell spawn.
-        // 4) If GetBattleInfo or DoNothing: do not change position/direction here.
-        //    (GetBattleInfo is handled entirely by GM/Player → not by this method.)
-        //
-        // The actual movement/ignorance logic is handled in GameManager when it resolves moves:
-        // this function may simply record the intended “direction_” change or note “wantsToShoot.”
-        //
-        // For brevity, implementation details are in GameManager; this stub exists so
-        // that compile passes.
-    }
+    // Called each tick to apply the chosen action to this tank:
+    void applyAction(common::ActionRequest action);
 
-    void kill() { alive_ = false; }
+    // Called by GameManager/GameState once per tick to decrement cooldown:
+    void tickCooldown();
+
+    // Kill the tank immediately:
+    void destroy();
 
 private:
     int playerIndex_;
-    int tankIndex_;
     std::size_t x_, y_;
-    int direction_;        // 0..7
+    std::size_t maxSteps_;
+    std::size_t shellsRemaining_;
+    int cooldown_;
     bool alive_;
-    std::size_t shellsLeft_;
+    int directionIndex_;  // 0=Up, 1=Up-Right, 2=Right, 3=Down-Right, 4=Down, 5=Down-Left, 6=Left, 7=Up-Left
+
+    // For applyAction, move deltas for each direction index:
+    static constexpr int DX[8] = { -1, -1,  0, +1, +1, +1,  0, -1 };
+    static constexpr int DY[8] = {  0, +1, +1, +1,  0, -1, -1, -1 };
 };
+
+} // namespace arena
