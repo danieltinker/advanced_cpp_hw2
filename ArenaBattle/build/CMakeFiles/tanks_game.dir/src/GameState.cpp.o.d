@@ -1,6 +1,6 @@
-CMakeFiles/tanks_game.dir/src/GameManager.cpp.o: \
-  /Users/danielbaruch/Desktop/University/semester\ 2025B/advanced_programming/hw2/advanced_cpp_hw2/ArenaBattle/src/GameManager.cpp \
-  /Users/danielbaruch/Desktop/University/semester\ 2025B/advanced_programming/hw2/advanced_cpp_hw2/ArenaBattle/include/GameManager.h \
+CMakeFiles/tanks_game.dir/src/GameState.cpp.o: \
+  /Users/danielbaruch/Desktop/University/semester\ 2025B/advanced_programming/hw2/advanced_cpp_hw2/ArenaBattle/src/GameState.cpp \
+  /Users/danielbaruch/Desktop/University/semester\ 2025B/advanced_programming/hw2/advanced_cpp_hw2/ArenaBattle/include/GameState.h \
   /Library/Developer/CommandLineTools/SDKs/MacOSX13.3.sdk/usr/include/c++/v1/string \
   /Library/Developer/CommandLineTools/SDKs/MacOSX13.3.sdk/usr/include/c++/v1/__algorithm/max.h \
   /Library/Developer/CommandLineTools/SDKs/MacOSX13.3.sdk/usr/include/c++/v1/__algorithm/comp.h \
@@ -676,7 +676,6 @@ CMakeFiles/tanks_game.dir/src/GameManager.cpp.o: \
   /Library/Developer/CommandLineTools/SDKs/MacOSX13.3.sdk/usr/include/c++/v1/__functional/pointer_to_binary_function.h \
   /Library/Developer/CommandLineTools/SDKs/MacOSX13.3.sdk/usr/include/c++/v1/__functional/pointer_to_unary_function.h \
   /Library/Developer/CommandLineTools/SDKs/MacOSX13.3.sdk/usr/include/c++/v1/__functional/unary_negate.h \
-  /Users/danielbaruch/Desktop/University/semester\ 2025B/advanced_programming/hw2/advanced_cpp_hw2/ArenaBattle/include/GameState.h \
   /Library/Developer/CommandLineTools/SDKs/MacOSX13.3.sdk/usr/include/c++/v1/map \
   /Library/Developer/CommandLineTools/SDKs/MacOSX13.3.sdk/usr/include/c++/v1/__tree \
   /Library/Developer/CommandLineTools/SDKs/MacOSX13.3.sdk/usr/include/c++/v1/set \
@@ -690,11 +689,7 @@ CMakeFiles/tanks_game.dir/src/GameManager.cpp.o: \
   /Users/danielbaruch/Desktop/University/semester\ 2025B/advanced_programming/hw2/advanced_cpp_hw2/ArenaBattle/common/Player.h \
   /Users/danielbaruch/Desktop/University/semester\ 2025B/advanced_programming/hw2/advanced_cpp_hw2/ArenaBattle/common/PlayerFactory.h \
   /Users/danielbaruch/Desktop/University/semester\ 2025B/advanced_programming/hw2/advanced_cpp_hw2/ArenaBattle/common/TankAlgorithmFactory.h \
-  /Users/danielbaruch/Desktop/University/semester\ 2025B/advanced_programming/hw2/advanced_cpp_hw2/ArenaBattle/include/utils.h \
-  /Library/Developer/CommandLineTools/SDKs/MacOSX13.3.sdk/usr/include/c++/v1/sstream \
-  /Library/Developer/CommandLineTools/SDKs/MacOSX13.3.sdk/usr/include/c++/v1/istream \
-  /Library/Developer/CommandLineTools/SDKs/MacOSX13.3.sdk/usr/include/c++/v1/ostream \
-  /Library/Developer/CommandLineTools/SDKs/MacOSX13.3.sdk/usr/include/c++/v1/bitset \
+  /Library/Developer/CommandLineTools/SDKs/MacOSX13.3.sdk/usr/include/c++/v1/iostream \
   /Library/Developer/CommandLineTools/SDKs/MacOSX13.3.sdk/usr/include/c++/v1/ios \
   /Library/Developer/CommandLineTools/SDKs/MacOSX13.3.sdk/usr/include/c++/v1/__locale \
   /Library/Developer/CommandLineTools/SDKs/MacOSX13.3.sdk/usr/include/c++/v1/locale.h \
@@ -715,6 +710,9 @@ CMakeFiles/tanks_game.dir/src/GameManager.cpp.o: \
   /Library/Developer/CommandLineTools/SDKs/MacOSX13.3.sdk/usr/include/xlocale/_time.h \
   /Library/Developer/CommandLineTools/SDKs/MacOSX13.3.sdk/usr/include/xlocale/_wchar.h \
   /Library/Developer/CommandLineTools/SDKs/MacOSX13.3.sdk/usr/include/xlocale/_wctype.h \
+  /Library/Developer/CommandLineTools/SDKs/MacOSX13.3.sdk/usr/include/c++/v1/istream \
+  /Library/Developer/CommandLineTools/SDKs/MacOSX13.3.sdk/usr/include/c++/v1/ostream \
+  /Library/Developer/CommandLineTools/SDKs/MacOSX13.3.sdk/usr/include/c++/v1/bitset \
   /Library/Developer/CommandLineTools/SDKs/MacOSX13.3.sdk/usr/include/c++/v1/locale \
   /Library/Developer/CommandLineTools/SDKs/MacOSX13.3.sdk/usr/include/c++/v1/cstdarg \
   /Library/Developer/CommandLineTools/SDKs/MacOSX13.3.sdk/usr/include/c++/v1/streambuf \
@@ -746,22 +744,4 @@ CMakeFiles/tanks_game.dir/src/GameManager.cpp.o: \
   /Library/Developer/CommandLineTools/SDKs/MacOSX13.3.sdk/usr/include/sys/_types/_fsfilcnt_t.h \
   /Library/Developer/CommandLineTools/SDKs/MacOSX13.3.sdk/usr/include/_types/_nl_item.h \
   /Library/Developer/CommandLineTools/SDKs/MacOSX13.3.sdk/usr/include/c++/v1/__bsd_locale_defaults.h \
-  /Library/Developer/CommandLineTools/SDKs/MacOSX13.3.sdk/usr/include/c++/v1/iostream \
-  /Library/Developer/CommandLineTools/SDKs/MacOSX13.3.sdk/usr/include/c++/v1/fstream \
-  /Library/Developer/CommandLineTools/SDKs/MacOSX13.3.sdk/usr/include/c++/v1/filesystem \
-  /Library/Developer/CommandLineTools/SDKs/MacOSX13.3.sdk/usr/include/c++/v1/__filesystem/copy_options.h \
-  /Library/Developer/CommandLineTools/SDKs/MacOSX13.3.sdk/usr/include/c++/v1/__filesystem/directory_entry.h \
-  /Library/Developer/CommandLineTools/SDKs/MacOSX13.3.sdk/usr/include/c++/v1/__filesystem/file_status.h \
-  /Library/Developer/CommandLineTools/SDKs/MacOSX13.3.sdk/usr/include/c++/v1/__filesystem/file_type.h \
-  /Library/Developer/CommandLineTools/SDKs/MacOSX13.3.sdk/usr/include/c++/v1/__filesystem/perms.h \
-  /Library/Developer/CommandLineTools/SDKs/MacOSX13.3.sdk/usr/include/c++/v1/__filesystem/filesystem_error.h \
-  /Library/Developer/CommandLineTools/SDKs/MacOSX13.3.sdk/usr/include/c++/v1/__filesystem/path.h \
-  /Library/Developer/CommandLineTools/SDKs/MacOSX13.3.sdk/usr/include/c++/v1/iomanip \
-  /Library/Developer/CommandLineTools/SDKs/MacOSX13.3.sdk/usr/include/c++/v1/__filesystem/operations.h \
-  /Library/Developer/CommandLineTools/SDKs/MacOSX13.3.sdk/usr/include/c++/v1/__filesystem/perm_options.h \
-  /Library/Developer/CommandLineTools/SDKs/MacOSX13.3.sdk/usr/include/c++/v1/__filesystem/space_info.h \
-  /Library/Developer/CommandLineTools/SDKs/MacOSX13.3.sdk/usr/include/c++/v1/__filesystem/directory_iterator.h \
-  /Library/Developer/CommandLineTools/SDKs/MacOSX13.3.sdk/usr/include/c++/v1/__filesystem/directory_options.h \
-  /Library/Developer/CommandLineTools/SDKs/MacOSX13.3.sdk/usr/include/c++/v1/__filesystem/path_iterator.h \
-  /Library/Developer/CommandLineTools/SDKs/MacOSX13.3.sdk/usr/include/c++/v1/__filesystem/recursive_directory_iterator.h \
-  /Library/Developer/CommandLineTools/SDKs/MacOSX13.3.sdk/usr/include/c++/v1/__filesystem/u8path.h
+  /Library/Developer/CommandLineTools/SDKs/MacOSX13.3.sdk/usr/include/c++/v1/sstream

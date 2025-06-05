@@ -3,7 +3,7 @@
 #include <iostream>
 #include <memory>
 #include <string>
-#include <fstream>    // for std::ifstream
+#include <fstream>
 
 #include "utils.h"
 #include "MyPlayerFactory.h"
@@ -19,7 +19,7 @@ int main(int argc, char** argv) {
     }
     std::string map_file = argv[1];
 
-    // Step 1: Read the first four header lines so we know rows/cols/num_shells
+    // Step A: Read header so we can build factories
     std::ifstream in(map_file);
     if (!in) {
         std::cerr << "Cannot open map file: " << map_file << "\n";
@@ -27,7 +27,6 @@ int main(int argc, char** argv) {
     }
 
     std::string line;
-
     // (1) Skip map name
     std::getline(in, line);
 
@@ -53,17 +52,15 @@ int main(int argc, char** argv) {
 
     in.close();
 
-    // Step 2: Build factories using rows, cols, num_shells
+    // Step B: Construct the two factories
     auto playerFac = std::make_unique<MyPlayerFactory>(rows, cols);
     auto tankFac   = std::make_unique<MyTankAlgorithmFactory>(num_shells);
 
-    // Step 3: Construct GameManager using the two‐arg constructor
+    // Step C: Construct GameManager and initialize via readBoard()
     GameManager gm(std::move(playerFac), std::move(tankFac));
-
-    // Step 4: Call readBoard() so that GameState is initialized
     gm.readBoard(map_file);
 
-    // Step 5: Run() with no arguments
+    // Step D: Run simulation (zero‐arg run())
     gm.run();
 
     return 0;
