@@ -154,6 +154,7 @@ std::string GameState::advanceOneTurn() {
     // Get the “real” action next:
     req = alg->getAction();
 }
+
         actions[k] = req;
     }
 
