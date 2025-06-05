@@ -499,3 +499,14 @@ void GameState::checkGameEndConditions() {
                      ", player2 has " + std::to_string(alive2);
     }
 }
+
+void GameState::printBoard() const {
+    const auto& grid = board_.getGrid();
+    for (std::size_t r = 0; r < rows_; ++r) {
+        for (std::size_t c = 0; c < cols_; ++c) {
+            std::cout << grid[r][c];
+        }
+        std::cout << "\n";
+    }
+    std::cout << std::endl;
+}

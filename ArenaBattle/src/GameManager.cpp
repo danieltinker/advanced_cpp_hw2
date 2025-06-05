@@ -132,20 +132,26 @@ void GameManager::run()
         return;
     }
 
-    // Each turn, we let GameState collect all actions, advance itself, and
-    // return a summary string such as:
-    //   "MoveForward, RotateRight90, Shoot (killed), MoveBackward (ignored), …"
-    // Then we write it to the file.
-
+    std::size_t turnCount = 0;
     while (!game_state_->isGameOver()) {
-        // Let GameState gather “[action1,action2,…]” internally (it already has all
-        // TankAlgorithm instances, and it knows to call updateTankWithBattleInfo(...) 
-        // for any GetBattleInfo).  We just ask for that turn's output‐string.
         std::string turnLine = game_state_->advanceOneTurn();
+
+        // Print the board to stdout after this turn:
+        std::cout << "=== Turn " << (turnCount + 1) << " ===\n";
+        game_state_->printBoard();
+
+        // Also write the turnLine to the output file:
         out << turnLine << "\n";
+
+        ++turnCount;
     }
 
-    // Once done, write the final result line:
+    // Once done, print the final board one more time (optional):
+    std::cout << "=== Final Board ===\n";
+    game_state_->printBoard();
+
+    // Then write the final result line:
     out << game_state_->getResultString() << "\n";
     out.close();
 }
+

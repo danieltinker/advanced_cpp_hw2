@@ -63,6 +63,9 @@ public:
     std::unique_ptr<common::SatelliteView>
     createSatelliteViewFor(int queryX, int queryY) const;
 
+    // Print the current board to stdout
+    void printBoard() const;
+
 private:
     struct TankState {
         int player_index;       // 1 or 2

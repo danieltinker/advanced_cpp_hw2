@@ -1,0 +1,16 @@
+RotateRight90, RotateRight90
+RotateRight90, RotateRight90
+RotateRight90, RotateRight90
+RotateRight90, RotateRight90
+RotateRight90, RotateRight90
+RotateRight90, RotateRight90
+RotateRight90, RotateRight90
+RotateRight90, RotateRight90
+RotateRight90, RotateRight90
+RotateRight90, RotateRight90
+RotateRight90, RotateRight90
+RotateRight90, RotateRight90
+RotateRight90, RotateRight90
+RotateRight90, RotateRight90
+RotateRight90, RotateRight90
+Tie, reached max steps = 15, player1 has 1, player2 has 1
