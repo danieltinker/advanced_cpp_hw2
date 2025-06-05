@@ -344,9 +344,14 @@ void GameState::confirmBackwardMoves(std::vector<bool>& ignored,
             }
             int newX = all_tanks_[k].x + dx;
             int newY = all_tanks_[k].y + dy;
-            if (newX < 0 || newY < 0 ||
-                newX >= board_.getWidth() || newY >= board_.getHeight() ||
-                board_.getCell(newX, newY).content == CellContent::WALL)
+            board_.wrapCoords(newX, newY);
+
+            // If the wrapped‐around cell is a wall, mark as ignored
+            if (board_.getCell(newX, newY).content == CellContent::WALL) {
+                ignored[k] = true;
+            }
+
+            if (board_.getCell(newX, newY).content == CellContent::WALL)
             {
                 ignored[k] = true;
             }
@@ -401,8 +406,7 @@ void GameState::updateTankPositionsOnBoard(std::vector<bool>& ignored,
             ignored[k] = true;
         }
         // If out of bounds or wall, ignore:
-        if (newX < 0 || newY < 0 ||
-            newX >= board_.getWidth() || newY >= board_.getHeight() ||
+        if (
             board_.getCell(newX, newY).content == CellContent::WALL)
         {
             ignored[k] = true;
