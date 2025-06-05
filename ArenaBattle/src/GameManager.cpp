@@ -1,157 +1,104 @@
 #include "GameManager.h"
+#include "Board.h"
+#include "utils.h"
+
 #include <fstream>
 #include <iostream>
-#include <sstream>
 
 using namespace arena;
 using namespace common;
 
-///--------------------------------------------------------------------------------
-/// Constructor / Destructor
-///--------------------------------------------------------------------------------
-GameManager::GameManager(std::unique_ptr<common::PlayerFactory> pFac,
-                         std::unique_ptr<common::TankAlgorithmFactory> tFac)
-    : player_factory_(std::move(pFac)),
-      tank_factory_(std::move(tFac))
-{
-}
+GameManager::GameManager(std::unique_ptr<PlayerFactory> pFac,
+                         std::unique_ptr<TankAlgorithmFactory> tFac)
+  : game_state_(std::move(pFac), std::move(tFac))
+{}
 
 GameManager::~GameManager() = default;
 
-///--------------------------------------------------------------------------------
-/// parseKeyValue: parses a line like "MaxSteps = 5000" (or "Rows=4") into out.
-/// If the key doesn't match, or conversion fails, out is unchanged.
-///--------------------------------------------------------------------------------
-void GameManager::parseKeyValue(const std::string& line,
-                                const std::string& key,
-                                std::size_t& out)
-{
-    // find “key” in the line:
-    auto pos = line.find(key);
-    if (pos == std::string::npos) return;
-    // find the '=' after key:
-    auto eqPos = line.find('=', pos + key.size());
-    if (eqPos == std::string::npos) return;
+void GameManager::readBoard(const std::string& map_file) {
+    loaded_map_file_ = map_file;
 
-    // everything after '=' is the number (possibly with whitespace)
-    std::string valstr = line.substr(eqPos + 1);
-    std::istringstream iss(valstr);
-    std::size_t v;
-    if (iss >> v) {
-        out = v;
-    }
-}
-
-///--------------------------------------------------------------------------------
-/// readBoard:
-///   1) Open the input text file (map_file).
-///   2) Read lines: map‐name (ignore), MaxSteps, NumShells, Rows, Cols.
-///   3) Build a Board(rows, cols) and fill its grid from the next “rows” lines.
-///   4) Hand off everything to GameState::initialize(...).
-///--------------------------------------------------------------------------------
-void GameManager::readBoard(const std::string& filename)
-{
-    input_filename_ = filename;
-
-    std::ifstream in(filename);
+    // (1) Open the map file and parse MaxSteps, NumShells, Rows, Cols:
+    std::ifstream in(map_file);
     if (!in) {
-        std::cerr << "Cannot open map file: " << filename << "\n";
+        std::cerr << "Cannot open map file: " << map_file << "\n";
         std::exit(1);
     }
 
     std::string line;
-    // 1) map name (ignore)
+    // map name (ignore)
     std::getline(in, line);
 
-    // 2) MaxSteps = <NUM>
+    // MaxSteps = <NUM>
     std::getline(in, line);
-    std::size_t max_steps = 0;
-    parseKeyValue(line, "MaxSteps", max_steps);
+    std::size_t maxSteps = 0;
+    parseKeyValue(line, "MaxSteps", maxSteps);
 
-    // 3) NumShells = <NUM>
+    // NumShells = <NUM>
     std::getline(in, line);
-    std::size_t num_shells = 0;
-    parseKeyValue(line, "NumShells", num_shells);
+    std::size_t numShells = 0;
+    parseKeyValue(line, "NumShells", numShells);
 
-    // 4) Rows = <NUM>
+    // Rows = <NUM>
     std::getline(in, line);
     std::size_t rows = 0;
     parseKeyValue(line, "Rows", rows);
 
-    // 5) Cols = <NUM>
+    // Cols = <NUM>
     std::getline(in, line);
     std::size_t cols = 0;
     parseKeyValue(line, "Cols", cols);
 
-    // 6) Build the Board(rows, cols) and read the next “rows” lines:
+    // (2) Build a Board(rows×cols) and fill cells:
     Board board(rows, cols);
     std::size_t r = 0;
     while (r < rows && std::getline(in, line)) {
         for (std::size_t c = 0; c < cols && c < line.size(); ++c) {
             char ch = line[c];
-            if (ch == '#' || ch == '@' || ch == '1' || ch == '2') {
-                board.setCell(r, c, ch);
+            CellContent content = CellContent::EMPTY;
+            if (ch == '#') {
+                content = CellContent::WALL;
+            } else if (ch == '@') {
+                content = CellContent::MINE;
+            } else if (ch == '1') {
+                content = CellContent::TANK1;
+            } else if (ch == '2') {
+                content = CellContent::TANK2;
             } else {
-                board.setCell(r, c, ' ');
+                content = CellContent::EMPTY;
             }
+            board.setCell(static_cast<int>(c), static_cast<int>(r), content);
         }
         ++r;
     }
     in.close();
 
-    // 7) Now hand everything off to GameState:
-    //    Pass in both factories (owned by GameManager) plus the board, max_steps, num_shells.
-    game_state_ = std::make_unique<GameState>(
-        std::move(player_factory_),
-        std::move(tank_factory_)
-    );
-    game_state_->initialize(board, max_steps, num_shells);
+    // (3) Initialize GameState with board, maxSteps, numShells:
+    game_state_.initialize(board, maxSteps, numShells);
 }
 
-///--------------------------------------------------------------------------------
-/// run():
-///   1) Open “output_<input_filename>.txt”
-///   2) While not game_state_->isGameOver():
-///        a)   Ask each tank for its ActionRequest (GameState already holds all
-///             algorithms and players internally; it provides a helper to do “GetBattleInfo”)
-///        b)   Pass those two actions to game_state_->step(a1, a2)
-///        c)   Write one line into the output file (all tanks’ actions, with “(ignored)”
-///             or “(killed)” as needed).  We let GameState tell us exactly what to print.
-/// FIXME:    For simplicity, here we ask GameState to return a single comma‐separated
-///           string for the entire turn.  (You can adapt that to print exactly as
-///           the assignment spec requires.)
-///   3) After the loop, print the final “<winner>” or “Tie…” line.
-///--------------------------------------------------------------------------------
-void GameManager::run()
-{
-    // Output file: “output_<inputfile>.txt”
-    std::string out_name = "output_" + input_filename_ + ".txt";
-    std::ofstream out(out_name);
+void GameManager::run() {
+    // We assume readBoard(...) has already been called.
+    // Output file is named "output_<loaded_map_file_>"
+    std::string out_filename = "output_" + loaded_map_file_;
+    std::ofstream out(out_filename);
     if (!out) {
-        std::cerr << "Cannot open " << out_name << " for writing\n";
+        std::cerr << "Cannot open output file: " << out_filename << "\n";
         return;
     }
 
-    std::size_t turnCount = 0;
-    while (!game_state_->isGameOver()) {
-        std::string turnLine = game_state_->advanceOneTurn();
-
-        // Print the board to stdout after this turn:
-        std::cout << "=== Turn " << (turnCount + 1) << " ===\n";
-        game_state_->printBoard();
-
-        // Also write the turnLine to the output file:
-        out << turnLine << "\n";
-
-        ++turnCount;
+    int turn = 0;
+    while (!game_state_.isGameOver()) {
+        out << "=== Turn " << turn << " ===\n";
+        game_state_.printBoard();
+        std::string turnStr = game_state_.advanceOneTurn();
+        out << turnStr << "\n\n";
+        ++turn;
     }
 
-    // Once done, print the final board one more time (optional):
-    std::cout << "=== Final Board ===\n";
-    game_state_->printBoard();
-
-    // Then write the final result line:
-    out << game_state_->getResultString() << "\n";
+    // Final board + result:
+    out << "=== Final Board ===\n";
+    game_state_.printBoard();
+    out << game_state_.getResultString() << "\n";
     out.close();
 }
-

@@ -3,12 +3,13 @@
 #include <string>
 #include <vector>
 #include <memory>
+#include <map>
+#include <set>
 
 #include "Board.h"
-#include "Projectile.h"
 #include "Tank.h"
 
-#include "MySatelliteView.h"            // ← we only need MySatelliteView here
+#include "MySatelliteView.h"            // for building snapshots
 
 #include "common/TankAlgorithm.h"
 #include "common/Player.h"
@@ -20,101 +21,103 @@
 namespace arena {
 
 /*
-  GameState now owns *all* of the state and tick logic:
+  GameState implements HW1’s logic:
 
-    • Board board_  (walls '#', mines '@', tank chars '1'/'2')
-    • a vector<TankState> all_tanks_ in birth order
-    • a vector<unique_ptr<Projectile>> projectiles_
-    • Two Player objects (player1_, player2_) that handle GetBattleInfo calls
-    • A parallel vector of TankAlgorithm instances (one per tank)
-    • maxSteps_, currentStep_, gameOver_, resultStr_
-    • rows_/cols_/num_shells_ and a two‐dimensional tankIdMap_ for lookups
+    • Each shell moves two cells per tick (with wraparound).
+    • If a shell’s sub‐step hits a wall, increment wallHits; wall breaks on 2 hits.
+    • If a shell hits a tank mid‐step, that tank dies immediately; shell removed.
+    • If two or more shells end on the same cell, they destroy each other.
+    • Tanks do not wrap. Forward/backward into a wall or OOB = ignored.
+    • Stepping onto a mine kills the tank and removes the mine.
+    • “GetBattleInfo” → build MySatelliteView with ‘%’ at that tank’s (x,y).
+    • Walls print ‘#’, mines ‘@’, empty ‘ ’, shell overlay ‘*’, tank arrows in color.
 
-  Public interface:
-    - GameState(factory1, factory2)
-    - initialize(board, maxSteps, numShells)
-    - advanceOneTurn() → string describing exactly what every tank did
-    - isGameOver() / getResultString()
-
-  Whenever a tank’s algorithm returns GetBattleInfo, we build a MySatelliteView,
-  pass it to the Player; the Player then constructs a MyBattleInfo internally and
-  calls the TankAlgorithm’s updateBattleInfo(...) as needed.
+  All single‐step “projectiles_” code has been removed in favor of the two‐step
+  Shell logic.
 */
+
 class GameState {
 public:
-    // Constructs an empty GameState.  Must call initialize(...) before advanceOneTurn().
     GameState(std::unique_ptr<common::PlayerFactory> pFac,
               std::unique_ptr<common::TankAlgorithmFactory> tFac);
     ~GameState();
 
-    /// Initialize from a parsed Board, maxSteps, and shells per tank.
+    /// Initialize from parsed Board, maxSteps, and shells per tank.
     void initialize(const Board& board, std::size_t maxSteps, std::size_t numShells);
 
-    /// Advance exactly one tick for *all* tanks:
-    ///   • Collect each alive tank’s ActionRequest, handling any GetBattleInfo
-    ///   • Perform the 10 sub‐phases (rotate, move, mines, cooldowns, projectiles, shoot, cleanup, end‐check)
-    ///   • Return a comma‐separated string (“Action1, Action2 (ignored), …”) describing what happened
+    /// Advance one tick for all tanks; return comma‐separated action string.
     std::string advanceOneTurn();
 
     bool isGameOver() const;
     std::string getResultString() const;
 
-    /// If a tank needs a raw SatelliteView (rare), this returns one marking (queryX, queryY) with '%'.
-    std::unique_ptr<common::SatelliteView>
-    createSatelliteViewFor(int queryX, int queryY) const;
+    /// Build a MySatelliteView (with ‘%’ at (queryX,queryY)) for a single tank.
+    std::unique_ptr<common::SatelliteView> createSatelliteViewFor(int queryX, int queryY) const;
 
-    // Print the current board to stdout
+    /// Print the current board (walls '#', mines '@', empties ' '), overlay:
+    ///  • shells as '*'
+    ///  • tanks as colored arrows (red for Player1, blue for Player2)
     void printBoard() const;
 
 private:
-    struct TankState {
-        int player_index;       // 1 or 2
-        int tank_index;         // 0‐based within that player
-        std::size_t x, y;       // current board coordinates
-        int direction;          // 0..7 (0=Up,1=Up‐Right,…,6=Left,7=Up‐Left)
-        bool alive;
-        std::size_t shells_left;
-        bool wantsBackward_;    // used by confirmBackwardMoves()
+    // A single shell (missile) on the board:
+    struct Shell {
+        int x, y;       // current coords
+        int dir;        // 0..7
     };
 
-    // ========== Private helpers for each sub‐step ==========
+    // Per‐tank state (one per tank in birth order):
+    struct TankState {
+        int player_index;  // 1 or 2
+        int tank_index;    // 0‐based within that player
+        int x, y;          // board coords
+        int direction;     // 0..7
+        bool alive;
+        std::size_t shells_left;
+        bool wantsBackward_;
+    };
 
-    // (A) Rotations: update direction for each tank that asked RotateLeft/RotateRight
+    // (A) Rotations (changes direction if rotate request)
     void applyTankRotations(const std::vector<common::ActionRequest>& actions);
 
-    // (B) Handle any tank that moved onto a mine “@”
+    // (B) If any tank stands on a mine '@', kill it
     void handleTankMineCollisions();
 
-    // (C) Decrement any “cooldown” counters if implemented (currently no per‐tank cooldown logic)
+    // (C) Cooldowns (unused stub)
     void updateTankCooldowns();
 
-    // (D) Confirm that “MoveBackward” was legal; otherwise mark “ignored” later
+    // (D) Confirm backward‐move legality; mark ignored[k]=true if illegal
     void confirmBackwardMoves(std::vector<bool>& ignored,
                               const std::vector<common::ActionRequest>& actions);
 
-    // (E) Actually update each tank’s position in board_ (for forward/backward)
+    // (E) Move tanks forward/backward (no wrap). Walls or OOB => ignored; mine => kill.
     void updateTankPositionsOnBoard(std::vector<bool>& ignored,
                                     std::vector<bool>& killedThisTurn,
                                     const std::vector<common::ActionRequest>& actions);
 
-    // (F) Advance all projectiles by one cell
-    void advanceProjectiles();
-
-    // (G) Resolve any projectile collisions: wall, mine, tank
-    void resolveProjectileCollisions(std::vector<bool>& killedThisTurn);
-
-    // (H) Spawn new projectiles for each Shoot action
+    // (F) Handle shooting: spawn new Shells at (x+dx,y+dy) with immediate mid‐step check
     void handleShooting(const std::vector<common::ActionRequest>& actions,
                         std::vector<bool>& killedThisTurn);
 
-    // (I) Remove dead tanks and projectiles that are out‐of‐bounds or hit walls
+    // (G) Move all shells two sub‐steps each (wrap + mid‐step collisions)
+    void updateShellsWithOverrunCheck();
+
+    // (H) Resolve collisions between shells / walls / tanks after movement
+    void resolveShellCollisions();
+
+    // (I) Mid‐step collision check at (x,y): wall, tank, mine logic
+    bool handleShellMidStepCollision(int x, int y);
+
+    // (J) Cleanup: remove any shells flagged for deletion (already flagged in steps 7–9)
     void cleanupDestroyedEntities();
 
-    // (J) Check game‐over conditions (zero tanks, shell starvation, maxSteps)
+    // (K) Check if game‐over conditions are met (win/tie)
     void checkGameEndConditions();
 
-    // ========== Internal state ==========
+    // Map a direction (0..7) to a UTF‐8 arrow string
+    static const char* directionToArrow(int dir);
 
+private:
     Board board_;
     std::size_t rows_{0}, cols_{0};
     std::size_t maxSteps_{0};
@@ -122,28 +125,27 @@ private:
     bool gameOver_{false};
     std::string resultStr_;
 
-    // All tanks (in birth order).  TankState.alive == false means tank is destroyed.
     std::vector<TankState> all_tanks_;
-
-    // tankIdMap_[player_index][tank_index] = index into all_tanks_ or SIZE_MAX
+    // (playerIdx → vector[tankIndex] = index in all_tanks_)
     std::vector<std::vector<std::size_t>> tankIdMap_;
 
-    // One TankAlgorithm instance per TankState (same index as all_tanks_)
+    // One TankAlgorithm per tank
     std::vector<std::unique_ptr<common::TankAlgorithm>> all_tank_algorithms_;
 
-    // Two Player instances (for player1_ and player2_)
+    // Two Player objects for updating battle info
     std::unique_ptr<common::Player> player1_, player2_;
     std::unique_ptr<common::PlayerFactory> player_factory_;
     std::unique_ptr<common::TankAlgorithmFactory> tank_factory_;
 
-    // All projectiles currently in flight
-    std::vector<std::unique_ptr<Projectile>> projectiles_;
+    // All shells currently in flight
+    std::vector<Shell> shells_;
+    // Bookkeeping: which shell indices to delete
+    std::set<std::size_t> toRemove_;
+    // Map (x,y) → list of shell indices that ended at (x,y)
+    std::map<std::pair<int,int>, std::vector<std::size_t>> positionMap_;
 
-    // Number of shells each tank started with
     std::size_t num_shells_{0};
-
-    // Used to assign per‐player tank_index in birth order
-    int nextTankIndex_[3]{0, 0, 0};
+    int nextTankIndex_[3]{0, 0, 0};  // next index for player 1 and 2
 };
 
 } // namespace arena

@@ -676,8 +676,10 @@ CMakeFiles/tanks_game.dir/src/GameState.cpp.o: \
   /Library/Developer/CommandLineTools/SDKs/MacOSX13.3.sdk/usr/include/c++/v1/__functional/pointer_to_binary_function.h \
   /Library/Developer/CommandLineTools/SDKs/MacOSX13.3.sdk/usr/include/c++/v1/__functional/pointer_to_unary_function.h \
   /Library/Developer/CommandLineTools/SDKs/MacOSX13.3.sdk/usr/include/c++/v1/__functional/unary_negate.h \
+  /Library/Developer/CommandLineTools/SDKs/MacOSX13.3.sdk/usr/include/c++/v1/map \
+  /Library/Developer/CommandLineTools/SDKs/MacOSX13.3.sdk/usr/include/c++/v1/__tree \
+  /Library/Developer/CommandLineTools/SDKs/MacOSX13.3.sdk/usr/include/c++/v1/set \
   /Users/danielbaruch/Desktop/University/semester\ 2025B/advanced_programming/hw2/advanced_cpp_hw2/ArenaBattle/include/Board.h \
-  /Users/danielbaruch/Desktop/University/semester\ 2025B/advanced_programming/hw2/advanced_cpp_hw2/ArenaBattle/include/Projectile.h \
   /Users/danielbaruch/Desktop/University/semester\ 2025B/advanced_programming/hw2/advanced_cpp_hw2/ArenaBattle/include/Tank.h \
   /Users/danielbaruch/Desktop/University/semester\ 2025B/advanced_programming/hw2/advanced_cpp_hw2/ArenaBattle/common/ActionRequest.h \
   /Users/danielbaruch/Desktop/University/semester\ 2025B/advanced_programming/hw2/advanced_cpp_hw2/ArenaBattle/include/MySatelliteView.h \
