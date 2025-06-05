@@ -2,35 +2,35 @@
 
 #include <memory>
 #include <string>
-#include "GameState.h"
 
-namespace common {
-    class PlayerFactory;
-    class TankAlgorithmFactory;
-}
+#include "GameState.h"
+#include "common/PlayerFactory.h"
+#include "common/TankAlgorithmFactory.h"
 
 namespace arena {
 
 class GameManager {
 public:
-    // Construct with two factories; GameState is default‐constructed internally.
+    // Two‐argument constructor as before.
     GameManager(std::unique_ptr<common::PlayerFactory> pFac,
                 std::unique_ptr<common::TankAlgorithmFactory> tFac);
+
     ~GameManager();
 
-    // Load and parse <map_file>, build a Board, then initialize GameState.
+    /// Reads the map file, initializes GameState, and stores the output filename.
     void readBoard(const std::string& map_file);
 
-    // After readBoard(...), call run() to perform the game loop (no arguments).
+    /// Runs the simulation (printing to stdout if desired) and writes exactly one
+    /// line per turn (plus final result) into "output_<basename>.txt".
     void run();
 
 private:
     GameState game_state_;
-    std::string loaded_map_file_;  // remembered so run() can name its output file
+    std::unique_ptr<common::PlayerFactory>       player_factory_;
+    std::unique_ptr<common::TankAlgorithmFactory> tank_factory_;
 
-    // We will need to remember MaxSteps and NumShells during readBoard, so that
-    // GameState.initialize(...) can be called. In practice, they are passed directly
-    // inside readBoard, and not stored here as members.
+    std::string stored_basename_;     // e.g. "input_b.txt"
+    std::string stored_output_filename_; // e.g. "output_input_b.txt"
 };
 
 } // namespace arena

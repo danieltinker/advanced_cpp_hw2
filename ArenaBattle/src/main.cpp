@@ -3,7 +3,7 @@
 #include <iostream>
 #include <memory>
 #include <string>
-#include <fstream>      // <-- add this, so std::ifstream is defined
+#include <fstream>    // for std::ifstream
 
 #include "utils.h"
 #include "MyPlayerFactory.h"
@@ -19,46 +19,51 @@ int main(int argc, char** argv) {
     }
     std::string map_file = argv[1];
 
-    // Step A: read the key values first so we can construct factories
-    std::ifstream in(map_file);            // now <fstream> is included
+    // Step 1: Read the first four header lines so we know rows/cols/num_shells
+    std::ifstream in(map_file);
     if (!in) {
         std::cerr << "Cannot open map file: " << map_file << "\n";
         return 1;
     }
+
     std::string line;
 
-    // Skip map name:
+    // (1) Skip map name
     std::getline(in, line);
 
-    // MaxSteps:
+    // (2) MaxSteps
     std::getline(in, line);
     std::size_t max_steps = 0;
     parseKeyValue(line, "MaxSteps", max_steps);
 
-    // NumShells:
+    // (3) NumShells
     std::getline(in, line);
     std::size_t num_shells = 0;
     parseKeyValue(line, "NumShells", num_shells);
 
-    // Rows:
+    // (4) Rows
     std::getline(in, line);
     std::size_t rows = 0;
     parseKeyValue(line, "Rows", rows);
 
-    // Cols:
+    // (5) Cols
     std::getline(in, line);
     std::size_t cols = 0;
     parseKeyValue(line, "Cols", cols);
 
     in.close();
 
-    // Step B: construct factories
+    // Step 2: Build factories using rows, cols, num_shells
     auto playerFac = std::make_unique<MyPlayerFactory>(rows, cols);
     auto tankFac   = std::make_unique<MyTankAlgorithmFactory>(num_shells);
 
-    // Step C: create GameManager, call readBoard, then run()
+    // Step 3: Construct GameManager using the two‐arg constructor
     GameManager gm(std::move(playerFac), std::move(tankFac));
+
+    // Step 4: Call readBoard() so that GameState is initialized
     gm.readBoard(map_file);
+
+    // Step 5: Run() with no arguments
     gm.run();
 
     return 0;
