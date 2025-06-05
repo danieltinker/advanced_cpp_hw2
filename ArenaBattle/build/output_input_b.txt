@@ -1,62 +1,21 @@
-=== Turn 0 ===
 MoveBackward, MoveBackward (ignored)
-
-=== Turn 1 ===
 MoveBackward, MoveBackward (ignored)
-
-=== Turn 2 ===
 MoveBackward, MoveBackward (ignored)
-
-=== Turn 3 ===
 MoveBackward, MoveBackward (ignored)
-
-=== Turn 4 ===
 MoveBackward, MoveBackward (ignored)
-
-=== Turn 5 ===
 MoveBackward, MoveBackward (ignored)
-
-=== Turn 6 ===
 MoveBackward, MoveBackward (ignored)
-
-=== Turn 7 ===
 MoveBackward, MoveBackward (ignored)
-
-=== Turn 8 ===
 MoveBackward, MoveBackward (ignored)
-
-=== Turn 9 ===
 MoveBackward, MoveBackward (ignored)
-
-=== Turn 10 ===
 MoveBackward, MoveBackward (ignored)
-
-=== Turn 11 ===
 MoveBackward, MoveBackward (ignored)
-
-=== Turn 12 ===
 MoveBackward, MoveBackward (ignored)
-
-=== Turn 13 ===
 MoveBackward, MoveBackward (ignored)
-
-=== Turn 14 ===
 MoveBackward, MoveBackward (ignored)
-
-=== Turn 15 ===
 MoveBackward, MoveBackward (ignored)
-
-=== Turn 16 ===
 MoveBackward, MoveBackward (ignored)
-
-=== Turn 17 ===
 MoveBackward, MoveBackward (ignored)
-
-=== Turn 18 ===
 MoveBackward, MoveBackward (ignored)
-
-=== Turn 19 ===
 MoveBackward, MoveBackward (ignored)
-
-=== Final Board ===
 Tie, reached max steps = 20, player1 has 1, player2 has 1

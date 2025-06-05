@@ -77,8 +77,8 @@ void GameManager::readBoard(const std::string& map_file) {
     game_state_.initialize(board, maxSteps, numShells);
 }
 
+
 void GameManager::run() {
-    // We assume readBoard(...) has already been called.
     // Output file is named "output_<loaded_map_file_>"
     std::string out_filename = "output_" + loaded_map_file_;
     std::ofstream out(out_filename);
@@ -89,16 +89,30 @@ void GameManager::run() {
 
     int turn = 0;
     while (!game_state_.isGameOver()) {
-        out << "=== Turn " << turn << " ===\n";
+        // --- Print to console ---
+        std::cout << "=== Turn " << turn << " ===\n";
         game_state_.printBoard();
+        std::cout << "\n";
+        // Advance one turn in the game state; get back a comma-separated list
+        // of what each tank did this turn (with "(ignored)" or "(killed)" tags as needed).
         std::string turnStr = game_state_.advanceOneTurn();
-        out << turnStr << "\n\n";
+        
+        // Show that line of actions on-screen
+        std::cout << turnStr << "\n\n";
+
+        // --- Write to output file ---
+        // Only write the actions (no header, no blank line).
+        out << turnStr << "\n";
+
         ++turn;
     }
 
-    // Final board + result:
-    out << "=== Final Board ===\n";
-    game_state_.printBoard();
+    // --- Final result: console ---
+    std::cout << "=== Final Board ===\n";
+    std::cout << game_state_.getResultString() << "\n";
+
+    // --- Final result: output file ---
     out << game_state_.getResultString() << "\n";
+
     out.close();
 }
