@@ -31,7 +31,7 @@ public:
             return common::ActionRequest::GetBattleInfo;
         }
         has_new_info_ = false;
-        return common::ActionRequest::MoveBackward;
+        return common::ActionRequest::Shoot;
     }
 
     // Receives a MyBattleInfo; extracts the '%' position

@@ -174,7 +174,7 @@ std::string GameState::advanceOneTurn() {
     updateTankPositionsOnBoard(ignored, killedThisTurn, actions);
 
     // --- (7) Handle shooting: spawn new shells with mid‐step check ---
-    handleShooting(actions, killedThisTurn);
+    handleShooting(ignored, actions);
 
     // --- (8) Move all shells two sub‐steps each (wrap + mid‐step collisions) ---
     updateShellsWithOverrunCheck();
@@ -211,7 +211,8 @@ std::string GameState::advanceOneTurn() {
             }
             if (ignored[k] &&
                (actions[k] == common::ActionRequest::MoveForward ||
-                actions[k] == common::ActionRequest::MoveBackward))
+                actions[k] == common::ActionRequest::MoveBackward) || 
+                actions[k] == common::ActionRequest::Shoot )
             {
                 s += " (ignored)";
             }
@@ -434,8 +435,8 @@ void GameState::updateTankPositionsOnBoard(std::vector<bool>& ignored,
 //------------------------------------------------------------------------------
 // (7) handleShooting: spawn new shells at (x+dx,y+dy) with immediate collision.
 //------------------------------------------------------------------------------
-void GameState::handleShooting(const std::vector<common::ActionRequest>& actions,
-                               std::vector<bool>& /*killedThisTurn*/) 
+void GameState::handleShooting(std::vector<bool>& ignored,const std::vector<common::ActionRequest>& actions
+                               /*std::vector<bool>&*/ /*killedThisTurn*/) 
 {
     auto spawnShell = [&](TankState& ts) {
         int sx = ts.x, sy = ts.y;
@@ -462,8 +463,11 @@ void GameState::handleShooting(const std::vector<common::ActionRequest>& actions
     for (std::size_t k = 0; k < all_tanks_.size(); ++k) {
         if (!all_tanks_[k].alive) continue;
         if (actions[k] != common::ActionRequest::Shoot) continue;
-        if (all_tanks_[k].shells_left == 0) continue;
-
+        if (all_tanks_[k].shells_left == 0) {
+            ignored[k] = true;
+            continue;
+        }
+        
         all_tanks_[k].shells_left--;
         spawnShell(all_tanks_[k]);
     }

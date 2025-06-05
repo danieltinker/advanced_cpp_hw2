@@ -96,8 +96,8 @@ private:
                                     const std::vector<common::ActionRequest>& actions);
 
     // (F) Handle shooting: spawn new Shells at (x+dx,y+dy) with immediate mid‐step check
-    void handleShooting(const std::vector<common::ActionRequest>& actions,
-                        std::vector<bool>& killedThisTurn);
+    void handleShooting(std::vector<bool>& ignored,const std::vector<common::ActionRequest>& actions
+                        );
 
     // (G) Move all shells two sub‐steps each (wrap + mid‐step collisions)
     void updateShellsWithOverrunCheck();
