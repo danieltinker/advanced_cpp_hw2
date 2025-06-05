@@ -392,6 +392,14 @@ void GameState::updateTankPositionsOnBoard(std::vector<bool>& ignored,
         int newX = all_tanks_[k].x + dx;
         int newY = all_tanks_[k].y + dy;
 
+
+        // **Wrap** them instead of rejecting:
+        board_.wrapCoords(newX, newY);
+
+        // now check if the wrapped cell is a wall or occupied:
+        if (board_.getCell(newX, newY).content == CellContent::WALL) {
+            ignored[k] = true;
+        }
         // If out of bounds or wall, ignore:
         if (newX < 0 || newY < 0 ||
             newX >= board_.getWidth() || newY >= board_.getHeight() ||

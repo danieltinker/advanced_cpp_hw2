@@ -1,17 +1,20 @@
 === Turn 0 ===
-Shoot, Shoot
+MoveForward, MoveForward
 
 === Turn 1 ===
-Shoot, Shoot
+MoveForward, MoveForward
 
 === Turn 2 ===
-Shoot, Shoot
+MoveForward, MoveForward
 
 === Turn 3 ===
-Shoot, Shoot
+MoveForward, MoveForward
 
 === Turn 4 ===
-killed, Shoot
+MoveForward, MoveForward
+
+=== Turn 5 ===
+killed, MoveForward
 
 === Final Board ===
 Player 2 won with 1 tanks still alive
