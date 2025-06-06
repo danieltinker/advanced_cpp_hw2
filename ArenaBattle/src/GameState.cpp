@@ -100,6 +100,17 @@ void GameState::initialize(const Board& board, std::size_t maxSteps, std::size_t
 // advanceOneTurn:
 //   Implements the 12 sub‐steps from HW1—a faithful two‐cell shell model.
 //------------------------------------------------------------------------------
+#include "GameState.h"
+#include "Board.h"
+#include "MyBattleInfo.h"     // <-- include the new MyBattleInfo
+#include <iostream>
+#include <sstream>
+
+using namespace arena;
+using namespace common;
+
+// … (constructor, destructor, initialize, etc.) …
+
 std::string GameState::advanceOneTurn() {
     if (gameOver_) return "";
 
@@ -108,56 +119,64 @@ std::string GameState::advanceOneTurn() {
     std::vector<bool> ignored(N, false);
     std::vector<bool> killedThisTurn(N, false);
 
-    // --- (1) Gather each alive tank’s requested action, but do NOT let
-    //           GetBattleInfo be followed by another action ---
+    // --- (1) Gather each alive tank’s requested action, but treat GetBattleInfo as the entire turn ---
     for (std::size_t k = 0; k < N; ++k) {
         if (!all_tanks_[k].alive) continue;
         auto& alg = all_tank_algorithms_[k];
 
+        // Ask the algorithm what it wants this turn
         common::ActionRequest req = alg->getAction();
+
         if (req == common::ActionRequest::GetBattleInfo) {
-            // Build the char-grid snapshot exactly as before:
-            std::vector<std::vector<char>> charGrid(rows_, std::vector<char>(cols_, ' '));
-            for (int ry = 0; ry < static_cast<int>(rows_); ++ry) {
-                for (int cx = 0; cx < static_cast<int>(cols_); ++cx) {
-                    const Cell& cell = board_.getCell(cx, ry);
+            // ─── Build a MyBattleInfo for tank k ───
+            MyBattleInfo info(rows_, cols_);
+
+            // (a) Copy walls/mines/tanks into info.grid:
+            for (std::size_t ry = 0; ry < rows_; ++ry) {
+                for (std::size_t cx = 0; cx < cols_; ++cx) {
+                    const Cell& cell = board_.getCell(static_cast<int>(cx),
+                                                      static_cast<int>(ry));
                     switch (cell.content) {
-                        case CellContent::WALL:  charGrid[ry][cx] = '#'; break;
-                        case CellContent::MINE:  charGrid[ry][cx] = '@'; break;
-                        case CellContent::TANK1: charGrid[ry][cx] = '1'; break;
-                        case CellContent::TANK2: charGrid[ry][cx] = '2'; break;
-                        default:                  charGrid[ry][cx] = ' '; break;
+                        case CellContent::WALL:
+                            info.grid[ry][cx] = '#';
+                            break;
+                        case CellContent::MINE:
+                            info.grid[ry][cx] = '@';
+                            break;
+                        case CellContent::TANK1:
+                            info.grid[ry][cx] = '1';
+                            break;
+                        case CellContent::TANK2:
+                            info.grid[ry][cx] = '2';
+                            break;
+                        default:
+                            info.grid[ry][cx] = ' ';
+                            break;
                     }
                 }
             }
-            // Mark the querying tank’s own spot as '%':
-            int qx = all_tanks_[k].x;
-            int qy = all_tanks_[k].y;
-            if (qx >= 0 && qx < static_cast<int>(cols_) &&
-                qy >= 0 && qy < static_cast<int>(rows_)) 
-            {
-                charGrid[qy][qx] = '%';
+
+            // (b) Overwrite the querying tank’s own spot with '%'
+            info.selfX = static_cast<std::size_t>(all_tanks_[k].x);
+            info.selfY = static_cast<std::size_t>(all_tanks_[k].y);
+            if (info.selfX < cols_ && info.selfY < rows_) {
+                info.grid[info.selfY][info.selfX] = '%';
             }
 
-            // Create a MySatelliteView and push it to the appropriate Player
-            MySatelliteView satView(
-                charGrid,
-                static_cast<int>(rows_),
-                static_cast<int>(cols_),
-                qx,
-                qy
-            );
-            if (all_tanks_[k].player_index == 1) {
-                player1_->updateTankWithBattleInfo(*alg, satView);
-            } else {
-                player2_->updateTankWithBattleInfo(*alg, satView);
-            }
+            // (c) Record direction, shellsRemaining, turnNumber
+            info.selfDir        = all_tanks_[k].direction;
+            info.shellsRemaining= all_tanks_[k].shells_left;
+            info.turnNumber     = static_cast<int>(currentStep_);
 
-            // NOW: do NOT call alg->getAction() again. The tank’s entire turn is spent on GetBattleInfo.
+            // (d) Pass it to the TankAlgorithm via the common interface
+            //     (up‐cast to BattleInfo& so signatures match)
+            alg->updateBattleInfo(static_cast<common::BattleInfo&>(info));
+
+            // That’s the tank’s entire turn—no second getAction() here.
             actions[k] = common::ActionRequest::GetBattleInfo;
         }
         else {
-            // Any other action (Move, Rotate, Shoot, DoNothing) is the final choice
+            // Any other action (Move, Rotate, Shoot, DoNothing) is final for this turn
             actions[k] = req;
         }
     }
@@ -177,25 +196,25 @@ std::string GameState::advanceOneTurn() {
     // --- (6) Move forward/backward (no wrap) ---
     updateTankPositionsOnBoard(ignored, killedThisTurn, actions);
 
-    // --- (7) Handle shooting: spawn new shells with mid-step check ---
+    // --- (7) Handle shooting: spawn new shells with mid‐step check ---
     handleShooting(ignored, actions);
 
-    // --- (8) Move all shells two sub-steps each (wrap + mid-step collisions) ---
+    // --- (8) Move all shells two sub‐steps each (wrap + mid‐step collisions) ---
     updateShellsWithOverrunCheck();
 
     // --- (9) Resolve shell collisions (shell vs shell, shell vs wall, shell vs tank) ---
     resolveShellCollisions();
 
-    // --- (10) Cleanup dead entities (tanks already removed, shells flagged) ---
+    // --- (10) Cleanup dead entities (tanks already removed, shells removed) ---
     cleanupDestroyedEntities();
 
-    // --- (11) Check end-of-game conditions ---
+    // --- (11) Check end‐of‐game conditions ---
     checkGameEndConditions();
 
     // --- (12) Increment turn counter ---
     ++currentStep_;
 
-    // Build comma-separated action string
+    // Build comma‐separated action string (with “(ignored)” and “(killed)” tags)
     std::ostringstream oss;
     for (std::size_t k = 0; k < N; ++k) {
         if (!all_tanks_[k].alive) {
@@ -203,17 +222,36 @@ std::string GameState::advanceOneTurn() {
         } else {
             std::string s;
             switch (actions[k]) {
-                case common::ActionRequest::MoveForward:   s = "MoveForward";   break;
-                case common::ActionRequest::MoveBackward:  s = "MoveBackward";  break;
-                case common::ActionRequest::RotateLeft90:  s = "RotateLeft90";  break;
-                case common::ActionRequest::RotateRight90: s = "RotateRight90"; break;
-                case common::ActionRequest::RotateLeft45:  s = "RotateLeft45";  break;
-                case common::ActionRequest::RotateRight45: s = "RotateRight45"; break;
-                case common::ActionRequest::Shoot:         s = "Shoot";         break;
-                case common::ActionRequest::GetBattleInfo: s = "GetBattleInfo"; break;
-                default:                                  s = "DoNothing";     break;
+                case common::ActionRequest::MoveForward:
+                    s = "MoveForward";
+                    break;
+                case common::ActionRequest::MoveBackward:
+                    s = "MoveBackward";
+                    break;
+                case common::ActionRequest::RotateLeft90:
+                    s = "RotateLeft90";
+                    break;
+                case common::ActionRequest::RotateRight90:
+                    s = "RotateRight90";
+                    break;
+                case common::ActionRequest::RotateLeft45:
+                    s = "RotateLeft45";
+                    break;
+                case common::ActionRequest::RotateRight45:
+                    s = "RotateRight45";
+                    break;
+                case common::ActionRequest::Shoot:
+                    s = "Shoot";
+                    break;
+                case common::ActionRequest::GetBattleInfo:
+                    s = "GetBattleInfo";
+                    break;
+                default:
+                    s = "DoNothing";
+                    break;
             }
-            // If MoveForward, MoveBackward or Shoot was flagged ignored, append “(ignored)”
+
+            // If MoveForward, MoveBackward, Shoot were flagged ignored, append “(ignored)”
             if (ignored[k] &&
                (actions[k] == common::ActionRequest::MoveForward ||
                 actions[k] == common::ActionRequest::MoveBackward ||
@@ -230,7 +268,6 @@ std::string GameState::advanceOneTurn() {
     }
     return oss.str();
 }
-
 
 //------------------------------------------------------------------------------
 // isGameOver / getResultString

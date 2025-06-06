@@ -1,3 +1,4 @@
+// MyBattleInfo.h
 #pragma once
 
 #include "common/BattleInfo.h"
@@ -10,27 +11,48 @@ namespace arena {
   A concrete BattleInfo containing:
     - rows, cols
     - a full 2D grid (vector<vector<char>>)
-    - helper to set an object at (x,y)
+    - the querying tank’s own (x,y), direction, shellsRemaining, turnNumber
 */
 struct MyBattleInfo : public common::BattleInfo {
+    // Grid dimensions & the 2D char‐grid:
     std::size_t rows, cols;
     std::vector<std::vector<char>> grid;
 
-    // Default constructor
+    // The querying tank’s state:
+    std::size_t selfX, selfY;   // tank’s (x,y)
+    int        selfDir;         // 0..7
+    int        shellsRemaining; // how many shells that tank still has
+
+    // (Optional) current turn number:
+    int turnNumber;
+
+    // Default constructor is fine for vector‐of‐vector initialization
     MyBattleInfo() = default;
 
-    // Two‐argument constructor
-    MyBattleInfo(std::size_t r, std::size_t c);
+    // Construct with dimensions; grid gets initialized to spaces:
+    MyBattleInfo(std::size_t r, std::size_t c)
+      : rows(r), cols(c),
+        grid(r, std::vector<char>(c, ' ')),
+        selfX(0), selfY(0),
+        selfDir(0),
+        shellsRemaining(0),
+        turnNumber(0)
+    {}
 
-    // Set a character at (x,y)
-    void setObjectAt(std::size_t x, std::size_t y, char c);
+    // Set a character at (x,y) in our char‐grid
+    void setObjectAt(std::size_t x, std::size_t y, char ch) {
+        if (x < cols && y < rows) {
+            grid[y][x] = ch;
+        }
+    }
 
-    char getObjectAt(size_t x, size_t y) const;
-
-    // (Optionally) you might also want a getter, but typically
-    // MyBattleInfo is passed to TankAlgorithm, and that code uses
-    // grid[x][y] directly. If not, you can add:
-    // char getObjectAt(std::size_t x, std::size_t y) const { return grid[x][y]; }
+    // Read a character from (x,y)
+    char getObjectAt(std::size_t x, std::size_t y) const {
+        if (x < cols && y < rows) {
+            return grid[y][x];
+        }
+        return ' ';
+    }
 };
 
 } // namespace arena
