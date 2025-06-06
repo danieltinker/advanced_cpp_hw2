@@ -9,8 +9,7 @@ std::unique_ptr<common::TankAlgorithm> MyTankAlgorithmFactory::create(
     // Pass num_shells_ as the third argument:
     return std::make_unique<MyTankAlgorithm>(
         player_index,
-        tank_index,
-        num_shells_   // ← include this!
+        tank_index
     );
 }
 

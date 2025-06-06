@@ -14,11 +14,11 @@ namespace arena {
 */
 class MyTankAlgorithm : public common::TankAlgorithm {
 public:
-    MyTankAlgorithm(int player_index, int tank_index, std::size_t num_shells)
+    MyTankAlgorithm(int player_index, int tank_index)
         : player_index_(player_index),
           tank_index_(tank_index),
           direction_((player_index == 1) ? 6 : 2),
-          shells_left_(num_shells),
+          shells_left_(0),
           pos_x_(SIZE_MAX),
           pos_y_(SIZE_MAX),
           has_new_info_(false)

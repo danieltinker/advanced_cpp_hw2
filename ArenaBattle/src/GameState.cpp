@@ -108,54 +108,58 @@ std::string GameState::advanceOneTurn() {
     std::vector<bool> ignored(N, false);
     std::vector<bool> killedThisTurn(N, false);
 
-    // --- (1) Gather each alive tank’s requested action ---
+    // --- (1) Gather each alive tank’s requested action, but do NOT let
+    //           GetBattleInfo be followed by another action ---
     for (std::size_t k = 0; k < N; ++k) {
         if (!all_tanks_[k].alive) continue;
         auto& alg = all_tank_algorithms_[k];
 
         common::ActionRequest req = alg->getAction();
         if (req == common::ActionRequest::GetBattleInfo) {
-    // (a) Build a temporary char‐grid from board_.getGrid()
-    std::vector<std::vector<char>> charGrid(rows_, std::vector<char>(cols_, ' '));
-    for (int ry = 0; ry < static_cast<int>(rows_); ++ry) {
-        for (int cx = 0; cx < static_cast<int>(cols_); ++cx) {
-            const Cell& cell = board_.getCell(cx, ry);
-            switch (cell.content) {
-                case CellContent::WALL:  charGrid[ry][cx] = '#'; break;
-                case CellContent::MINE:  charGrid[ry][cx] = '@'; break;
-                case CellContent::TANK1: charGrid[ry][cx] = '1'; break;
-                case CellContent::TANK2: charGrid[ry][cx] = '2'; break;
-                default:                  charGrid[ry][cx] = ' '; break;
+            // Build the char-grid snapshot exactly as before:
+            std::vector<std::vector<char>> charGrid(rows_, std::vector<char>(cols_, ' '));
+            for (int ry = 0; ry < static_cast<int>(rows_); ++ry) {
+                for (int cx = 0; cx < static_cast<int>(cols_); ++cx) {
+                    const Cell& cell = board_.getCell(cx, ry);
+                    switch (cell.content) {
+                        case CellContent::WALL:  charGrid[ry][cx] = '#'; break;
+                        case CellContent::MINE:  charGrid[ry][cx] = '@'; break;
+                        case CellContent::TANK1: charGrid[ry][cx] = '1'; break;
+                        case CellContent::TANK2: charGrid[ry][cx] = '2'; break;
+                        default:                  charGrid[ry][cx] = ' '; break;
+                    }
+                }
             }
+            // Mark the querying tank’s own spot as '%':
+            int qx = all_tanks_[k].x;
+            int qy = all_tanks_[k].y;
+            if (qx >= 0 && qx < static_cast<int>(cols_) &&
+                qy >= 0 && qy < static_cast<int>(rows_)) 
+            {
+                charGrid[qy][qx] = '%';
+            }
+
+            // Create a MySatelliteView and push it to the appropriate Player
+            MySatelliteView satView(
+                charGrid,
+                static_cast<int>(rows_),
+                static_cast<int>(cols_),
+                qx,
+                qy
+            );
+            if (all_tanks_[k].player_index == 1) {
+                player1_->updateTankWithBattleInfo(*alg, satView);
+            } else {
+                player2_->updateTankWithBattleInfo(*alg, satView);
+            }
+
+            // NOW: do NOT call alg->getAction() again. The tank’s entire turn is spent on GetBattleInfo.
+            actions[k] = common::ActionRequest::GetBattleInfo;
         }
-    }
-    // (b) Mark the querying tank’s spot as '%':
-    int qx = all_tanks_[k].x;
-    int qy = all_tanks_[k].y;
-    if (qx >= 0 && qx < static_cast<int>(cols_) &&
-        qy >= 0 && qy < static_cast<int>(rows_))
-    {
-        charGrid[qy][qx] = '%';
-    }
-
-    // (c) Now construct MySatelliteView from charGrid
-    MySatelliteView satView(
-        charGrid,
-        static_cast<int>(rows_),
-        static_cast<int>(cols_),
-        qx,
-        qy
-    );
-    if (all_tanks_[k].player_index == 1) {
-        player1_->updateTankWithBattleInfo(*alg, satView);
-    } else {
-        player2_->updateTankWithBattleInfo(*alg, satView);
-    }
-    // Get the “real” action next:
-    req = alg->getAction();
-}
-
-        actions[k] = req;
+        else {
+            // Any other action (Move, Rotate, Shoot, DoNothing) is the final choice
+            actions[k] = req;
+        }
     }
 
     // --- (2) Rotations ---
@@ -173,10 +177,10 @@ std::string GameState::advanceOneTurn() {
     // --- (6) Move forward/backward (no wrap) ---
     updateTankPositionsOnBoard(ignored, killedThisTurn, actions);
 
-    // --- (7) Handle shooting: spawn new shells with mid‐step check ---
+    // --- (7) Handle shooting: spawn new shells with mid-step check ---
     handleShooting(ignored, actions);
 
-    // --- (8) Move all shells two sub‐steps each (wrap + mid‐step collisions) ---
+    // --- (8) Move all shells two sub-steps each (wrap + mid-step collisions) ---
     updateShellsWithOverrunCheck();
 
     // --- (9) Resolve shell collisions (shell vs shell, shell vs wall, shell vs tank) ---
@@ -185,13 +189,13 @@ std::string GameState::advanceOneTurn() {
     // --- (10) Cleanup dead entities (tanks already removed, shells flagged) ---
     cleanupDestroyedEntities();
 
-    // --- (11) Check end‐of‐game conditions ---
+    // --- (11) Check end-of-game conditions ---
     checkGameEndConditions();
 
     // --- (12) Increment turn counter ---
     ++currentStep_;
 
-    // Build comma‐separated action string
+    // Build comma-separated action string
     std::ostringstream oss;
     for (std::size_t k = 0; k < N; ++k) {
         if (!all_tanks_[k].alive) {
@@ -209,10 +213,11 @@ std::string GameState::advanceOneTurn() {
                 case common::ActionRequest::GetBattleInfo: s = "GetBattleInfo"; break;
                 default:                                  s = "DoNothing";     break;
             }
+            // If MoveForward, MoveBackward or Shoot was flagged ignored, append “(ignored)”
             if (ignored[k] &&
                (actions[k] == common::ActionRequest::MoveForward ||
-                actions[k] == common::ActionRequest::MoveBackward) || 
-                actions[k] == common::ActionRequest::Shoot )
+                actions[k] == common::ActionRequest::MoveBackward ||
+                actions[k] == common::ActionRequest::Shoot))
             {
                 s += " (ignored)";
             }
@@ -225,6 +230,7 @@ std::string GameState::advanceOneTurn() {
     }
     return oss.str();
 }
+
 
 //------------------------------------------------------------------------------
 // isGameOver / getResultString

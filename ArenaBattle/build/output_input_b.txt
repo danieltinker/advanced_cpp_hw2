@@ -1,21 +1,21 @@
+GetBattleInfo, GetBattleInfo
+Shoot, Shoot
+GetBattleInfo, GetBattleInfo
+Shoot, Shoot
+GetBattleInfo, GetBattleInfo
 Shoot (ignored), Shoot (ignored)
+GetBattleInfo, GetBattleInfo
 Shoot (ignored), Shoot (ignored)
+GetBattleInfo, GetBattleInfo
 Shoot (ignored), Shoot (ignored)
+GetBattleInfo, GetBattleInfo
 Shoot (ignored), Shoot (ignored)
+GetBattleInfo, GetBattleInfo
 Shoot (ignored), Shoot (ignored)
+GetBattleInfo, GetBattleInfo
 Shoot (ignored), Shoot (ignored)
+GetBattleInfo, GetBattleInfo
 Shoot (ignored), Shoot (ignored)
-Shoot (ignored), Shoot (ignored)
-Shoot (ignored), Shoot (ignored)
-Shoot (ignored), Shoot (ignored)
-Shoot (ignored), Shoot (ignored)
-Shoot (ignored), Shoot (ignored)
-Shoot (ignored), Shoot (ignored)
-Shoot (ignored), Shoot (ignored)
-Shoot (ignored), Shoot (ignored)
-Shoot (ignored), Shoot (ignored)
-Shoot (ignored), Shoot (ignored)
-Shoot (ignored), Shoot (ignored)
-Shoot (ignored), Shoot (ignored)
+GetBattleInfo, GetBattleInfo
 Shoot (ignored), Shoot (ignored)
 Tie, reached max steps = 20, player1 has 1, player2 has 1
