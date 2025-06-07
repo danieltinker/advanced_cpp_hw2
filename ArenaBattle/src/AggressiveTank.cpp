@@ -1,12 +1,13 @@
 // src/AggressiveTank.cpp
 #include "AggressiveTank.h"
 #include "common/TankAlgorithm.h"
+#include "MyTankAlgorithm.h"
 #include <algorithm> // for std::abs, etc.
 //why dont you keep num shells and max steps? the tank algorithm should expect shells remaining
 using namespace arena;
 
 AggressiveTank::AggressiveTank(int pIdx, int tIdx)
-    : TankAlgorithm(pIdx, tIdx)
+    : MyTankAlgorithm(pIdx, tIdx)
 {}
 
 AggressiveTank::~AggressiveTank() { };

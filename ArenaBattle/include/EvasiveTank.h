@@ -3,10 +3,11 @@
 
 #include "common/TankAlgorithm.h"
 #include "MyBattleInfo.h"
+#include "MyTankAlgorithm.h"
 
 namespace arena {
 
-class EvasiveTank : public common::TankAlgorithm {
+class EvasiveTank : public MyTankAlgorithm {
 public:
     EvasiveTank(int playerIndex, int tankIndex);
     ~EvasiveTank() override;

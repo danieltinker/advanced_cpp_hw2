@@ -1,6 +1,7 @@
 #pragma once
 
 #include "common/TankAlgorithm.h"
+#include "MyTankAlgorithm.h"
 #include "MyBattleInfo.h"
 
 namespace arena {
@@ -9,7 +10,7 @@ namespace arena {
  * An aggressive strategy: shoot any enemy directly in front (if we have shells),
  * otherwise move forward.  Internally tracks shellsRemaining_ each turn.
  */
-class AggressiveTank : public common::TankAlgorithm {
+class AggressiveTank : public MyTankAlgorithm{
 public:
     AggressiveTank(int playerIndex, int tankIndex);
     ~AggressiveTank() override;

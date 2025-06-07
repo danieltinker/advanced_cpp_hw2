@@ -15,10 +15,6 @@ namespace common {
 class TankAlgorithm {
 public:
     virtual ~TankAlgorithm() {}
-    
-    // Amir: legal so have this ctor here?
-    TankAlgorithm(int playerIndex, int tankIndex);
-
     virtual ActionRequest getAction() = 0;
     virtual void updateBattleInfo(BattleInfo& info) = 0;
 };

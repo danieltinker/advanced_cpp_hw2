@@ -4,6 +4,7 @@ CMakeFiles/tanks_game.dir/src/AggressiveTank.cpp.o: \
   /Users/danielbaruch/Desktop/University/semester\ 2025B/advanced_programming/hw2/advanced_cpp_hw2/ArenaBattle/common/TankAlgorithm.h \
   /Users/danielbaruch/Desktop/University/semester\ 2025B/advanced_programming/hw2/advanced_cpp_hw2/ArenaBattle/common/ActionRequest.h \
   /Users/danielbaruch/Desktop/University/semester\ 2025B/advanced_programming/hw2/advanced_cpp_hw2/ArenaBattle/common/BattleInfo.h \
+  /Users/danielbaruch/Desktop/University/semester\ 2025B/advanced_programming/hw2/advanced_cpp_hw2/ArenaBattle/include/MyTankAlgorithm.h \
   /Users/danielbaruch/Desktop/University/semester\ 2025B/advanced_programming/hw2/advanced_cpp_hw2/ArenaBattle/include/MyBattleInfo.h \
   /Library/Developer/CommandLineTools/SDKs/MacOSX13.3.sdk/usr/include/c++/v1/vector \
   /Library/Developer/CommandLineTools/SDKs/MacOSX13.3.sdk/usr/include/c++/v1/__algorithm/copy.h \

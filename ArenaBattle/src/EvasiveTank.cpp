@@ -2,11 +2,12 @@
 #include "EvasiveTank.h"
 #include <algorithm>
 #include <cmath>
+#include "MyTankAlgorithm.h"
 
 using namespace arena;
 
 EvasiveTank::EvasiveTank(int pIdx, int tIdx)
-    : TankAlgorithm(pIdx, tIdx)
+    : MyTankAlgorithm(pIdx, tIdx)
 {}
 
 EvasiveTank::~EvasiveTank(){};
