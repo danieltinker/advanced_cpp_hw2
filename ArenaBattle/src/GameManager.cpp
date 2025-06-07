@@ -82,15 +82,49 @@ void GameManager::readBoard(const std::string& map_file) {
     game_state_.initialize(board, maxSteps, numShells);
 }
 
+
 void GameManager::run() {
-    size_t turn = 0;
+    // Derive an output filename from the input map:
+    // e.g. "basic.txt" → "basic_actions.txt"
+    std::string outFile = loaded_map_file_;
+    auto dot = outFile.rfind('.');
+    if (dot != std::string::npos) {
+        outFile = outFile.substr(0, dot) + "_actions" + outFile.substr(dot);
+    } else {
+        outFile += "_actions.txt";
+    }
+
+    std::ofstream ofs(outFile);
+    if (!ofs) {
+        std::cerr << "Error: cannot open actions log file '" 
+                  << outFile << "' for writing.\n";
+        std::exit(1);
+    }
+
+    std::size_t turn = 0;
     while (!game_state_.isGameOver()) {
+        // 1) Print board to console
         std::cout << "=== Turn " << turn << " ===\n";
         game_state_.printBoard();
-        std::cout << game_state_.advanceOneTurn() << "\n";
+
+        // 2) Advance and capture actions
+        std::string actions = game_state_.advanceOneTurn();
+
+        // 3) Log actions line to file (no console print)
+        ofs << actions << "\n";
+
         ++turn;
     }
+
+    // Final board + result on console
     std::cout << "=== Final Board ===\n";
     game_state_.printBoard();
-    std::cout << game_state_.getResultString() << "\n";
+    std::string result = game_state_.getResultString();
+    std::cout << result << "\n";
+
+    // And log the final result line to the same file
+    ofs << result << "\n";
+
+    ofs.close();
+    std::cout << "Actions logged to: " << outFile << "\n";
 }
