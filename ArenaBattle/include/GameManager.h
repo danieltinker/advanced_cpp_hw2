@@ -11,27 +11,23 @@ namespace common {
 
 namespace arena {
 
+/// Loads a map, initializes GameState, and runs the main loop.
 class GameManager {
 public:
-    /// Construct with concrete factories; template allows passing by value
-    template<typename PF, typename TF>
-    GameManager(PF pFac, TF tFac)
-        : game_state_(
-              std::make_unique<PF>(std::move(pFac)),
-              std::make_unique<TF>(std::move(tFac))
-          )
-    {}
-
+    /// Takes ownership of two factories.
+    GameManager(std::unique_ptr<common::PlayerFactory>        pFac,
+                std::unique_ptr<common::TankAlgorithmFactory> tFac);
     ~GameManager() = default;
 
-    /// Load and parse <map_file>, build a Board, then initialize GameState.
-    void readBoard(const std::string &map_file);
+    /// Parses the map file and initializes GameState.
+    void readBoard(const std::string& map_file);
 
-    /// After readBoard(...), call run() to perform the game loop (no arguments).
+    /// Executes the game loop until completion.
     void run();
 
 private:
-    GameState game_state_;
-    std::string loaded_map_file_;  ///< remembered so run() can name its output file
+    GameState    game_state_;
+    std::string  loaded_map_file_;
 };
-}
+
+} // namespace arena

@@ -1,6 +1,6 @@
 Walls
-Rows = 7
-Cols = 7
+Rows = 9
+Cols = 9
 MaxSteps = 20
 NumShells = 2
 
