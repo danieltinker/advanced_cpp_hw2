@@ -181,24 +181,10 @@ CMakeFiles/tanks_game.dir/src/MySatelliteView.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/tanks_game.dir/src/MySatelliteView.cpp.s"
 	/Library/Developer/CommandLineTools/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S "/Users/danielbaruch/Desktop/University/semester 2025B/advanced_programming/hw2/advanced_cpp_hw2/ArenaBattle/src/MySatelliteView.cpp" -o CMakeFiles/tanks_game.dir/src/MySatelliteView.cpp.s
 
-CMakeFiles/tanks_game.dir/src/MyTankAlgorithm.cpp.o: CMakeFiles/tanks_game.dir/flags.make
-CMakeFiles/tanks_game.dir/src/MyTankAlgorithm.cpp.o: ../src/MyTankAlgorithm.cpp
-CMakeFiles/tanks_game.dir/src/MyTankAlgorithm.cpp.o: CMakeFiles/tanks_game.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir="/Users/danielbaruch/Desktop/University/semester 2025B/advanced_programming/hw2/advanced_cpp_hw2/ArenaBattle/build/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_9) "Building CXX object CMakeFiles/tanks_game.dir/src/MyTankAlgorithm.cpp.o"
-	/Library/Developer/CommandLineTools/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/tanks_game.dir/src/MyTankAlgorithm.cpp.o -MF CMakeFiles/tanks_game.dir/src/MyTankAlgorithm.cpp.o.d -o CMakeFiles/tanks_game.dir/src/MyTankAlgorithm.cpp.o -c "/Users/danielbaruch/Desktop/University/semester 2025B/advanced_programming/hw2/advanced_cpp_hw2/ArenaBattle/src/MyTankAlgorithm.cpp"
-
-CMakeFiles/tanks_game.dir/src/MyTankAlgorithm.cpp.i: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/tanks_game.dir/src/MyTankAlgorithm.cpp.i"
-	/Library/Developer/CommandLineTools/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E "/Users/danielbaruch/Desktop/University/semester 2025B/advanced_programming/hw2/advanced_cpp_hw2/ArenaBattle/src/MyTankAlgorithm.cpp" > CMakeFiles/tanks_game.dir/src/MyTankAlgorithm.cpp.i
-
-CMakeFiles/tanks_game.dir/src/MyTankAlgorithm.cpp.s: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/tanks_game.dir/src/MyTankAlgorithm.cpp.s"
-	/Library/Developer/CommandLineTools/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S "/Users/danielbaruch/Desktop/University/semester 2025B/advanced_programming/hw2/advanced_cpp_hw2/ArenaBattle/src/MyTankAlgorithm.cpp" -o CMakeFiles/tanks_game.dir/src/MyTankAlgorithm.cpp.s
-
 CMakeFiles/tanks_game.dir/src/MyTankAlgorithmFactory.cpp.o: CMakeFiles/tanks_game.dir/flags.make
 CMakeFiles/tanks_game.dir/src/MyTankAlgorithmFactory.cpp.o: ../src/MyTankAlgorithmFactory.cpp
 CMakeFiles/tanks_game.dir/src/MyTankAlgorithmFactory.cpp.o: CMakeFiles/tanks_game.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir="/Users/danielbaruch/Desktop/University/semester 2025B/advanced_programming/hw2/advanced_cpp_hw2/ArenaBattle/build/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_10) "Building CXX object CMakeFiles/tanks_game.dir/src/MyTankAlgorithmFactory.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir="/Users/danielbaruch/Desktop/University/semester 2025B/advanced_programming/hw2/advanced_cpp_hw2/ArenaBattle/build/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_9) "Building CXX object CMakeFiles/tanks_game.dir/src/MyTankAlgorithmFactory.cpp.o"
 	/Library/Developer/CommandLineTools/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/tanks_game.dir/src/MyTankAlgorithmFactory.cpp.o -MF CMakeFiles/tanks_game.dir/src/MyTankAlgorithmFactory.cpp.o.d -o CMakeFiles/tanks_game.dir/src/MyTankAlgorithmFactory.cpp.o -c "/Users/danielbaruch/Desktop/University/semester 2025B/advanced_programming/hw2/advanced_cpp_hw2/ArenaBattle/src/MyTankAlgorithmFactory.cpp"
 
 CMakeFiles/tanks_game.dir/src/MyTankAlgorithmFactory.cpp.i: cmake_force
@@ -212,7 +198,7 @@ CMakeFiles/tanks_game.dir/src/MyTankAlgorithmFactory.cpp.s: cmake_force
 CMakeFiles/tanks_game.dir/src/Player1.cpp.o: CMakeFiles/tanks_game.dir/flags.make
 CMakeFiles/tanks_game.dir/src/Player1.cpp.o: ../src/Player1.cpp
 CMakeFiles/tanks_game.dir/src/Player1.cpp.o: CMakeFiles/tanks_game.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir="/Users/danielbaruch/Desktop/University/semester 2025B/advanced_programming/hw2/advanced_cpp_hw2/ArenaBattle/build/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_11) "Building CXX object CMakeFiles/tanks_game.dir/src/Player1.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir="/Users/danielbaruch/Desktop/University/semester 2025B/advanced_programming/hw2/advanced_cpp_hw2/ArenaBattle/build/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_10) "Building CXX object CMakeFiles/tanks_game.dir/src/Player1.cpp.o"
 	/Library/Developer/CommandLineTools/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/tanks_game.dir/src/Player1.cpp.o -MF CMakeFiles/tanks_game.dir/src/Player1.cpp.o.d -o CMakeFiles/tanks_game.dir/src/Player1.cpp.o -c "/Users/danielbaruch/Desktop/University/semester 2025B/advanced_programming/hw2/advanced_cpp_hw2/ArenaBattle/src/Player1.cpp"
 
 CMakeFiles/tanks_game.dir/src/Player1.cpp.i: cmake_force
@@ -226,7 +212,7 @@ CMakeFiles/tanks_game.dir/src/Player1.cpp.s: cmake_force
 CMakeFiles/tanks_game.dir/src/Player2.cpp.o: CMakeFiles/tanks_game.dir/flags.make
 CMakeFiles/tanks_game.dir/src/Player2.cpp.o: ../src/Player2.cpp
 CMakeFiles/tanks_game.dir/src/Player2.cpp.o: CMakeFiles/tanks_game.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir="/Users/danielbaruch/Desktop/University/semester 2025B/advanced_programming/hw2/advanced_cpp_hw2/ArenaBattle/build/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_12) "Building CXX object CMakeFiles/tanks_game.dir/src/Player2.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir="/Users/danielbaruch/Desktop/University/semester 2025B/advanced_programming/hw2/advanced_cpp_hw2/ArenaBattle/build/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_11) "Building CXX object CMakeFiles/tanks_game.dir/src/Player2.cpp.o"
 	/Library/Developer/CommandLineTools/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/tanks_game.dir/src/Player2.cpp.o -MF CMakeFiles/tanks_game.dir/src/Player2.cpp.o.d -o CMakeFiles/tanks_game.dir/src/Player2.cpp.o -c "/Users/danielbaruch/Desktop/University/semester 2025B/advanced_programming/hw2/advanced_cpp_hw2/ArenaBattle/src/Player2.cpp"
 
 CMakeFiles/tanks_game.dir/src/Player2.cpp.i: cmake_force
@@ -240,7 +226,7 @@ CMakeFiles/tanks_game.dir/src/Player2.cpp.s: cmake_force
 CMakeFiles/tanks_game.dir/src/Projectile.cpp.o: CMakeFiles/tanks_game.dir/flags.make
 CMakeFiles/tanks_game.dir/src/Projectile.cpp.o: ../src/Projectile.cpp
 CMakeFiles/tanks_game.dir/src/Projectile.cpp.o: CMakeFiles/tanks_game.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir="/Users/danielbaruch/Desktop/University/semester 2025B/advanced_programming/hw2/advanced_cpp_hw2/ArenaBattle/build/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_13) "Building CXX object CMakeFiles/tanks_game.dir/src/Projectile.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir="/Users/danielbaruch/Desktop/University/semester 2025B/advanced_programming/hw2/advanced_cpp_hw2/ArenaBattle/build/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_12) "Building CXX object CMakeFiles/tanks_game.dir/src/Projectile.cpp.o"
 	/Library/Developer/CommandLineTools/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/tanks_game.dir/src/Projectile.cpp.o -MF CMakeFiles/tanks_game.dir/src/Projectile.cpp.o.d -o CMakeFiles/tanks_game.dir/src/Projectile.cpp.o -c "/Users/danielbaruch/Desktop/University/semester 2025B/advanced_programming/hw2/advanced_cpp_hw2/ArenaBattle/src/Projectile.cpp"
 
 CMakeFiles/tanks_game.dir/src/Projectile.cpp.i: cmake_force
@@ -254,7 +240,7 @@ CMakeFiles/tanks_game.dir/src/Projectile.cpp.s: cmake_force
 CMakeFiles/tanks_game.dir/src/Tank.cpp.o: CMakeFiles/tanks_game.dir/flags.make
 CMakeFiles/tanks_game.dir/src/Tank.cpp.o: ../src/Tank.cpp
 CMakeFiles/tanks_game.dir/src/Tank.cpp.o: CMakeFiles/tanks_game.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir="/Users/danielbaruch/Desktop/University/semester 2025B/advanced_programming/hw2/advanced_cpp_hw2/ArenaBattle/build/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_14) "Building CXX object CMakeFiles/tanks_game.dir/src/Tank.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir="/Users/danielbaruch/Desktop/University/semester 2025B/advanced_programming/hw2/advanced_cpp_hw2/ArenaBattle/build/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_13) "Building CXX object CMakeFiles/tanks_game.dir/src/Tank.cpp.o"
 	/Library/Developer/CommandLineTools/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/tanks_game.dir/src/Tank.cpp.o -MF CMakeFiles/tanks_game.dir/src/Tank.cpp.o.d -o CMakeFiles/tanks_game.dir/src/Tank.cpp.o -c "/Users/danielbaruch/Desktop/University/semester 2025B/advanced_programming/hw2/advanced_cpp_hw2/ArenaBattle/src/Tank.cpp"
 
 CMakeFiles/tanks_game.dir/src/Tank.cpp.i: cmake_force
@@ -268,7 +254,7 @@ CMakeFiles/tanks_game.dir/src/Tank.cpp.s: cmake_force
 CMakeFiles/tanks_game.dir/src/main.cpp.o: CMakeFiles/tanks_game.dir/flags.make
 CMakeFiles/tanks_game.dir/src/main.cpp.o: ../src/main.cpp
 CMakeFiles/tanks_game.dir/src/main.cpp.o: CMakeFiles/tanks_game.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir="/Users/danielbaruch/Desktop/University/semester 2025B/advanced_programming/hw2/advanced_cpp_hw2/ArenaBattle/build/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_15) "Building CXX object CMakeFiles/tanks_game.dir/src/main.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir="/Users/danielbaruch/Desktop/University/semester 2025B/advanced_programming/hw2/advanced_cpp_hw2/ArenaBattle/build/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_14) "Building CXX object CMakeFiles/tanks_game.dir/src/main.cpp.o"
 	/Library/Developer/CommandLineTools/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/tanks_game.dir/src/main.cpp.o -MF CMakeFiles/tanks_game.dir/src/main.cpp.o.d -o CMakeFiles/tanks_game.dir/src/main.cpp.o -c "/Users/danielbaruch/Desktop/University/semester 2025B/advanced_programming/hw2/advanced_cpp_hw2/ArenaBattle/src/main.cpp"
 
 CMakeFiles/tanks_game.dir/src/main.cpp.i: cmake_force
@@ -282,7 +268,7 @@ CMakeFiles/tanks_game.dir/src/main.cpp.s: cmake_force
 CMakeFiles/tanks_game.dir/src/utils.cpp.o: CMakeFiles/tanks_game.dir/flags.make
 CMakeFiles/tanks_game.dir/src/utils.cpp.o: ../src/utils.cpp
 CMakeFiles/tanks_game.dir/src/utils.cpp.o: CMakeFiles/tanks_game.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir="/Users/danielbaruch/Desktop/University/semester 2025B/advanced_programming/hw2/advanced_cpp_hw2/ArenaBattle/build/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_16) "Building CXX object CMakeFiles/tanks_game.dir/src/utils.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir="/Users/danielbaruch/Desktop/University/semester 2025B/advanced_programming/hw2/advanced_cpp_hw2/ArenaBattle/build/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_15) "Building CXX object CMakeFiles/tanks_game.dir/src/utils.cpp.o"
 	/Library/Developer/CommandLineTools/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/tanks_game.dir/src/utils.cpp.o -MF CMakeFiles/tanks_game.dir/src/utils.cpp.o.d -o CMakeFiles/tanks_game.dir/src/utils.cpp.o -c "/Users/danielbaruch/Desktop/University/semester 2025B/advanced_programming/hw2/advanced_cpp_hw2/ArenaBattle/src/utils.cpp"
 
 CMakeFiles/tanks_game.dir/src/utils.cpp.i: cmake_force
@@ -303,7 +289,6 @@ tanks_game_OBJECTS = \
 "CMakeFiles/tanks_game.dir/src/MyBattleInfo.cpp.o" \
 "CMakeFiles/tanks_game.dir/src/MyPlayerFactory.cpp.o" \
 "CMakeFiles/tanks_game.dir/src/MySatelliteView.cpp.o" \
-"CMakeFiles/tanks_game.dir/src/MyTankAlgorithm.cpp.o" \
 "CMakeFiles/tanks_game.dir/src/MyTankAlgorithmFactory.cpp.o" \
 "CMakeFiles/tanks_game.dir/src/Player1.cpp.o" \
 "CMakeFiles/tanks_game.dir/src/Player2.cpp.o" \
@@ -323,7 +308,6 @@ tanks_game: CMakeFiles/tanks_game.dir/src/GameState.cpp.o
 tanks_game: CMakeFiles/tanks_game.dir/src/MyBattleInfo.cpp.o
 tanks_game: CMakeFiles/tanks_game.dir/src/MyPlayerFactory.cpp.o
 tanks_game: CMakeFiles/tanks_game.dir/src/MySatelliteView.cpp.o
-tanks_game: CMakeFiles/tanks_game.dir/src/MyTankAlgorithm.cpp.o
 tanks_game: CMakeFiles/tanks_game.dir/src/MyTankAlgorithmFactory.cpp.o
 tanks_game: CMakeFiles/tanks_game.dir/src/Player1.cpp.o
 tanks_game: CMakeFiles/tanks_game.dir/src/Player2.cpp.o
@@ -333,7 +317,7 @@ tanks_game: CMakeFiles/tanks_game.dir/src/main.cpp.o
 tanks_game: CMakeFiles/tanks_game.dir/src/utils.cpp.o
 tanks_game: CMakeFiles/tanks_game.dir/build.make
 tanks_game: CMakeFiles/tanks_game.dir/link.txt
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir="/Users/danielbaruch/Desktop/University/semester 2025B/advanced_programming/hw2/advanced_cpp_hw2/ArenaBattle/build/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_17) "Linking CXX executable tanks_game"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir="/Users/danielbaruch/Desktop/University/semester 2025B/advanced_programming/hw2/advanced_cpp_hw2/ArenaBattle/build/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_16) "Linking CXX executable tanks_game"
 	$(CMAKE_COMMAND) -E cmake_link_script CMakeFiles/tanks_game.dir/link.txt --verbose=$(VERBOSE)
 
 # Rule to build all files generated by this target.

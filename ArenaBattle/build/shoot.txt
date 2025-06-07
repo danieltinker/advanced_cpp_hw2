@@ -1,0 +1,8 @@
+Shoot
+Rows = 2
+Cols = 7
+MaxSteps = 20
+NumShells = 2
+
+1.....2
+.......

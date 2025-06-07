@@ -1,5 +1,6 @@
 GetBattleInfo, GetBattleInfo
 MoveForward, MoveForward
 MoveForward, MoveForward
+MoveForward, MoveForward
 killed, killed
 Tie, both players have zero tanks

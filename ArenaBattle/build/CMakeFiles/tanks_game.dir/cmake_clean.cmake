@@ -15,8 +15,6 @@ file(REMOVE_RECURSE
   "CMakeFiles/tanks_game.dir/src/MyPlayerFactory.cpp.o.d"
   "CMakeFiles/tanks_game.dir/src/MySatelliteView.cpp.o"
   "CMakeFiles/tanks_game.dir/src/MySatelliteView.cpp.o.d"
-  "CMakeFiles/tanks_game.dir/src/MyTankAlgorithm.cpp.o"
-  "CMakeFiles/tanks_game.dir/src/MyTankAlgorithm.cpp.o.d"
   "CMakeFiles/tanks_game.dir/src/MyTankAlgorithmFactory.cpp.o"
   "CMakeFiles/tanks_game.dir/src/MyTankAlgorithmFactory.cpp.o.d"
   "CMakeFiles/tanks_game.dir/src/Player1.cpp.o"

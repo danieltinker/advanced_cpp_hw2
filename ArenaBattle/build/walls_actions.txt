@@ -1,8 +1,8 @@
+GetBattleInfo, GetBattleInfo, GetBattleInfo, GetBattleInfo
 MoveForward, MoveForward, MoveForward, MoveForward (ignored)
 MoveForward, MoveForward (ignored), MoveForward, MoveForward (ignored)
 MoveForward, MoveForward (ignored), MoveForward, MoveForward (ignored)
 MoveForward, MoveForward (ignored), MoveForward (ignored), MoveForward (ignored)
-MoveForward (ignored), MoveForward (ignored), MoveForward (ignored), MoveForward (ignored)
 MoveForward (ignored), MoveForward (ignored), MoveForward (ignored), MoveForward (ignored)
 MoveForward (ignored), MoveForward (ignored), MoveForward (ignored), MoveForward (ignored)
 MoveForward (ignored), MoveForward (ignored), MoveForward (ignored), MoveForward (ignored)

@@ -321,30 +321,6 @@ src/MySatelliteView.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/tanks_game.dir/build.make CMakeFiles/tanks_game.dir/src/MySatelliteView.cpp.s
 .PHONY : src/MySatelliteView.cpp.s
 
-src/MyTankAlgorithm.o: src/MyTankAlgorithm.cpp.o
-.PHONY : src/MyTankAlgorithm.o
-
-# target to build an object file
-src/MyTankAlgorithm.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/tanks_game.dir/build.make CMakeFiles/tanks_game.dir/src/MyTankAlgorithm.cpp.o
-.PHONY : src/MyTankAlgorithm.cpp.o
-
-src/MyTankAlgorithm.i: src/MyTankAlgorithm.cpp.i
-.PHONY : src/MyTankAlgorithm.i
-
-# target to preprocess a source file
-src/MyTankAlgorithm.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/tanks_game.dir/build.make CMakeFiles/tanks_game.dir/src/MyTankAlgorithm.cpp.i
-.PHONY : src/MyTankAlgorithm.cpp.i
-
-src/MyTankAlgorithm.s: src/MyTankAlgorithm.cpp.s
-.PHONY : src/MyTankAlgorithm.s
-
-# target to generate assembly for a file
-src/MyTankAlgorithm.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/tanks_game.dir/build.make CMakeFiles/tanks_game.dir/src/MyTankAlgorithm.cpp.s
-.PHONY : src/MyTankAlgorithm.cpp.s
-
 src/MyTankAlgorithmFactory.o: src/MyTankAlgorithmFactory.cpp.o
 .PHONY : src/MyTankAlgorithmFactory.o
 
@@ -546,9 +522,6 @@ help:
 	@echo "... src/MySatelliteView.o"
 	@echo "... src/MySatelliteView.i"
 	@echo "... src/MySatelliteView.s"
-	@echo "... src/MyTankAlgorithm.o"
-	@echo "... src/MyTankAlgorithm.i"
-	@echo "... src/MyTankAlgorithm.s"
 	@echo "... src/MyTankAlgorithmFactory.o"
 	@echo "... src/MyTankAlgorithmFactory.i"
 	@echo "... src/MyTankAlgorithmFactory.s"
