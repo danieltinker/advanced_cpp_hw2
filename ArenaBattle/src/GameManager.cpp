@@ -95,7 +95,7 @@ void GameManager::run() {
         game_state_.printBoard();
 
         std::string actions = game_state_.advanceOneTurn();
-        std::cout << actions << "";
+        std::cout << actions << "" << std::endl;
         ++turn;
     }
 
