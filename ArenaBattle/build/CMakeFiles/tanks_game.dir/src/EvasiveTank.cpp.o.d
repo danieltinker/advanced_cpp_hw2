@@ -642,5 +642,4 @@ CMakeFiles/tanks_game.dir/src/EvasiveTank.cpp.o: \
   /Library/Developer/CommandLineTools/SDKs/MacOSX13.3.sdk/usr/include/c++/v1/__algorithm/rotate_copy.h \
   /Library/Developer/CommandLineTools/SDKs/MacOSX13.3.sdk/usr/include/c++/v1/__algorithm/shift_left.h \
   /Library/Developer/CommandLineTools/SDKs/MacOSX13.3.sdk/usr/include/c++/v1/__algorithm/shift_right.h \
-  /Library/Developer/CommandLineTools/SDKs/MacOSX13.3.sdk/usr/include/c++/v1/__algorithm/transform.h \
-  /Users/danielbaruch/Desktop/University/semester\ 2025B/advanced_programming/hw2/advanced_cpp_hw2/ArenaBattle/include/MyTankAlgorithm.h
+  /Library/Developer/CommandLineTools/SDKs/MacOSX13.3.sdk/usr/include/c++/v1/__algorithm/transform.h

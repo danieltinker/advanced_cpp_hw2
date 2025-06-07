@@ -1,51 +1,53 @@
 // src/AggressiveTank.cpp
 #include "AggressiveTank.h"
-#include "common/TankAlgorithm.h"
-#include "MyTankAlgorithm.h"
-#include <algorithm> // for std::abs, etc.
-//why dont you keep num shells and max steps? the tank algorithm should expect shells remaining
+#include "common/ActionRequest.h"
+
 using namespace arena;
+using namespace common;
 
-AggressiveTank::AggressiveTank(int pIdx, int tIdx)
-    : MyTankAlgorithm(pIdx, tIdx)
-{}
+static constexpr int D8[8][2] = {
+    { 0,-1}, {+1,-1}, {+1,0}, {+1,+1},
+    { 0,+1}, {-1,+1}, {-1,0}, {-1,-1}
+};
 
-AggressiveTank::~AggressiveTank() { };
+AggressiveTank::AggressiveTank(int playerIndex, int /*tankIndex*/)
+  : lastInfo_{1,1},
+    direction_(playerIndex == 1 ? 6 : 2)
+{ }
 
-void AggressiveTank::updateBattleInfo(common::BattleInfo& baseInfo) {
-    const MyBattleInfo& info = static_cast<const MyBattleInfo&>(baseInfo);
-    lastInfo_       = info;
-    shellsRemaining_= info.shellsRemaining;
+void AggressiveTank::updateBattleInfo(BattleInfo &baseInfo) {
+    auto &info = static_cast<MyBattleInfo&>(baseInfo);
+
+    // first time only: grab our starting ammo
+    if (shellsLeft_ == SIZE_MAX) {
+        shellsLeft_ = info.shellsRemaining;
+    }
+
+    // copy in the new grid & self‐coordinates
+    lastInfo_ = info;
 }
 
-common::ActionRequest AggressiveTank::getAction() {
-    // (1) If an enemy is directly in front and we have ammo → Shoot
-    int dx = 0, dy = 0;
-    switch (lastInfo_.selfDir & 7) {
-        case 0:  dy = -1; break;
-        case 1:  dx = +1; dy = -1; break;
-        case 2:  dx = +1; break;
-        case 3:  dx = +1; dy = +1; break;
-        case 4:  dy = +1; break;
-        case 5:  dx = -1; dy = +1; break;
-        case 6:  dx = -1; break;
-        case 7:  dx = -1; dy = -1; break;
+ActionRequest AggressiveTank::getAction() {
+    // on turn 0 we haven’t learned ammo yet
+    if (shellsLeft_ == SIZE_MAX) {
+        return ActionRequest::GetBattleInfo;
     }
-    int nx = static_cast<int>(lastInfo_.selfX) + dx;
-    int ny = static_cast<int>(lastInfo_.selfY) + dy;
-    if (nx >= 0 && nx < static_cast<int>(lastInfo_.cols) &&
-        ny >= 0 && ny < static_cast<int>(lastInfo_.rows))
+
+    // look one cell ahead in direction_
+    int nx = int(lastInfo_.selfX) + D8[direction_][0];
+    int ny = int(lastInfo_.selfY) + D8[direction_][1];
+    if (nx >= 0 && nx < int(lastInfo_.cols)
+     && ny >= 0 && ny < int(lastInfo_.rows))
     {
         char c = lastInfo_.grid[ny][nx];
-        if ((c == '1' || c == '2') && c != '%') {
-            if (shellsRemaining_ > 0) {
-                --shellsRemaining_;
-                return common::ActionRequest::Shoot;
+        if ((c=='1' || c=='2') && c!='%') {
+            if (shellsLeft_ > 0) {
+                --shellsLeft_;
+                return ActionRequest::Shoot;
             }
         }
     }
 
-    // (2) Otherwise, rotate randomly or move forward
-    // You could implement a search for nearest enemy. For brevity:
-    return common::ActionRequest::MoveForward;
+    // fallback: move forward
+    return ActionRequest::MoveForward;
 }

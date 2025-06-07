@@ -1,3 +1,4 @@
+GetBattleInfo, GetBattleInfo
 MoveForward, MoveForward
 MoveForward, MoveForward
 killed, killed
