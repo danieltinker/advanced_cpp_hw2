@@ -1,3 +1,4 @@
+// include/Player1.h
 #pragma once
 
 #include "common/Player.h"
@@ -8,29 +9,26 @@
 namespace arena {
 
 /**
- * Player1: constructs a MyBattleInfo from the SatelliteView
- * and forwards it to its tank algorithm.
+ * Player1: wraps the provided SatelliteView into a MyBattleInfo
+ * and forwards it to its TankAlgorithm.
  */
 class Player1 : public common::Player {
 public:
-    // We still take the 5 args so PlayerFactory can invoke us:
     Player1(int player_index,
-            size_t rows,
-            size_t cols,
-            size_t max_steps,
-            size_t num_shells);
+            std::size_t rows,
+            std::size_t cols,
+            std::size_t max_steps,
+            std::size_t num_shells);
 
     ~Player1() override = default;
 
-    // Exactly match common::Player:
     void updateTankWithBattleInfo(
-        common::TankAlgorithm  &tank,
-        common::SatelliteView  &satellite_view
+        common::TankAlgorithm   &tank,
+        common::SatelliteView   &sv
     ) override;
 
 private:
-    size_t rows_, cols_;
-    // (you can also store max_steps_ and num_shells_ here if you need them)
+    std::size_t rows_, cols_;
 };
 
 } // namespace arena

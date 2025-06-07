@@ -1,3 +1,4 @@
+// include/Player2.h
 #pragma once
 
 #include "common/Player.h"
@@ -8,25 +9,26 @@
 namespace arena {
 
 /**
- * Player2: same pattern, different heuristics.
+ * Player2: wraps the provided SatelliteView into a MyBattleInfo
+ * and forwards it to its TankAlgorithm.
  */
 class Player2 : public common::Player {
 public:
     Player2(int player_index,
-            size_t rows,
-            size_t cols,
-            size_t max_steps,
-            size_t num_shells);
+            std::size_t rows,
+            std::size_t cols,
+            std::size_t max_steps,
+            std::size_t num_shells);
 
     ~Player2() override = default;
 
     void updateTankWithBattleInfo(
-        common::TankAlgorithm  &tank,
-        common::SatelliteView  &satellite_view
+        common::TankAlgorithm   &tank,
+        common::SatelliteView   &sv
     ) override;
 
 private:
-    size_t rows_, cols_;
+    std::size_t rows_, cols_;
 };
 
 } // namespace arena
