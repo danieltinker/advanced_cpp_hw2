@@ -21,8 +21,6 @@ file(REMOVE_RECURSE
   "CMakeFiles/tanks_game.dir/src/Player1.cpp.o.d"
   "CMakeFiles/tanks_game.dir/src/Player2.cpp.o"
   "CMakeFiles/tanks_game.dir/src/Player2.cpp.o.d"
-  "CMakeFiles/tanks_game.dir/src/Projectile.cpp.o"
-  "CMakeFiles/tanks_game.dir/src/Projectile.cpp.o.d"
   "CMakeFiles/tanks_game.dir/src/Tank.cpp.o"
   "CMakeFiles/tanks_game.dir/src/Tank.cpp.o.d"
   "CMakeFiles/tanks_game.dir/src/main.cpp.o"

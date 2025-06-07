@@ -430,31 +430,78 @@ void GameState::handleShooting(std::vector<bool>& ignored,
     }
 }
 
+//------------------------------------------------------------------------------
+// (8) updateShellsWithOverrunCheck: move each shell in two unit‐steps with
+//     a collision check after each step so it can never “jump” past a tank.
+//------------------------------------------------------------------------------
 void GameState::updateShellsWithOverrunCheck() {
     toRemove_.clear();
     positionMap_.clear();
     board_.clearShellMarks();
 
-    for (size_t i=0; i<shells_.size(); ++i) {
-        int dx=0,dy=0;
-        switch(shells_[i].dir) {
-        case 0: dy=-1; break; case 1: dx=1;dy=-1; break;
-        case 2: dx=1; break;  case 3: dx=1;dy=1; break;
-        case 4: dy=1; break;  case 5: dx=-1;dy=1; break;
-        case 6: dx=-1; break; case 7: dx=-1;dy=-1; break;
+    std::vector<Shell> survivors;
+    survivors.reserve(shells_.size());
+
+    for (std::size_t i = 0; i < shells_.size(); ++i) {
+        auto sh = shells_[i];
+
+        // compute delta once
+        int dx = 0, dy = 0;
+        switch (sh.dir) {
+            case 0:  dy = -1; break;    // Up
+            case 1:  dx = +1; dy = -1; break; // Up‐Right
+            case 2:  dx = +1; break;    // Right
+            case 3:  dx = +1; dy = +1; break; // Down‐Right
+            case 4:  dy = +1; break;    // Down
+            case 5:  dx = -1; dy = +1; break; // Down‐Left
+            case 6:  dx = -1; break;    // Left
+            case 7:  dx = -1; dy = -1; break; // Up‐Left
         }
-        for (int step=0; step<2; ++step) {
-            int nx=shells_[i].x+dx, ny=shells_[i].y+dy;
-            board_.wrapCoords(nx,ny);
-            if (handleShellMidStepCollision(nx,ny)) {
-                toRemove_.insert(i);
-                break;
+
+        // first sub‐step
+        int x1 = sh.x + dx;
+        int y1 = sh.y + dy;
+        board_.wrapCoords(x1, y1);
+        if ( handleShellMidStepCollision(x1, y1) ) {
+            continue; // shell destroyed at first step
+        }
+
+        // second sub‐step
+        int x2 = x1 + dx;
+        int y2 = y1 + dy;
+        board_.wrapCoords(x2, y2);
+        if ( handleShellMidStepCollision(x2, y2) ) {
+            continue; // shell destroyed at second step
+        }
+
+        // survived both sub‐steps → record final position and overlay later
+        survivors.push_back({ x2, y2, sh.dir });
+        positionMap_[{x2,y2}].push_back(survivors.size()-1);
+    }
+
+    // now handle shell‐vs‐shell collisions as before
+    for (auto const& entry : positionMap_) {
+        if (entry.second.size() > 1) {
+            for (auto idx : entry.second) {
+                toRemove_.insert(idx);
             }
-            shells_[i].x=nx; shells_[i].y=ny;
-            positionMap_[{nx,ny}].push_back(i);
         }
     }
+
+    // build final shell list
+    std::vector<Shell> finalShells;
+    finalShells.reserve(survivors.size());
+    for (std::size_t i = 0; i < survivors.size(); ++i) {
+        if (toRemove_.count(i) == 0) {
+            // mark overlay
+            auto& c = board_.getCell(survivors[i].x, survivors[i].y);
+            c.hasShellOverlay = true;
+            finalShells.push_back(survivors[i]);
+        }
+    }
+    shells_.swap(finalShells);
 }
+
 
 void GameState::resolveShellCollisions() {
     for (auto const& kv : positionMap_) {
@@ -473,24 +520,36 @@ void GameState::resolveShellCollisions() {
     shells_.swap(survivors);
 }
 
+//------------------------------------------------------------------------------
+// (I) handleShellMidStepCollision: wall/tank logic at (x,y)
+//------------------------------------------------------------------------------
 bool GameState::handleShellMidStepCollision(int x, int y) {
-    auto& cell = board_.getCell(x,y);
-    if (cell.content==CellContent::WALL) {
-        if (++cell.wallHits >=2) cell.content=CellContent::EMPTY;
+    Cell& cell = board_.getCell(x, y);
+
+    // 1) Wall?
+    if (cell.content == CellContent::WALL) {
+        cell.wallHits++;
+        if (cell.wallHits >= 2) {
+            cell.content = CellContent::EMPTY;
+        }
         return true;
     }
-    if (cell.content==CellContent::TANK1 || cell.content==CellContent::TANK2) {
-        for (auto& ts: all_tanks_) {
-            if (ts.alive && ts.x==x && ts.y==y &&
-               ((cell.content==CellContent::TANK1&&ts.player_index==1)||
-                (cell.content==CellContent::TANK2&&ts.player_index==2))) {
-                ts.alive=false;
+
+    // 2) Tank?
+    if (cell.content == CellContent::TANK1 || cell.content == CellContent::TANK2) {
+        // find and kill the matching TankState
+        int pid = (cell.content == CellContent::TANK1 ? 1 : 2);
+        for (auto& ts : all_tanks_) {
+            if (ts.alive && ts.player_index == pid && ts.x == x && ts.y == y) {
+                ts.alive = false;
                 break;
             }
         }
-        cell.content=CellContent::EMPTY;
+        cell.content = CellContent::EMPTY;
         return true;
     }
+
+    // 3) Mine or empty: shells pass through mines, are only removed on tanks/walls
     return false;
 }
 
