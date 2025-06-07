@@ -1,4 +1,7 @@
 #include "GameState.h"
+#include "Board.h"
+#include "MyBattleInfo.h"
+
 #include <iostream>
 #include <sstream>
 
@@ -6,736 +9,408 @@ using namespace arena;
 using namespace common;
 
 //------------------------------------------------------------------------------
-// Constructor / Destructor
-//------------------------------------------------------------------------------
 GameState::GameState(std::unique_ptr<common::PlayerFactory> pFac,
                      std::unique_ptr<common::TankAlgorithmFactory> tFac)
-    : player_factory_(std::move(pFac)),
-      tank_factory_(std::move(tFac))
+  : player_factory_(std::move(pFac)),
+    tank_factory_(std::move(tFac))
 {}
 
 GameState::~GameState() = default;
 
 //------------------------------------------------------------------------------
-// initialize:
-// 1) Copy board_, rows_, cols_, maxSteps_, num_shells_
-// 2) Scan board for TANK1/TANK2 → build TankState + tankIdMap_
-// 3) Create two Player instances via player_factory_->create(...)
-// 4) Create one TankAlgorithm per TankState via tank_factory_->create(...)
-// 5) Clear shells_, reset currentStep_, gameOver_, resultStr_
-//------------------------------------------------------------------------------
-void GameState::initialize(const Board& board, std::size_t maxSteps, std::size_t numShells) {
-    board_ = board;
-    rows_ = board.getRows();
-    cols_ = board.getCols();
-
-    maxSteps_ = maxSteps;
+void GameState::initialize(const Board& board,
+                           std::size_t maxSteps,
+                           std::size_t numShells)
+{
+    board_      = board;
+    rows_       = board.getRows();
+    cols_       = board.getCols();
+    maxSteps_   = maxSteps;
     num_shells_ = numShells;
 
-    // Scan for tanks
-    nextTankIndex_[1] = nextTankIndex_[2] = 0;
     all_tanks_.clear();
-    tankIdMap_.assign(3, std::vector<std::size_t>(rows_ * cols_, SIZE_MAX));
+    tankIdMap_.assign(3, std::vector<std::size_t>(rows_*cols_, SIZE_MAX));
+    nextTankIndex_[1] = nextTankIndex_[2] = 0;
 
     for (std::size_t r = 0; r < rows_; ++r) {
         for (std::size_t c = 0; c < cols_; ++c) {
-            const Cell& cell = board_.getCell(static_cast<int>(c), static_cast<int>(r));
-            if (cell.content == CellContent::TANK1 || cell.content == CellContent::TANK2) {
-                int pidx = (cell.content == CellContent::TANK1 ? 1 : 2);
+            const Cell& cell = board_.getCell(int(c), int(r));
+            if (cell.content == CellContent::TANK1 ||
+                cell.content == CellContent::TANK2)
+            {
+                int pidx = (cell.content==CellContent::TANK1?1:2);
                 int tidx = nextTankIndex_[pidx]++;
-                TankState ts;
-                ts.player_index = pidx;
-                ts.tank_index = tidx;
-                ts.x = static_cast<int>(c);
-                ts.y = static_cast<int>(r);
-                ts.direction = (pidx == 1 ? 6 : 2); // Player1 faces left(6), Player2 faces right(2)
-                ts.alive = true;
-                ts.shells_left = num_shells_;
-                ts.wantsBackward_ = false;
+                TankState ts{pidx,tidx,int(c),int(r),(pidx==1?6:2),true,num_shells_,false};
                 all_tanks_.push_back(ts);
-
-                std::size_t globalIdx = all_tanks_.size() - 1;
-                if (static_cast<std::size_t>(tidx) >= tankIdMap_[pidx].size()) {
-                    tankIdMap_[pidx].resize(tidx + 1, SIZE_MAX);
-                }
-                tankIdMap_[pidx][tidx] = globalIdx;
+                tankIdMap_[pidx][tidx] = all_tanks_.size()-1;
             }
         }
     }
+
     player1_ = player_factory_->create(1, rows_, cols_, maxSteps_, num_shells_);
     player2_ = player_factory_->create(2, rows_, cols_, maxSteps_, num_shells_);
-    // Create Player1 and Player2
-    // player1_ = player_factory_->create(1,
-    //                                    static_cast<std::size_t>(rows_),
-    //                                    static_cast<std::size_t>(cols_),
-    //                                    maxSteps_,
-    //                                    num_shells_);
-    // player2_ = player_factory_->create(2,
-    //                                    static_cast<std::size_t>(rows_),
-    //                                    static_cast<std::size_t>(cols_),
-    //                                    maxSteps_,
-    //                                    num_shells_);
 
-    // Create one TankAlgorithm per tank
     all_tank_algorithms_.clear();
-    all_tank_algorithms_.reserve(all_tanks_.size());
-    for (std::size_t k = 0; k < all_tanks_.size(); ++k) {
-        int pidx = all_tanks_[k].player_index;
-        int tidx = all_tanks_[k].tank_index;
+    for (auto& ts : all_tanks_) {
         all_tank_algorithms_.push_back(
-            tank_factory_->create(pidx, tidx)
+            tank_factory_->create(ts.player_index, ts.tank_index)
         );
     }
 
-    // Clear shells and bookkeeping
     shells_.clear();
     toRemove_.clear();
     positionMap_.clear();
 
     currentStep_ = 0;
-    gameOver_ = false;
+    gameOver_    = false;
     resultStr_.clear();
 }
 
 //------------------------------------------------------------------------------
-// advanceOneTurn:
-//   Implements the 12 sub‐steps from HW1—a faithful two‐cell shell model.
-//------------------------------------------------------------------------------
-#include "GameState.h"
-#include "Board.h"
-#include "MyBattleInfo.h"     // <-- include the new MyBattleInfo
-#include <iostream>
-#include <sstream>
-
-using namespace arena;
-using namespace common;
-
-// … (constructor, destructor, initialize, etc.) …
-
 std::string GameState::advanceOneTurn() {
     if (gameOver_) return "";
 
-    std::size_t N = all_tanks_.size();
-    std::vector<common::ActionRequest> actions(N, common::ActionRequest::DoNothing);
-    std::vector<bool> ignored(N, false);
-    std::vector<bool> killedThisTurn(N, false);
+    const size_t N = all_tanks_.size();
+    std::vector<ActionRequest> actions(N, ActionRequest::DoNothing);
+    std::vector<bool> ignored(N,false), killed(N,false);
 
-    for (std::size_t k = 0; k < N; ++k) {
-    if (!all_tanks_[k].alive) continue;
-    auto& alg = all_tank_algorithms_[k];
-    common::ActionRequest req = alg->getAction();
+    // 1) Gather actions
+    for (size_t k = 0; k < N; ++k) {
+        auto& ts  = all_tanks_[k];
+        auto& alg = *all_tank_algorithms_[k];
+        if (!ts.alive) continue;
 
-    if (req == common::ActionRequest::GetBattleInfo) {
-        // 1) Build the MyBattleInfo info(rows_, cols_) and fill its fields:
-        // in GameState::advanceOneTurn(), replacing the old BattleInfo block:
-
-// 1) Build a SatelliteView for tank k:
-std::vector<std::vector<char>> charGrid(rows_, std::vector<char>(cols_, ' '));
-for (size_t ry = 0; ry < rows_; ++ry) {
-  for (size_t cx = 0; cx < cols_; ++cx) {
-    const Cell &cell = board_.getCell(static_cast<int>(cx),
-                                      static_cast<int>(ry));
-    switch (cell.content) {
-      case CellContent::WALL:  charGrid[ry][cx] = '#'; break;
-      case CellContent::MINE:  charGrid[ry][cx] = '@'; break;
-      case CellContent::TANK1: charGrid[ry][cx] = '1'; break;
-      case CellContent::TANK2: charGrid[ry][cx] = '2'; break;
-      default:                  charGrid[ry][cx] = ' '; break;
+        ActionRequest req = alg.getAction();
+        if (req == ActionRequest::GetBattleInfo) {
+            // build snapshot grid
+            std::vector<std::vector<char>> grid(rows_, std::vector<char>(cols_, ' '));
+            for (size_t y=0; y<rows_; ++y)
+                for (size_t x=0; x<cols_; ++x) {
+                    const auto& cell = board_.getCell(int(x),int(y));
+                    grid[y][x] = (cell.content==CellContent::WALL?'#':
+                                  cell.content==CellContent::MINE?'@':
+                                  cell.content==CellContent::TANK1?'1':
+                                  cell.content==CellContent::TANK2?'2':' ');
+                }
+            grid[ts.y][ts.x] = '%';
+            MySatelliteView sv(grid,int(rows_),int(cols_), ts.x, ts.y);
+            if (ts.player_index==1)
+                player1_->updateTankWithBattleInfo(alg, sv);
+            else
+                player2_->updateTankWithBattleInfo(alg, sv);
+            actions[k] = ActionRequest::GetBattleInfo;
+        } else {
+            actions[k] = req;
+        }
     }
-  }
-}
- // mark “self”:
-charGrid[ all_tanks_[k].y ][ all_tanks_[k].x ] = '%';
-arena::MySatelliteView satView(
-    charGrid, static_cast<int>(rows_),
-    static_cast<int>(cols_),
-    all_tanks_[k].x, all_tanks_[k].y
-);
 
-// 2) Dispatch to the correct Player
-if (all_tanks_[k].player_index == 1) {
-  player1_->updateTankWithBattleInfo(
-      *all_tank_algorithms_[k], satView
-  );
-} else {
-  player2_->updateTankWithBattleInfo(
-      *all_tank_algorithms_[k], satView
-  );
-}
-
-// 3) Record that this tank’s action was GetBattleInfo
-actions[k] = common::ActionRequest::GetBattleInfo;
-
-    }
-    else {
-        actions[k] = req;
-    }
-}
-
-
-    // --- (2) Rotations ---
+    // 2) Rotations
     applyTankRotations(actions);
-
-    // --- (3) Mines collision (tank on '@') ---
+    // 3) Mines
     handleTankMineCollisions();
-
-    // --- (4) Cooldowns (unused) ---
+    // 4) Cooldowns
     updateTankCooldowns();
-
-    // --- (5) Confirm backward move legality ---
+    // 5) Backward legality
     confirmBackwardMoves(ignored, actions);
-
-    // --- (6) Move forward/backward (no wrap) ---
-    updateTankPositionsOnBoard(ignored, killedThisTurn, actions);
-
-    // --- (7) Handle shooting: spawn new shells with mid‐step check ---
+    // 6) Move tanks
+    updateTankPositionsOnBoard(ignored, killed, actions);
+    // 7) Spawn shells
     handleShooting(ignored, actions);
-
-    // --- (8) Move all shells two sub‐steps each (wrap + mid‐step collisions) ---
+    // 8) Move shells
     updateShellsWithOverrunCheck();
-
-    // --- (9) Resolve shell collisions (shell vs shell, shell vs wall, shell vs tank) ---
+    // 9) Resolve collisions
     resolveShellCollisions();
-
-    // --- (10) Cleanup dead entities (tanks already removed, shells removed) ---
+    // 10) Cleanup
     cleanupDestroyedEntities();
-
-    // --- (11) Check end‐of‐game conditions ---
+    // 11) End game?
     checkGameEndConditions();
-
-    // --- (12) Increment turn counter ---
+    // 12) Next turn
     ++currentStep_;
 
-    // Build comma‐separated action string (with “(ignored)” and “(killed)” tags)
+    // Build log
     std::ostringstream oss;
-    for (std::size_t k = 0; k < N; ++k) {
+    for (size_t k=0; k<N; ++k) {
         if (!all_tanks_[k].alive) {
             oss << "killed";
         } else {
-            std::string s;
-            switch (actions[k]) {
-                case common::ActionRequest::MoveForward:
-                    s = "MoveForward";
-                    break;
-                case common::ActionRequest::MoveBackward:
-                    s = "MoveBackward";
-                    break;
-                case common::ActionRequest::RotateLeft90:
-                    s = "RotateLeft90";
-                    break;
-                case common::ActionRequest::RotateRight90:
-                    s = "RotateRight90";
-                    break;
-                case common::ActionRequest::RotateLeft45:
-                    s = "RotateLeft45";
-                    break;
-                case common::ActionRequest::RotateRight45:
-                    s = "RotateRight45";
-                    break;
-                case common::ActionRequest::Shoot:
-                    s = "Shoot";
-                    break;
-                case common::ActionRequest::GetBattleInfo:
-                    s = "GetBattleInfo";
-                    break;
-                default:
-                    s = "DoNothing";
-                    break;
+            const auto act = actions[k];
+            const char* name = "DoNothing";
+            switch(act) {
+            case ActionRequest::MoveForward:   name="MoveForward"; break;
+            case ActionRequest::MoveBackward:  name="MoveBackward";break;
+            case ActionRequest::RotateLeft90:  name="RotateLeft90"; break;
+            case ActionRequest::RotateRight90: name="RotateRight90";break;
+            case ActionRequest::RotateLeft45:  name="RotateLeft45"; break;
+            case ActionRequest::RotateRight45: name="RotateRight45";break;
+            case ActionRequest::Shoot:         name="Shoot";        break;
+            case ActionRequest::GetBattleInfo: name="GetBattleInfo";break;
+            default: break;
             }
-
-            // If MoveForward, MoveBackward, Shoot were flagged ignored, append “(ignored)”
-            if (ignored[k] &&
-               (actions[k] == common::ActionRequest::MoveForward ||
-                actions[k] == common::ActionRequest::MoveBackward ||
-                actions[k] == common::ActionRequest::Shoot))
-            {
-                s += " (ignored)";
-            }
-            if (killedThisTurn[k]) {
-                s += " (killed)";
-            }
-            oss << s;
+            oss << name;
+            if (ignored[k] && (act==ActionRequest::MoveForward ||
+                              act==ActionRequest::MoveBackward ||
+                              act==ActionRequest::Shoot))
+                oss << " (ignored)";
+            if (killed[k])
+                oss << " (killed)";
         }
-        if (k + 1 < N) oss << ", ";
+        if (k+1<N) oss << ", ";
     }
     return oss.str();
 }
 
 //------------------------------------------------------------------------------
-// isGameOver / getResultString
-//------------------------------------------------------------------------------
-bool GameState::isGameOver() const {
-    return gameOver_;
-}
-
-std::string GameState::getResultString() const {
-    return resultStr_;
-}
+bool GameState::isGameOver() const { return gameOver_; }
+std::string GameState::getResultString() const { return resultStr_; }
 
 //------------------------------------------------------------------------------
-// createSatelliteViewFor: build MySatelliteView with '%' at (queryX,queryY)
-//------------------------------------------------------------------------------
-std::unique_ptr<common::SatelliteView>
-GameState::createSatelliteViewFor(int queryX, int queryY) const
-{
-    // Build a char‐grid snapshot
-    std::vector<std::vector<char>> charGrid(rows_, std::vector<char>(cols_, ' '));
-    for (int ry = 0; ry < static_cast<int>(rows_); ++ry) {
-        for (int cx = 0; cx < static_cast<int>(cols_); ++cx) {
-            const Cell& cell = board_.getCell(cx, ry);
-            switch (cell.content) {
-                case CellContent::WALL:  charGrid[ry][cx] = '#'; break;
-                case CellContent::MINE:  charGrid[ry][cx] = '@'; break;
-                case CellContent::TANK1: charGrid[ry][cx] = '1'; break;
-                case CellContent::TANK2: charGrid[ry][cx] = '2'; break;
-                default:                  charGrid[ry][cx] = ' '; break;
+void GameState::printBoard() const {
+    auto gridCopy = board_.getGrid();
+    for (auto const& sh : shells_)
+        gridCopy[sh.y][sh.x].hasShellOverlay = true;
+    for (auto const& ts : all_tanks_)
+        if (ts.alive)
+            gridCopy[ts.y][ts.x].content = 
+                ts.player_index==1?CellContent::TANK1:CellContent::TANK2;
+
+    for (size_t r=0; r<rows_; ++r) {
+        for (size_t c=0; c<cols_; ++c) {
+            const auto& cell = gridCopy[r][c];
+            switch(cell.content) {
+            case CellContent::WALL:  std::cout<<'#'; break;
+            case CellContent::MINE:  std::cout<<'@'; break;
+            case CellContent::EMPTY:
+                std::cout << (cell.hasShellOverlay? '*' : ' ');
+                break;
+            case CellContent::TANK1:
+            case CellContent::TANK2: {
+                int pid = (cell.content==CellContent::TANK1?1:2);
+                int dir=0;
+                for (auto const& ts: all_tanks_) {
+                    if (ts.alive && ts.player_index==pid &&
+                        ts.x==int(c)&&ts.y==int(r)) { dir=ts.direction; break; }
+                }
+                const char* arr = directionToArrow(dir);
+                std::cout << (pid==1? "\033[31m": "\033[34m")
+                          << arr << "\033[0m";
+            } break;
             }
         }
+        std::cout<<"\n";
     }
-    // Mark the querying tank spot as '%'
-    if (queryX >= 0 && queryX < static_cast<int>(cols_) &&
-        queryY >= 0 && queryY < static_cast<int>(rows_))
-    {
-        charGrid[queryY][queryX] = '%';
-    }
-
-    return std::make_unique<MySatelliteView>(
-        charGrid,
-        static_cast<int>(rows_),
-        static_cast<int>(cols_),
-        queryX,
-        queryY
-    );
+    std::cout<<std::endl;
 }
 
+//------------------------------------------------------------------------------
+const char* GameState::directionToArrow(int dir) {
+    static const char* arr[8] = {"↑","↗","→","↘","↓","↙","←","↖"};
+    return arr[dir&7];
+}
 
 //------------------------------------------------------------------------------
-// (2) applyTankRotations: change each tank’s direction on rotate request
-//------------------------------------------------------------------------------
-void GameState::applyTankRotations(const std::vector<common::ActionRequest>& actions) {
-    for (std::size_t k = 0; k < all_tanks_.size(); ++k) {
+void GameState::applyTankRotations(const std::vector<ActionRequest>& A) {
+    for (size_t k=0; k<all_tanks_.size(); ++k) {
         if (!all_tanks_[k].alive) continue;
-        auto act = actions[k];
-        int& dir = all_tanks_[k].direction;
-        switch (act) {
-            case common::ActionRequest::RotateLeft90:
-                dir = (dir + 6) % 8;
-                break;
-            case common::ActionRequest::RotateRight90:
-                dir = (dir + 2) % 8;
-                break;
-            case common::ActionRequest::RotateLeft45:
-                dir = (dir + 7) % 8;
-                break;
-            case common::ActionRequest::RotateRight45:
-                dir = (dir + 1) % 8;
-                break;
-            default:
-                break;
+        int& d = all_tanks_[k].direction;
+        switch(A[k]) {
+        case ActionRequest::RotateLeft90:  d=(d+6)&7; break;
+        case ActionRequest::RotateRight90: d=(d+2)&7; break;
+        case ActionRequest::RotateLeft45:  d=(d+7)&7; break;
+        case ActionRequest::RotateRight45: d=(d+1)&7; break;
+        default: break;
         }
     }
 }
 
-//------------------------------------------------------------------------------
-// (3) handleTankMineCollisions: kill any tank on a mine
-//------------------------------------------------------------------------------
 void GameState::handleTankMineCollisions() {
-    for (auto& ts : all_tanks_) {
+    for (auto& ts: all_tanks_) {
         if (!ts.alive) continue;
-        Cell& cell = board_.getCell(ts.x, ts.y);
-        if (cell.content == CellContent::MINE) {
+        auto& cell = board_.getCell(ts.x, ts.y);
+        if (cell.content==CellContent::MINE) {
             ts.alive = false;
             cell.content = CellContent::EMPTY;
         }
     }
 }
 
-//------------------------------------------------------------------------------
-// (4) updateTankCooldowns (unused)
-//------------------------------------------------------------------------------
 void GameState::updateTankCooldowns() {
-    // No per‐tank cooldown in this version
+    // unused
 }
 
-//------------------------------------------------------------------------------
-// (5) confirmBackwardMoves: mark ignored if backward into wall or OOB
-//------------------------------------------------------------------------------
 void GameState::confirmBackwardMoves(std::vector<bool>& ignored,
-                                     const std::vector<common::ActionRequest>& actions)
+                                     const std::vector<ActionRequest>& A)
 {
-    for (std::size_t k = 0; k < all_tanks_.size(); ++k) {
-        if (!all_tanks_[k].alive) continue;
-        if (actions[k] == common::ActionRequest::MoveBackward) {
-            int backDir = (all_tanks_[k].direction + 4) & 7;
-            int dx = 0, dy = 0;
-            switch (backDir) {
-                case 0:  dy = -1; break;    // Up
-                case 1:  dx = +1; dy = -1; break; // Up‐Right
-                case 2:  dx = +1; break;    // Right
-                case 3:  dx = +1; dy = +1; break; // Down‐Right
-                case 4:  dy = +1; break;    // Down
-                case 5:  dx = -1; dy = +1; break; // Down‐Left
-                case 6:  dx = -1; break;    // Left
-                case 7:  dx = -1; dy = -1; break; // Up‐Left
-            }
-            int newX = all_tanks_[k].x + dx;
-            int newY = all_tanks_[k].y + dy;
-            board_.wrapCoords(newX, newY);
-
-            // If the wrapped‐around cell is a wall, mark as ignored
-            if (board_.getCell(newX, newY).content == CellContent::WALL) {
-                ignored[k] = true;
-            }
-
-            if (board_.getCell(newX, newY).content == CellContent::WALL)
-            {
-                ignored[k] = true;
-            }
+    for (size_t k=0; k<all_tanks_.size(); ++k) {
+        if (!all_tanks_[k].alive || A[k]!=ActionRequest::MoveBackward)
+            continue;
+        int back = (all_tanks_[k].direction+4)&7;
+        int dx=0,dy=0;
+        switch(back) {
+        case 0: dy=-1; break; case 1: dx=1;dy=-1; break;
+        case 2: dx=1; break;  case 3: dx=1;dy=1; break;
+        case 4: dy=1; break;  case 5: dx=-1;dy=1; break;
+        case 6: dx=-1; break; case 7: dx=-1;dy=-1; break;
         }
+        int nx=all_tanks_[k].x+dx, ny=all_tanks_[k].y+dy;
+        board_.wrapCoords(nx,ny);
+        if (board_.getCell(nx,ny).content==CellContent::WALL)
+            ignored[k]=true;
     }
 }
 
-//------------------------------------------------------------------------------
-// (6) updateTankPositionsOnBoard: move forward/backward, no wrap.
-//------------------------------------------------------------------------------
 void GameState::updateTankPositionsOnBoard(std::vector<bool>& ignored,
-                                           std::vector<bool>& killedThisTurn,
-                                           const std::vector<common::ActionRequest>& actions)
+                                           std::vector<bool>& killed,
+                                           const std::vector<ActionRequest>& A)
 {
-    // Clear old tank marks:
     board_.clearTankMarks();
-
-    for (std::size_t k = 0; k < all_tanks_.size(); ++k) {
-        if (!all_tanks_[k].alive) continue;
-        auto act = actions[k];
-        if (act != common::ActionRequest::MoveForward &&
-            act != common::ActionRequest::MoveBackward)
-        {
+    for (size_t k=0; k<all_tanks_.size(); ++k) {
+        auto& ts = all_tanks_[k];
+        if (!ts.alive) continue;
+        if ((A[k]!=ActionRequest::MoveForward && A[k]!=ActionRequest::MoveBackward) ||
+            ignored[k]) continue;
+        int dir = ts.direction;
+        if (A[k]==ActionRequest::MoveBackward) dir=(dir+4)&7;
+        int dx=0,dy=0;
+        switch(dir) {
+        case 0: dy=-1; break; case 1: dx=1;dy=-1; break;
+        case 2: dx=1; break;  case 3: dx=1;dy=1; break;
+        case 4: dy=1; break;  case 5: dx=-1;dy=1; break;
+        case 6: dx=-1; break; case 7: dx=-1;dy=-1; break;
+        }
+        int nx=ts.x+dx, ny=ts.y+dy;
+        board_.wrapCoords(nx,ny);
+        if (board_.getCell(nx,ny).content==CellContent::WALL) {
+            ignored[k]=true;
             continue;
         }
-        if (ignored[k]) continue;
-
-        int dx = 0, dy = 0;
-        int moveDir = all_tanks_[k].direction;
-        if (act == common::ActionRequest::MoveBackward) {
-            moveDir = (moveDir + 4) & 7;
-        }
-        switch (moveDir) {
-            case 0:  dy = -1; break;    // Up
-            case 1:  dx = +1; dy = -1; break; // Up‐Right
-            case 2:  dx = +1; break;    // Right
-            case 3:  dx = +1; dy = +1; break; // Down‐Right
-            case 4:  dy = +1; break;    // Down
-            case 5:  dx = -1; dy = +1; break; // Down‐Left
-            case 6:  dx = -1; break;    // Left
-            case 7:  dx = -1; dy = -1; break; // Up‐Left
-        }
-        int newX = all_tanks_[k].x + dx;
-        int newY = all_tanks_[k].y + dy;
-
-
-        // **Wrap** them instead of rejecting:
-        board_.wrapCoords(newX, newY);
-
-        // now check if the wrapped cell is a wall or occupied:
-        if (board_.getCell(newX, newY).content == CellContent::WALL) {
-            ignored[k] = true;
-        }
-        // If out of bounds or wall, ignore:
-        if (
-            board_.getCell(newX, newY).content == CellContent::WALL)
-        {
-            ignored[k] = true;
+        if (board_.getCell(nx,ny).content==CellContent::MINE) {
+            killed[k]=true;
+            ts.alive=false;
+            board_.setCell(ts.x,ts.y,CellContent::EMPTY);
+            board_.setCell(nx,ny,CellContent::EMPTY);
             continue;
         }
-
-        // If stepping onto a mine:
-        if (board_.getCell(newX, newY).content == CellContent::MINE) {
-            killedThisTurn[k] = true;
-            all_tanks_[k].alive = false;
-            board_.setCell(all_tanks_[k].x, all_tanks_[k].y, CellContent::EMPTY);
-            board_.setCell(newX, newY, CellContent::EMPTY);
-            continue;
-        }
-
-        // Normal move:
-        board_.setCell(all_tanks_[k].x, all_tanks_[k].y, CellContent::EMPTY);
-        all_tanks_[k].x = newX;
-        all_tanks_[k].y = newY;
-        board_.setCell(newX, newY,
-                       (all_tanks_[k].player_index == 1 ? CellContent::TANK1 : CellContent::TANK2));
+        board_.setCell(ts.x,ts.y,CellContent::EMPTY);
+        ts.x = nx; ts.y = ny;
+        board_.setCell(nx,ny,
+            ts.player_index==1?CellContent::TANK1:CellContent::TANK2);
     }
 }
 
-//------------------------------------------------------------------------------
-// (7) handleShooting: spawn new shells at (x+dx,y+dy) with immediate collision.
-//------------------------------------------------------------------------------
-void GameState::handleShooting(std::vector<bool>& ignored,const std::vector<common::ActionRequest>& actions
-                               /*std::vector<bool>&*/ /*killedThisTurn*/) 
+void GameState::handleShooting(std::vector<bool>& ignored,
+                               const std::vector<ActionRequest>& A)
 {
-    auto spawnShell = [&](TankState& ts) {
-        int sx = ts.x, sy = ts.y;
-        int dx = 0, dy = 0;
-        switch (ts.direction) {
-            case 0:  dy = -1; break;    // Up
-            case 1:  dx = +1; dy = -1; break; // Up‐Right
-            case 2:  dx = +1; break;    // Right
-            case 3:  dx = +1; dy = +1; break; // Down‐Right
-            case 4:  dy = +1; break;    // Down
-            case 5:  dx = -1; dy = +1; break; // Down‐Left
-            case 6:  dx = -1; break;    // Left
-            case 7:  dx = -1; dy = -1; break; // Up‐Left
+    auto spawn = [&](TankState& ts){
+        int dx=0,dy=0;
+        switch(ts.direction) {
+        case 0: dy=-1; break; case 1: dx=1;dy=-1; break;
+        case 2: dx=1; break;  case 3: dx=1;dy=1; break;
+        case 4: dy=1; break;  case 5: dx=-1;dy=1; break;
+        case 6: dx=-1; break; case 7: dx=-1;dy=-1; break;
         }
-        int spawnX = (sx + dx + board_.getWidth())  % board_.getWidth();
-        int spawnY = (sy + dy + board_.getHeight()) % board_.getHeight();
-
-        // Mid‐step collision at spawn cell:
-        if (!handleShellMidStepCollision(spawnX, spawnY)) {
-            shells_.push_back({ spawnX, spawnY, ts.direction });
-        }
+        int sx=(ts.x+dx+board_.getWidth())%board_.getWidth();
+        int sy=(ts.y+dy+board_.getHeight())%board_.getHeight();
+        if (!handleShellMidStepCollision(sx,sy))
+            shells_.push_back({sx,sy,ts.direction});
     };
 
-    for (std::size_t k = 0; k < all_tanks_.size(); ++k) {
-        if (!all_tanks_[k].alive) continue;
-        if (actions[k] != common::ActionRequest::Shoot) continue;
-        if (all_tanks_[k].shells_left == 0) {
-            ignored[k] = true;
+    for (size_t k=0; k<all_tanks_.size(); ++k) {
+        if (!all_tanks_[k].alive || A[k]!=ActionRequest::Shoot) continue;
+        if (all_tanks_[k].shells_left==0) {
+            ignored[k]=true;
             continue;
         }
-        
         all_tanks_[k].shells_left--;
-        spawnShell(all_tanks_[k]);
+        spawn(all_tanks_[k]);
     }
 }
 
-//------------------------------------------------------------------------------
-// (8) updateShellsWithOverrunCheck: move each shell two sub‐steps (wrap+mid‐check)
-//------------------------------------------------------------------------------
 void GameState::updateShellsWithOverrunCheck() {
     toRemove_.clear();
     positionMap_.clear();
     board_.clearShellMarks();
 
-    for (std::size_t i = 0; i < shells_.size(); ++i) {
-        int dx = 0, dy = 0;
-        switch (shells_[i].dir) {
-            case 0:  dy = -1; break;    // Up
-            case 1:  dx = +1; dy = -1; break; // Up‐Right
-            case 2:  dx = +1; break;    // Right
-            case 3:  dx = +1; dy = +1; break; // Down‐Right
-            case 4:  dy = +1; break;    // Down
-            case 5:  dx = -1; dy = +1; break; // Down‐Left
-            case 6:  dx = -1; break;    // Left
-            case 7:  dx = -1; dy = -1; break; // Up‐Left
+    for (size_t i=0; i<shells_.size(); ++i) {
+        int dx=0,dy=0;
+        switch(shells_[i].dir) {
+        case 0: dy=-1; break; case 1: dx=1;dy=-1; break;
+        case 2: dx=1; break;  case 3: dx=1;dy=1; break;
+        case 4: dy=1; break;  case 5: dx=-1;dy=1; break;
+        case 6: dx=-1; break; case 7: dx=-1;dy=-1; break;
         }
-
-        for (int step = 0; step < 2; ++step) {
-            int nextX = shells_[i].x + dx;
-            int nextY = shells_[i].y + dy;
-            board_.wrapCoords(nextX, nextY);
-
-            if (handleShellMidStepCollision(nextX, nextY)) {
+        for (int step=0; step<2; ++step) {
+            int nx=shells_[i].x+dx, ny=shells_[i].y+dy;
+            board_.wrapCoords(nx,ny);
+            if (handleShellMidStepCollision(nx,ny)) {
                 toRemove_.insert(i);
                 break;
             }
-            shells_[i].x = nextX;
-            shells_[i].y = nextY;
-            positionMap_[{ nextX, nextY }].push_back(i);
+            shells_[i].x=nx; shells_[i].y=ny;
+            positionMap_[{nx,ny}].push_back(i);
         }
     }
 }
 
-//------------------------------------------------------------------------------
-// (9) resolveShellCollisions: any cell with ≥2 shells → all shells removed;
-// mark survivors’ hasShellOverlay=true.
-//------------------------------------------------------------------------------
 void GameState::resolveShellCollisions() {
-    // A) Mutually destroy shells that share a cell
-    for (auto const& entry : positionMap_) {
-        const auto& idxs = entry.second;
-        if (idxs.size() > 1) {
-            for (auto idx : idxs) {
+    for (auto const& kv : positionMap_) {
+        if (kv.second.size()>1)
+            for (auto idx : kv.second)
                 toRemove_.insert(idx);
-            }
-        }
     }
-
-    // B) Build survivors and mark overlay on board
     std::vector<Shell> survivors;
-    survivors.reserve(shells_.size());
-    for (std::size_t i = 0; i < shells_.size(); ++i) {
-        if (toRemove_.count(i) == 0) {
-            board_.getCell(shells_[i].x, shells_[i].y).hasShellOverlay = true;
+    for (size_t i=0; i<shells_.size(); ++i) {
+        if (!toRemove_.count(i)) {
+            auto& cell = board_.getCell(shells_[i].x, shells_[i].y);
+            cell.hasShellOverlay = true;
             survivors.push_back(shells_[i]);
         }
     }
     shells_.swap(survivors);
 }
 
-//------------------------------------------------------------------------------
-// (I) handleShellMidStepCollision: wall/tank/mine logic at (x,y)
-//------------------------------------------------------------------------------
 bool GameState::handleShellMidStepCollision(int x, int y) {
-    Cell& cell = board_.getCell(x, y);
-
-    // 1) Wall?
-    if (cell.content == CellContent::WALL) {
-        cell.wallHits++;
-        if (cell.wallHits >= 2) {
-            cell.content = CellContent::EMPTY;
-        }
+    auto& cell = board_.getCell(x,y);
+    if (cell.content==CellContent::WALL) {
+        if (++cell.wallHits >=2) cell.content=CellContent::EMPTY;
         return true;
     }
-    // 2) TANK1?
-    if (cell.content == CellContent::TANK1) {
-        for (auto& ts : all_tanks_) {
-            if (ts.alive && ts.x == x && ts.y == y && ts.player_index == 1) {
-                ts.alive = false;
+    if (cell.content==CellContent::TANK1 || cell.content==CellContent::TANK2) {
+        for (auto& ts: all_tanks_) {
+            if (ts.alive && ts.x==x && ts.y==y &&
+               ((cell.content==CellContent::TANK1&&ts.player_index==1)||
+                (cell.content==CellContent::TANK2&&ts.player_index==2))) {
+                ts.alive=false;
                 break;
             }
         }
-        cell.content = CellContent::EMPTY;
+        cell.content=CellContent::EMPTY;
         return true;
     }
-    // 3) TANK2?
-    if (cell.content == CellContent::TANK2) {
-        for (auto& ts : all_tanks_) {
-            if (ts.alive && ts.x == x && ts.y == y && ts.player_index == 2) {
-                ts.alive = false;
-                break;
-            }
-        }
-        cell.content = CellContent::EMPTY;
-        return true;
-    }
-    // 4) MINE? shell passes through
-    if (cell.content == CellContent::MINE) {
-        return false;
-    }
-    // 5) Otherwise (EMPTY or overlay), no destruction
     return false;
 }
 
-//------------------------------------------------------------------------------
-// (10) cleanupDestroyedEntities: nothing to do (tanks removed, shells removed)
-//------------------------------------------------------------------------------
 void GameState::cleanupDestroyedEntities() {
-    // Everything is already removed in earlier steps.
+    // nothing
 }
 
-//------------------------------------------------------------------------------
-// (11) checkGameEndConditions
-//------------------------------------------------------------------------------
 void GameState::checkGameEndConditions() {
-    int alive1 = 0, alive2 = 0;
-    for (auto const& ts : all_tanks_) {
-        if (ts.alive) {
-            if (ts.player_index == 1) ++alive1;
-            else ++alive2;
-        }
+    int a1=0,a2=0;
+    for (auto const& ts: all_tanks_) {
+        if (ts.alive) (ts.player_index==1?++a1:++a2);
     }
-
-    if (alive1 == 0 && alive2 == 0) {
-        gameOver_ = true;
-        resultStr_ = "Tie, both players have zero tanks";
+    if (a1==0 && a2==0) {
+        gameOver_=true; resultStr_="Tie, both players have zero tanks";
     }
-    else if (alive1 == 0) {
-        gameOver_ = true;
-        resultStr_ = "Player 2 won with " + std::to_string(alive2) + " tanks still alive";
+    else if (a1==0) {
+        gameOver_=true; resultStr_="Player 2 won with "+std::to_string(a2)+" tanks still alive";
     }
-    else if (alive2 == 0) {
-        gameOver_ = true;
-        resultStr_ = "Player 1 won with " + std::to_string(alive1) + " tanks still alive";
+    else if (a2==0) {
+        gameOver_=true; resultStr_="Player 1 won with "+std::to_string(a1)+" tanks still alive";
     }
-    else if (currentStep_ + 1 >= maxSteps_) {
-        gameOver_ = true;
-        resultStr_ = "Tie, reached max steps = " + std::to_string(maxSteps_) +
-                     ", player1 has " + std::to_string(alive1) +
-                     ", player2 has " + std::to_string(alive2);
-    }
-}
-
-//------------------------------------------------------------------------------
-// (12) printBoard: overlay shells (*) and colored tank arrows
-//------------------------------------------------------------------------------
-void GameState::printBoard() const {
-    // Copy the grid (Cells) so we can overlay shells/tanks without mutating original
-    auto gridCopy = board_.getGrid();
-
-    // Tanks overlay: place placeholders so we can fetch direction
-    for (auto const& ts : all_tanks_) {
-        if (!ts.alive) continue;
-        int r = ts.y, c = ts.x;
-        if (r >= 0 && r < static_cast<int>(rows_) && c >= 0 && c < static_cast<int>(cols_)) {
-            gridCopy[r][c].content =
-                (ts.player_index == 1 ? CellContent::TANK1 : CellContent::TANK2);
-        }
-    }
-
-    // Now print row by row:
-    for (int r = 0; r < static_cast<int>(rows_); ++r) {
-        for (int c = 0; c < static_cast<int>(cols_); ++c) {
-            const Cell& cell = gridCopy[r][c];
-            if (cell.content == CellContent::WALL) {
-                std::cout << "#";
-            }
-            else if (cell.content == CellContent::MINE) {
-                std::cout << "@";
-            }
-            else if (cell.content == CellContent::EMPTY) {
-                if (cell.hasShellOverlay) {
-                    std::cout << "*";
-                } else {
-                    std::cout << " ";
-                }
-            }
-            else if (cell.content == CellContent::TANK1 ||
-                     cell.content == CellContent::TANK2)
-            {
-                // Find that tank’s direction
-                int dir = 0;
-                int pidx = (cell.content == CellContent::TANK1 ? 1 : 2);
-                for (auto const& ts : all_tanks_) {
-                    if (ts.alive &&
-                        ts.y == r &&
-                        ts.x == c &&
-                        ts.player_index == pidx)
-                    {
-                        dir = ts.direction;
-                        break;
-                    }
-                }
-                const char* arrow = directionToArrow(dir);
-                if (cell.content == CellContent::TANK1) {
-                    // Red arrow
-                    std::cout << "\033[31m" << arrow << "\033[0m";
-                } else {
-                    // Blue arrow
-                    std::cout << "\033[34m" << arrow << "\033[0m";
-                }
-            }
-            else {
-                std::cout << "?";
-            }
-        }
-        std::cout << "\n";
-    }
-    std::cout << std::endl;
-}
-
-//------------------------------------------------------------------------------
-// directionToArrow: map 0..7 to a UTF‐8 arrow
-//------------------------------------------------------------------------------
-const char* GameState::directionToArrow(int dir) {
-    switch (dir & 7) {
-        case 0: return "↑";
-        case 1: return "↗";
-        case 2: return "→";
-        case 3: return "↘";
-        case 4: return "↓";
-        case 5: return "↙";
-        case 6: return "←";
-        case 7: return "↖";
-        default: return "?";
+    else if (currentStep_+1>=maxSteps_) {
+        gameOver_=true;
+        resultStr_="Tie, reached max steps="+std::to_string(maxSteps_)+
+                   ", player1 has "+std::to_string(a1)+
+                   ", player2 has "+std::to_string(a2);
     }
 }
