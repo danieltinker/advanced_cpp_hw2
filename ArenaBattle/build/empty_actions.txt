@@ -1,11 +1,4 @@
 MoveForward, MoveForward
 MoveForward, MoveForward
-MoveForward, MoveForward
-MoveForward, MoveForward
-MoveForward, MoveForward
-MoveForward, MoveForward
-MoveForward, MoveForward
-MoveForward, MoveForward
-MoveForward, MoveForward
-MoveForward, MoveForward
-Tie, reached max steps=10, player1 has 1, player2 has 1
+killed, killed
+Tie, both players have zero tanks

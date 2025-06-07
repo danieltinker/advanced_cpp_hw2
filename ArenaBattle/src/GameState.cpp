@@ -259,41 +259,130 @@ void GameState::confirmBackwardMoves(std::vector<bool>& ignored,
 }
 
 void GameState::updateTankPositionsOnBoard(std::vector<bool>& ignored,
-                                           std::vector<bool>& killed,
-                                           const std::vector<ActionRequest>& A)
+                                           std::vector<bool>& killedThisTurn,
+                                           const std::vector<common::ActionRequest>& actions)
 {
     board_.clearTankMarks();
-    for (size_t k=0; k<all_tanks_.size(); ++k) {
-        auto& ts = all_tanks_[k];
-        if (!ts.alive) continue;
-        if ((A[k]!=ActionRequest::MoveForward && A[k]!=ActionRequest::MoveBackward) ||
-            ignored[k]) continue;
-        int dir = ts.direction;
-        if (A[k]==ActionRequest::MoveBackward) dir=(dir+4)&7;
-        int dx=0,dy=0;
-        switch(dir) {
-        case 0: dy=-1; break; case 1: dx=1;dy=-1; break;
-        case 2: dx=1; break;  case 3: dx=1;dy=1; break;
-        case 4: dy=1; break;  case 5: dx=-1;dy=1; break;
-        case 6: dx=-1; break; case 7: dx=-1;dy=-1; break;
-        }
-        int nx=ts.x+dx, ny=ts.y+dy;
-        board_.wrapCoords(nx,ny);
-        if (board_.getCell(nx,ny).content==CellContent::WALL) {
-            ignored[k]=true;
+
+    const std::size_t N = all_tanks_.size();
+    // Store original positions
+    std::vector<std::pair<int,int>> oldPos(N);
+    // Store each tank's intended new position (or same if no move/ignored)
+    std::vector<std::pair<int,int>> newPos(N);
+
+    // 1) Compute oldPos and newPos
+    for (std::size_t k = 0; k < N; ++k) {
+        oldPos[k] = { all_tanks_[k].x, all_tanks_[k].y };
+
+        if (!all_tanks_[k].alive
+            || ignored[k]
+            || (actions[k] != common::ActionRequest::MoveForward
+             && actions[k] != common::ActionRequest::MoveBackward))
+        {
+            // No move: stay in place
+            newPos[k] = oldPos[k];
             continue;
         }
-        if (board_.getCell(nx,ny).content==CellContent::MINE) {
-            killed[k]=true;
-            ts.alive=false;
-            board_.setCell(ts.x,ts.y,CellContent::EMPTY);
-            board_.setCell(nx,ny,CellContent::EMPTY);
+
+        // Figure out dx,dy for forward or backward
+        int dir = all_tanks_[k].direction;
+        if (actions[k] == common::ActionRequest::MoveBackward) {
+            dir = (dir + 4) & 7;
+        }
+        int dx = 0, dy = 0;
+        switch (dir) {
+            case 0:  dy = -1; break;
+            case 1:  dx = +1; dy = -1; break;
+            case 2:  dx = +1; break;
+            case 3:  dx = +1; dy = +1; break;
+            case 4:  dy = +1; break;
+            case 5:  dx = -1; dy = +1; break;
+            case 6:  dx = -1; break;
+            case 7:  dx = -1; dy = -1; break;
+        }
+        int nx = all_tanks_[k].x + dx;
+        int ny = all_tanks_[k].y + dy;
+        board_.wrapCoords(nx, ny);
+        newPos[k] = {nx, ny};
+    }
+
+    // 2) Detect collisions: map destination → list of tanks
+    std::map<std::pair<int,int>, std::vector<std::size_t>> destMap;
+    for (std::size_t k = 0; k < N; ++k) {
+        // Only moving tanks can collide; stationary tanks not considered head-on
+        if (newPos[k] != oldPos[k] && all_tanks_[k].alive) {
+            destMap[newPos[k]].push_back(k);
+        }
+    }
+    // Mark any collisions
+    for (auto const& entry : destMap) {
+        auto const& vec = entry.second;
+        if (vec.size() > 1) {
+            // All tanks in vec collide and die
+            for (auto k : vec) {
+                killedThisTurn[k] = true;
+                all_tanks_[k].alive = false;
+                // Clear their old cell
+                auto [ox, oy] = oldPos[k];
+                board_.setCell(ox, oy, CellContent::EMPTY);
+            }
+        }
+    }
+
+    // 3) Apply non-colliding moves
+    for (std::size_t k = 0; k < N; ++k) {
+        if (!all_tanks_[k].alive) continue;
+
+        // If they didn't actually move, just re-stamp them
+        if (newPos[k] == oldPos[k]) {
+            board_.setCell(oldPos[k].first,
+                           oldPos[k].second,
+                           all_tanks_[k].player_index == 1
+                             ? CellContent::TANK1
+                             : CellContent::TANK2);
             continue;
         }
-        board_.setCell(ts.x,ts.y,CellContent::EMPTY);
-        ts.x = nx; ts.y = ny;
-        board_.setCell(nx,ny,
-            ts.player_index==1?CellContent::TANK1:CellContent::TANK2);
+
+        // If this tank collided, we already cleared it above
+        // so skip
+        if (killedThisTurn[k]) continue;
+
+        int nx = newPos[k].first;
+        int ny = newPos[k].second;
+
+        // If stepping onto a wall, it's illegal: ignore move, stay in place
+        if (board_.getCell(nx, ny).content == CellContent::WALL) {
+            ignored[k] = true;
+            // re-stamp at old position
+            auto [ox, oy] = oldPos[k];
+            board_.setCell(ox, oy,
+                           all_tanks_[k].player_index == 1
+                             ? CellContent::TANK1
+                             : CellContent::TANK2);
+            continue;
+        }
+
+        // If stepping onto a mine: kill
+        if (board_.getCell(nx, ny).content == CellContent::MINE) {
+            killedThisTurn[k] = true;
+            all_tanks_[k].alive = false;
+            // clear both cells
+            auto [ox, oy] = oldPos[k];
+            board_.setCell(ox, oy, CellContent::EMPTY);
+            board_.setCell(nx, ny, CellContent::EMPTY);
+            continue;
+        }
+
+        // Normal move: clear old, set new
+        auto [ox, oy] = oldPos[k];
+        board_.setCell(ox, oy, CellContent::EMPTY);
+
+        all_tanks_[k].x = nx;
+        all_tanks_[k].y = ny;
+        board_.setCell(nx, ny,
+                       all_tanks_[k].player_index == 1
+                         ? CellContent::TANK1
+                         : CellContent::TANK2);
     }
 }
 
