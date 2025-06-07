@@ -1,5 +1,0 @@
-GetBattleInfo, GetBattleInfo
-MoveForward, Shoot
-MoveForward, Shoot
-killed, MoveForward
-Player 1 won with 1 tanks still alive

@@ -116,10 +116,13 @@ std::string GameState::advanceOneTurn() {
     updateTankPositionsOnBoard(ignored, killed, actions);
     // 7) Spawn shells
     handleShooting(ignored, actions);
+
     // 8) Move shells
     updateShellsWithOverrunCheck();
+            
     // 9) Resolve collisions
     resolveShellCollisions();
+
     // 10) Cleanup
     cleanupDestroyedEntities();
     // 11) End game?
@@ -127,36 +130,49 @@ std::string GameState::advanceOneTurn() {
     // 12) Next turn
     ++currentStep_;
 
-    // Build log
-    std::ostringstream oss;
-    for (size_t k=0; k<N; ++k) {
-        if (!all_tanks_[k].alive) {
-            oss << "killed";
-        } else {
-            const auto act = actions[k];
-            const char* name = "DoNothing";
-            switch(act) {
-            case ActionRequest::MoveForward:   name="MoveForward"; break;
-            case ActionRequest::MoveBackward:  name="MoveBackward";break;
-            case ActionRequest::RotateLeft90:  name="RotateLeft90"; break;
-            case ActionRequest::RotateRight90: name="RotateRight90";break;
-            case ActionRequest::RotateLeft45:  name="RotateLeft45"; break;
-            case ActionRequest::RotateRight45: name="RotateRight45";break;
-            case ActionRequest::Shoot:         name="Shoot";        break;
-            case ActionRequest::GetBattleInfo: name="GetBattleInfo";break;
-            default: break;
-            }
-            oss << name;
-            if (ignored[k] && (act==ActionRequest::MoveForward ||
-                              act==ActionRequest::MoveBackward ||
-                              act==ActionRequest::Shoot))
-                oss << " (ignored)";
-            if (killed[k])
-                oss << " (killed)";
-        }
-        if (k+1<N) oss << ", ";
+
+std::ostringstream oss;
+for (size_t k = 0; k < N; ++k) {
+    const auto act = actions[k];
+    const char* name = nullptr;
+    switch (act) {
+      case ActionRequest::MoveForward:    name = "MoveForward";   break;
+      case ActionRequest::MoveBackward:   name = "MoveBackward";  break;
+      case ActionRequest::RotateLeft90:   name = "RotateLeft90";  break;
+      case ActionRequest::RotateRight90:  name = "RotateRight90"; break;
+      case ActionRequest::RotateLeft45:   name = "RotateLeft45";  break;
+      case ActionRequest::RotateRight45:  name = "RotateRight45"; break;
+      case ActionRequest::Shoot:          name = "Shoot";         break;
+      case ActionRequest::GetBattleInfo:  name = "GetBattleInfo"; break;
+      default: name = "DoNothing";                                break;
     }
-    return oss.str();
+    std::cout << name;
+
+    if (all_tanks_[k].alive) {
+        // they survived → just print their action (plus “(ignored)” if applicable)
+        oss << name;
+        if (ignored[k] &&
+           (act == ActionRequest::MoveForward ||
+            act == ActionRequest::MoveBackward ||
+            act == ActionRequest::Shoot))
+        {
+            oss << " (ignored)";
+        }
+    }
+    else {
+        if (!name) {
+            oss << "killed";
+        }
+        else {
+            oss << name;
+            oss << " (killed)";
+        }
+    }
+
+    if (k + 1 < N) oss << ", ";
+}
+
+return oss.str();
 }
 
 //------------------------------------------------------------------------------
@@ -310,8 +326,9 @@ void GameState::updateTankPositionsOnBoard(std::vector<bool>& ignored,
     std::map<std::pair<int,int>, std::vector<std::size_t>> destMap;
     for (std::size_t k = 0; k < N; ++k) {
         // Only moving tanks can collide; stationary tanks not considered head-on
-        if (newPos[k] != oldPos[k] && all_tanks_[k].alive) {
+        if (all_tanks_[k].alive) {
             destMap[newPos[k]].push_back(k);
+            std::cout << "place: " << k << "  ,new Pos: " << newPos[k].first << ", " << newPos[k].second;
         }
     }
     // Mark any collisions

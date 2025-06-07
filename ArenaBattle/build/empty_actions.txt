@@ -1,4 +1,3 @@
 GetBattleInfo, GetBattleInfo
-Shoot, MoveForward
-MoveForward, killed
-Player 1 won with 1 tanks still alive
+Shoot (killed), MoveForward (killed)
+Tie, both players have zero tanks
