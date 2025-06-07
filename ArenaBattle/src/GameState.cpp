@@ -134,7 +134,7 @@ std::string GameState::advanceOneTurn() {
 std::ostringstream oss;
 for (size_t k = 0; k < N; ++k) {
     const auto act = actions[k];
-    const char* name = nullptr;
+    const char* name = "DoNothing";
     switch (act) {
       case ActionRequest::MoveForward:    name = "MoveForward";   break;
       case ActionRequest::MoveBackward:   name = "MoveBackward";  break;
@@ -144,9 +144,9 @@ for (size_t k = 0; k < N; ++k) {
       case ActionRequest::RotateRight45:  name = "RotateRight45"; break;
       case ActionRequest::Shoot:          name = "Shoot";         break;
       case ActionRequest::GetBattleInfo:  name = "GetBattleInfo"; break;
-      default: name = "DoNothing";                                break;
+      case ActionRequest::DoNothing:      name = nullptr;         break;
+      default:                                                    break;
     }
-    std::cout << name;
 
     if (all_tanks_[k].alive) {
         // they survived → just print their action (plus “(ignored)” if applicable)
@@ -328,7 +328,6 @@ void GameState::updateTankPositionsOnBoard(std::vector<bool>& ignored,
         // Only moving tanks can collide; stationary tanks not considered head-on
         if (all_tanks_[k].alive) {
             destMap[newPos[k]].push_back(k);
-            std::cout << "place: " << k << "  ,new Pos: " << newPos[k].first << ", " << newPos[k].second;
         }
     }
     // Mark any collisions
