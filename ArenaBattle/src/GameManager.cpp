@@ -1,118 +1,106 @@
 #include "GameManager.h"
 #include "Board.h"
-#include "utils.h"
-
 #include <fstream>
 #include <iostream>
+#include <sstream>
+#include <vector>
+#include <string>
 
 using namespace arena;
-using namespace common;
 
-// GameManager::GameManager(std::unique_ptr<PlayerFactory> pFac,
-//                          std::unique_ptr<TankAlgorithmFactory> tFac)
-//   : game_state_(std::move(pFac), std::move(tFac))
-// {}
-
-GameManager::~GameManager() = default;
-
-void GameManager::readBoard(const std::string& map_file) {
+void GameManager::readBoard(const std::string &map_file) {
     loaded_map_file_ = map_file;
 
-    // (1) Open the map file and parse MaxSteps, NumShells, Rows, Cols:
     std::ifstream in(map_file);
     if (!in) {
-        std::cerr << "Cannot open map file: " << map_file << "\n";
+        std::cerr << "Failed to open map file: " << map_file << std::endl;
         std::exit(1);
     }
 
     std::string line;
-    // map name (ignore)
-    std::getline(in, line);
+    size_t rows = 0, cols = 0, maxSteps = 0, numShells = 0;
+    std::vector<std::string> gridLines;
 
-    // MaxSteps = <NUM>
-    std::getline(in, line);
-    std::size_t maxSteps = 0;
-    parseKeyValue(line, "MaxSteps", maxSteps);
-
-    // NumShells = <NUM>
-    std::getline(in, line);
-    std::size_t numShells = 0;
-    parseKeyValue(line, "NumShells", numShells);
-
-    // Rows = <NUM>
-    std::getline(in, line);
-    std::size_t rows = 0;
-    parseKeyValue(line, "Rows", rows);
-
-    // Cols = <NUM>
-    std::getline(in, line);
-    std::size_t cols = 0;
-    parseKeyValue(line, "Cols", cols);
-
-    // (2) Build a Board(rows×cols) and fill cells:
-    Board board(rows, cols);
-    std::size_t r = 0;
-    while (r < rows && std::getline(in, line)) {
-        for (std::size_t c = 0; c < cols && c < line.size(); ++c) {
-            char ch = line[c];
-            CellContent content = CellContent::EMPTY;
-            if (ch == '#') {
-                content = CellContent::WALL;
-            } else if (ch == '@') {
-                content = CellContent::MINE;
-            } else if (ch == '1') {
-                content = CellContent::TANK1;
-            } else if (ch == '2') {
-                content = CellContent::TANK2;
-            } else {
-                content = CellContent::EMPTY;
+    // Parse header lines
+    while (std::getline(in, line)) {
+        if (line.empty()) continue;
+        if (line.rfind("Rows", 0) == 0) {
+            rows = std::stoul(line.substr(line.find('=') + 1));
+        } else if (line.rfind("Cols", 0) == 0) {
+            cols = std::stoul(line.substr(line.find('=') + 1));
+        } else if (line.rfind("MaxSteps", 0) == 0) {
+            maxSteps = std::stoul(line.substr(line.find('=') + 1));
+        } else if (line.rfind("NumShells", 0) == 0) {
+            numShells = std::stoul(line.substr(line.find('=') + 1));
+        } else {
+            // Possibly a grid line: only ., #, @, 1, 2
+            bool isGrid = !line.empty();
+            for (char ch : line) {
+                if (ch != '.' && ch != '#' && ch != '@' && ch != '1' && ch != '2') {
+                    isGrid = false;
+                    break;
+                }
             }
-            board.setCell(static_cast<int>(c), static_cast<int>(r), content);
+            if (isGrid) {
+                gridLines.push_back(line);
+                break;
+            }
+            // Otherwise skip non-header title or comments
         }
-        ++r;
     }
-    in.close();
+    // Read remaining grid lines
+    while (gridLines.size() < rows && std::getline(in, line)) {
+        if (line.empty()) continue;
+        // Ensure it's a valid grid line
+        bool isGrid = true;
+        for (char ch : line) {
+            if (ch != '.' && ch != '#' && ch != '@' && ch != '1' && ch != '2') {
+                isGrid = false;
+                break;
+            }
+        }
+        if (!isGrid) continue;
+        gridLines.push_back(line);
+    }
+    while (gridLines.size() < rows && std::getline(in, line)) {
+        if (line.empty()) continue;
+        gridLines.push_back(line);
+    }
 
-    // (3) Initialize GameState with board, maxSteps, numShells:
+    // Build the board
+    Board board(rows, cols);
+    for (size_t r = 0; r < rows; ++r) {
+        const auto &rowStr = gridLines[r];
+        for (size_t c = 0; c < cols && c < rowStr.size(); ++c) {
+            char ch = rowStr[c];
+            switch (ch) {
+                case '#': board.setCell(c, r, CellContent::WALL); break;
+                case '@': board.setCell(c, r, CellContent::MINE); break;
+                case '1': board.setCell(c, r, CellContent::TANK1); break;
+                case '2': board.setCell(c, r, CellContent::TANK2); break;
+                default:  board.setCell(c, r, CellContent::EMPTY); break;
+            }
+        }
+    }
+
+    // Initialize game state
     game_state_.initialize(board, maxSteps, numShells);
 }
 
-
 void GameManager::run() {
-    // Output file is named "output_<loaded_map_file_>"
-    std::string out_filename = "output_" + loaded_map_file_;
-    std::ofstream out(out_filename);
-    if (!out) {
-        std::cerr << "Cannot open output file: " << out_filename << "\n";
-        return;
-    }
-
-    int turn = 0;
+    size_t turn = 0;
+    // Game loop
     while (!game_state_.isGameOver()) {
-        // --- Print to console ---
-        std::cout << "=== Turn " << turn << " ===\n";
+        std::cout << "=== Turn " << turn << " ===";
         game_state_.printBoard();
-        std::cout << "\n";
-        // Advance one turn in the game state; get back a comma-separated list
-        // of what each tank did this turn (with "(ignored)" or "(killed)" tags as needed).
-        std::string turnStr = game_state_.advanceOneTurn();
-        
-        // Show that line of actions on-screen
-        std::cout << turnStr << "\n\n";
 
-        // --- Write to output file ---
-        // Only write the actions (no header, no blank line).
-        out << turnStr << "\n";
-
+        std::string actions = game_state_.advanceOneTurn();
+        std::cout << actions << "";
         ++turn;
     }
 
-    // --- Final result: console ---
-    std::cout << "=== Final Board ===\n";
-    std::cout << game_state_.getResultString() << "\n";
-
-    // --- Final result: output file ---
-    out << game_state_.getResultString() << "\n";
-
-    out.close();
+    // Final board and result
+    std::cout << "=== Final Board ===";
+    game_state_.printBoard();
+    std::cout << game_state_.getResultString() << std::endl;
 }
