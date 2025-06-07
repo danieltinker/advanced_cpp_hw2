@@ -5,7 +5,7 @@
 namespace common {
 
 /*
-  GameManager builds a concrete SatelliteViewImpl and passes
+  GameManager builds a concrete MySatelliteView and passes
   it to Player when a tank requests GetBattleInfo. A SatelliteView
   can be queried at (x,y), returning any of: '#','1','2','%','@','*',' ','&'.
 */
