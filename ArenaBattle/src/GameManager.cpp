@@ -91,7 +91,7 @@ void GameManager::run() {
     size_t turn = 0;
     // Game loop
     while (!game_state_.isGameOver()) {
-        std::cout << "=== Turn " << turn << " ===";
+        std::cout << "=== Turn " << turn << " ===" << std::endl;
         game_state_.printBoard();
 
         std::string actions = game_state_.advanceOneTurn();
