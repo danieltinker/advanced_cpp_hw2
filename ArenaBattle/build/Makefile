@@ -129,6 +129,30 @@ tanks_game/fast:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/tanks_game.dir/build.make CMakeFiles/tanks_game.dir/build
 .PHONY : tanks_game/fast
 
+src/AggressiveTank.o: src/AggressiveTank.cpp.o
+.PHONY : src/AggressiveTank.o
+
+# target to build an object file
+src/AggressiveTank.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/tanks_game.dir/build.make CMakeFiles/tanks_game.dir/src/AggressiveTank.cpp.o
+.PHONY : src/AggressiveTank.cpp.o
+
+src/AggressiveTank.i: src/AggressiveTank.cpp.i
+.PHONY : src/AggressiveTank.i
+
+# target to preprocess a source file
+src/AggressiveTank.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/tanks_game.dir/build.make CMakeFiles/tanks_game.dir/src/AggressiveTank.cpp.i
+.PHONY : src/AggressiveTank.cpp.i
+
+src/AggressiveTank.s: src/AggressiveTank.cpp.s
+.PHONY : src/AggressiveTank.s
+
+# target to generate assembly for a file
+src/AggressiveTank.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/tanks_game.dir/build.make CMakeFiles/tanks_game.dir/src/AggressiveTank.cpp.s
+.PHONY : src/AggressiveTank.cpp.s
+
 src/Board.o: src/Board.cpp.o
 .PHONY : src/Board.o
 
@@ -152,6 +176,30 @@ src/Board.s: src/Board.cpp.s
 src/Board.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/tanks_game.dir/build.make CMakeFiles/tanks_game.dir/src/Board.cpp.s
 .PHONY : src/Board.cpp.s
+
+src/EvasiveTank.o: src/EvasiveTank.cpp.o
+.PHONY : src/EvasiveTank.o
+
+# target to build an object file
+src/EvasiveTank.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/tanks_game.dir/build.make CMakeFiles/tanks_game.dir/src/EvasiveTank.cpp.o
+.PHONY : src/EvasiveTank.cpp.o
+
+src/EvasiveTank.i: src/EvasiveTank.cpp.i
+.PHONY : src/EvasiveTank.i
+
+# target to preprocess a source file
+src/EvasiveTank.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/tanks_game.dir/build.make CMakeFiles/tanks_game.dir/src/EvasiveTank.cpp.i
+.PHONY : src/EvasiveTank.cpp.i
+
+src/EvasiveTank.s: src/EvasiveTank.cpp.s
+.PHONY : src/EvasiveTank.s
+
+# target to generate assembly for a file
+src/EvasiveTank.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/tanks_game.dir/build.make CMakeFiles/tanks_game.dir/src/EvasiveTank.cpp.s
+.PHONY : src/EvasiveTank.cpp.s
 
 src/GameManager.o: src/GameManager.cpp.o
 .PHONY : src/GameManager.o
@@ -224,30 +272,6 @@ src/MyBattleInfo.s: src/MyBattleInfo.cpp.s
 src/MyBattleInfo.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/tanks_game.dir/build.make CMakeFiles/tanks_game.dir/src/MyBattleInfo.cpp.s
 .PHONY : src/MyBattleInfo.cpp.s
-
-src/MyPlayer.o: src/MyPlayer.cpp.o
-.PHONY : src/MyPlayer.o
-
-# target to build an object file
-src/MyPlayer.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/tanks_game.dir/build.make CMakeFiles/tanks_game.dir/src/MyPlayer.cpp.o
-.PHONY : src/MyPlayer.cpp.o
-
-src/MyPlayer.i: src/MyPlayer.cpp.i
-.PHONY : src/MyPlayer.i
-
-# target to preprocess a source file
-src/MyPlayer.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/tanks_game.dir/build.make CMakeFiles/tanks_game.dir/src/MyPlayer.cpp.i
-.PHONY : src/MyPlayer.cpp.i
-
-src/MyPlayer.s: src/MyPlayer.cpp.s
-.PHONY : src/MyPlayer.s
-
-# target to generate assembly for a file
-src/MyPlayer.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/tanks_game.dir/build.make CMakeFiles/tanks_game.dir/src/MyPlayer.cpp.s
-.PHONY : src/MyPlayer.cpp.s
 
 src/MyPlayerFactory.o: src/MyPlayerFactory.cpp.o
 .PHONY : src/MyPlayerFactory.o
@@ -344,6 +368,54 @@ src/MyTankAlgorithmFactory.s: src/MyTankAlgorithmFactory.cpp.s
 src/MyTankAlgorithmFactory.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/tanks_game.dir/build.make CMakeFiles/tanks_game.dir/src/MyTankAlgorithmFactory.cpp.s
 .PHONY : src/MyTankAlgorithmFactory.cpp.s
+
+src/Player1.o: src/Player1.cpp.o
+.PHONY : src/Player1.o
+
+# target to build an object file
+src/Player1.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/tanks_game.dir/build.make CMakeFiles/tanks_game.dir/src/Player1.cpp.o
+.PHONY : src/Player1.cpp.o
+
+src/Player1.i: src/Player1.cpp.i
+.PHONY : src/Player1.i
+
+# target to preprocess a source file
+src/Player1.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/tanks_game.dir/build.make CMakeFiles/tanks_game.dir/src/Player1.cpp.i
+.PHONY : src/Player1.cpp.i
+
+src/Player1.s: src/Player1.cpp.s
+.PHONY : src/Player1.s
+
+# target to generate assembly for a file
+src/Player1.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/tanks_game.dir/build.make CMakeFiles/tanks_game.dir/src/Player1.cpp.s
+.PHONY : src/Player1.cpp.s
+
+src/Player2.o: src/Player2.cpp.o
+.PHONY : src/Player2.o
+
+# target to build an object file
+src/Player2.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/tanks_game.dir/build.make CMakeFiles/tanks_game.dir/src/Player2.cpp.o
+.PHONY : src/Player2.cpp.o
+
+src/Player2.i: src/Player2.cpp.i
+.PHONY : src/Player2.i
+
+# target to preprocess a source file
+src/Player2.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/tanks_game.dir/build.make CMakeFiles/tanks_game.dir/src/Player2.cpp.i
+.PHONY : src/Player2.cpp.i
+
+src/Player2.s: src/Player2.cpp.s
+.PHONY : src/Player2.s
+
+# target to generate assembly for a file
+src/Player2.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/tanks_game.dir/build.make CMakeFiles/tanks_game.dir/src/Player2.cpp.s
+.PHONY : src/Player2.cpp.s
 
 src/Projectile.o: src/Projectile.cpp.o
 .PHONY : src/Projectile.o
@@ -450,9 +522,15 @@ help:
 	@echo "... edit_cache"
 	@echo "... rebuild_cache"
 	@echo "... tanks_game"
+	@echo "... src/AggressiveTank.o"
+	@echo "... src/AggressiveTank.i"
+	@echo "... src/AggressiveTank.s"
 	@echo "... src/Board.o"
 	@echo "... src/Board.i"
 	@echo "... src/Board.s"
+	@echo "... src/EvasiveTank.o"
+	@echo "... src/EvasiveTank.i"
+	@echo "... src/EvasiveTank.s"
 	@echo "... src/GameManager.o"
 	@echo "... src/GameManager.i"
 	@echo "... src/GameManager.s"
@@ -462,9 +540,6 @@ help:
 	@echo "... src/MyBattleInfo.o"
 	@echo "... src/MyBattleInfo.i"
 	@echo "... src/MyBattleInfo.s"
-	@echo "... src/MyPlayer.o"
-	@echo "... src/MyPlayer.i"
-	@echo "... src/MyPlayer.s"
 	@echo "... src/MyPlayerFactory.o"
 	@echo "... src/MyPlayerFactory.i"
 	@echo "... src/MyPlayerFactory.s"
@@ -477,6 +552,12 @@ help:
 	@echo "... src/MyTankAlgorithmFactory.o"
 	@echo "... src/MyTankAlgorithmFactory.i"
 	@echo "... src/MyTankAlgorithmFactory.s"
+	@echo "... src/Player1.o"
+	@echo "... src/Player1.i"
+	@echo "... src/Player1.s"
+	@echo "... src/Player2.o"
+	@echo "... src/Player2.i"
+	@echo "... src/Player2.s"
 	@echo "... src/Projectile.o"
 	@echo "... src/Projectile.i"
 	@echo "... src/Projectile.s"

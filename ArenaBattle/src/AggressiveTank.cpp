@@ -1,61 +1,50 @@
-// In AggressiveTank.cpp:
+// src/AggressiveTank.cpp
 #include "AggressiveTank.h"
-#include <cassert>
+#include "common/TankAlgorithm.h"
+#include <algorithm> // for std::abs, etc.
+//why dont you keep num shells and max steps? the tank algorithm should expect shells remaining
+using namespace arena;
 
 AggressiveTank::AggressiveTank(int pIdx, int tIdx)
     : TankAlgorithm(pIdx, tIdx)
 {}
 
-AggressiveTank::~AggressiveTank() = default;
+AggressiveTank::~AggressiveTank() { };
 
-void AggressiveTank::updateBattleInfo(const common::BattleInfo& baseInfo) {
-    // Down‐cast to our concrete type (we know GameState only passed MyBattleInfo)
+void AggressiveTank::updateBattleInfo(common::BattleInfo& baseInfo) {
     const MyBattleInfo& info = static_cast<const MyBattleInfo&>(baseInfo);
-
-    // Copy it into our member for later getAction() logic
-    lastInfo_ = info;
-
-    // Initialize or refresh our own shell count
-    shellsRemaining_ = info.shellsRemaining;
+    lastInfo_       = info;
+    shellsRemaining_= info.shellsRemaining;
 }
 
 common::ActionRequest AggressiveTank::getAction() {
-    // Example: if an enemy is directly in front (scan lastInfo_.grid),
-    // and we have shells, then Shoot and decrement:
-    // (pseudocode—replace with your real search)
-    bool enemyAhead = false;
+    // (1) If an enemy is directly in front and we have ammo → Shoot
+    int dx = 0, dy = 0;
+    switch (lastInfo_.selfDir & 7) {
+        case 0:  dy = -1; break;
+        case 1:  dx = +1; dy = -1; break;
+        case 2:  dx = +1; break;
+        case 3:  dx = +1; dy = +1; break;
+        case 4:  dy = +1; break;
+        case 5:  dx = -1; dy = +1; break;
+        case 6:  dx = -1; break;
+        case 7:  dx = -1; dy = -1; break;
+    }
+    int nx = static_cast<int>(lastInfo_.selfX) + dx;
+    int ny = static_cast<int>(lastInfo_.selfY) + dy;
+    if (nx >= 0 && nx < static_cast<int>(lastInfo_.cols) &&
+        ny >= 0 && ny < static_cast<int>(lastInfo_.rows))
     {
-        // Suppose “selfDir” 2 means “→,” so we check (selfY, selfX+1..)
-        int dx = 0, dy = 0;
-        switch ( lastInfo_.selfDir & 7 ) {
-            case 0:  dy = -1; break;    // ↑
-            case 1:  dx = +1; dy = -1; break; // ↗
-            case 2:  dx = +1; break;    // →
-            case 3:  dx = +1; dy = +1; break; // ↘
-            case 4:  dy = +1; break;    // ↓
-            case 5:  dx = -1; dy = +1; break; // ↙
-            case 6:  dx = -1; break;    // ←
-            case 7:  dx = -1; dy = -1; break; // ↖
-        }
-        int nx = static_cast<int>(lastInfo_.selfX) + dx;
-        int ny = static_cast<int>(lastInfo_.selfY) + dy;
-        if (nx >= 0 && nx < static_cast<int>(lastInfo_.cols) &&
-            ny >= 0 && ny < static_cast<int>(lastInfo_.rows))
-        {
-            char c = lastInfo_.grid[ny][nx];
-            // If that char is '1' or '2' and it isn’t “me” (’%’), it’s an enemy
-            if ((c == '1' || c == '2') && c != '%') {
-                enemyAhead = true;
+        char c = lastInfo_.grid[ny][nx];
+        if ((c == '1' || c == '2') && c != '%') {
+            if (shellsRemaining_ > 0) {
+                --shellsRemaining_;
+                return common::ActionRequest::Shoot;
             }
         }
     }
 
-    if (enemyAhead && shellsRemaining_ > 0) {
-        // We have ammo, shoot and decrement
-        --shellsRemaining_;
-        return common::ActionRequest::Shoot;
-    }
-
-    // Otherwise, for example, rotate toward some direction or move:
+    // (2) Otherwise, rotate randomly or move forward
+    // You could implement a search for nearest enemy. For brevity:
     return common::ActionRequest::MoveForward;
 }

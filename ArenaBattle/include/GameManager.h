@@ -14,8 +14,18 @@ namespace arena {
 class GameManager {
 public:
     // Construct with two factories; GameState is default‐constructed internally.
-    GameManager(std::unique_ptr<common::PlayerFactory> pFac,
-                std::unique_ptr<common::TankAlgorithmFactory> tFac);
+    // GameManager(std::unique_ptr<common::PlayerFactory> pFac,
+    //             std::unique_ptr<common::TankAlgorithmFactory> tFac);
+
+    /// Construct with concrete factories; template allows passing by value
+    template<typename PF, typename TF>
+    GameManager(PF pFac, TF tFac)
+        : game_state_(
+              std::make_unique<PF>(std::move(pFac)),
+              std::make_unique<TF>(std::move(tFac))
+          )
+    {}
+            
     ~GameManager();
 
     // Load and parse <map_file>, build a Board, then initialize GameState.

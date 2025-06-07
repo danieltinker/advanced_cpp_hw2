@@ -8,13 +8,17 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 include_directories(
     ${CMAKE_SOURCE_DIR}/include
+    ${CMAKE_SOURCE_DIR}/common
     ${CMAKE_SOURCE_DIR}/
 )
 
-# Gather all .cpp files under src/
-file(GLOB SRC_SOURCES "${CMAKE_SOURCE_DIR}/src/*.cpp")
+# Gather all .cpp files under src/ and common/
+file(GLOB SRC_SOURCES
+    "${CMAKE_SOURCE_DIR}/src/*.cpp"
+    "${CMAKE_SOURCE_DIR}/common/*.cpp"
+)
 
-# Build the executable “tanks_game” (per your naming convention).
+# Build the executable “tanks_game”
 add_executable(tanks_game
     ${SRC_SOURCES}
 )

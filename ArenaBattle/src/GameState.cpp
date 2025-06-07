@@ -62,18 +62,19 @@ void GameState::initialize(const Board& board, std::size_t maxSteps, std::size_t
             }
         }
     }
-
+    player1_ = player_factory_->create(1, rows_, cols_, maxSteps_, num_shells_);
+    player2_ = player_factory_->create(2, rows_, cols_, maxSteps_, num_shells_);
     // Create Player1 and Player2
-    player1_ = player_factory_->create(1,
-                                       static_cast<std::size_t>(rows_),
-                                       static_cast<std::size_t>(cols_),
-                                       maxSteps_,
-                                       num_shells_);
-    player2_ = player_factory_->create(2,
-                                       static_cast<std::size_t>(rows_),
-                                       static_cast<std::size_t>(cols_),
-                                       maxSteps_,
-                                       num_shells_);
+    // player1_ = player_factory_->create(1,
+    //                                    static_cast<std::size_t>(rows_),
+    //                                    static_cast<std::size_t>(cols_),
+    //                                    maxSteps_,
+    //                                    num_shells_);
+    // player2_ = player_factory_->create(2,
+    //                                    static_cast<std::size_t>(rows_),
+    //                                    static_cast<std::size_t>(cols_),
+    //                                    maxSteps_,
+    //                                    num_shells_);
 
     // Create one TankAlgorithm per tank
     all_tank_algorithms_.clear();
@@ -119,67 +120,58 @@ std::string GameState::advanceOneTurn() {
     std::vector<bool> ignored(N, false);
     std::vector<bool> killedThisTurn(N, false);
 
-    // --- (1) Gather each alive tank’s requested action, but treat GetBattleInfo as the entire turn ---
     for (std::size_t k = 0; k < N; ++k) {
-        if (!all_tanks_[k].alive) continue;
-        auto& alg = all_tank_algorithms_[k];
+    if (!all_tanks_[k].alive) continue;
+    auto& alg = all_tank_algorithms_[k];
+    common::ActionRequest req = alg->getAction();
 
-        // Ask the algorithm what it wants this turn
-        common::ActionRequest req = alg->getAction();
+    if (req == common::ActionRequest::GetBattleInfo) {
+        // 1) Build the MyBattleInfo info(rows_, cols_) and fill its fields:
+        // in GameState::advanceOneTurn(), replacing the old BattleInfo block:
 
-        if (req == common::ActionRequest::GetBattleInfo) {
-            // ─── Build a MyBattleInfo for tank k ───
-            MyBattleInfo info(rows_, cols_);
-
-            // (a) Copy walls/mines/tanks into info.grid:
-            for (std::size_t ry = 0; ry < rows_; ++ry) {
-                for (std::size_t cx = 0; cx < cols_; ++cx) {
-                    const Cell& cell = board_.getCell(static_cast<int>(cx),
-                                                      static_cast<int>(ry));
-                    switch (cell.content) {
-                        case CellContent::WALL:
-                            info.grid[ry][cx] = '#';
-                            break;
-                        case CellContent::MINE:
-                            info.grid[ry][cx] = '@';
-                            break;
-                        case CellContent::TANK1:
-                            info.grid[ry][cx] = '1';
-                            break;
-                        case CellContent::TANK2:
-                            info.grid[ry][cx] = '2';
-                            break;
-                        default:
-                            info.grid[ry][cx] = ' ';
-                            break;
-                    }
-                }
-            }
-
-            // (b) Overwrite the querying tank’s own spot with '%'
-            info.selfX = static_cast<std::size_t>(all_tanks_[k].x);
-            info.selfY = static_cast<std::size_t>(all_tanks_[k].y);
-            if (info.selfX < cols_ && info.selfY < rows_) {
-                info.grid[info.selfY][info.selfX] = '%';
-            }
-
-            // (c) Record direction, shellsRemaining, turnNumber
-            info.selfDir        = all_tanks_[k].direction;
-            info.shellsRemaining= all_tanks_[k].shells_left;
-            info.turnNumber     = static_cast<int>(currentStep_);
-
-            // (d) Pass it to the TankAlgorithm via the common interface
-            //     (up‐cast to BattleInfo& so signatures match)
-            alg->updateBattleInfo(static_cast<common::BattleInfo&>(info));
-
-            // That’s the tank’s entire turn—no second getAction() here.
-            actions[k] = common::ActionRequest::GetBattleInfo;
-        }
-        else {
-            // Any other action (Move, Rotate, Shoot, DoNothing) is final for this turn
-            actions[k] = req;
-        }
+// 1) Build a SatelliteView for tank k:
+std::vector<std::vector<char>> charGrid(rows_, std::vector<char>(cols_, ' '));
+for (size_t ry = 0; ry < rows_; ++ry) {
+  for (size_t cx = 0; cx < cols_; ++cx) {
+    const Cell &cell = board_.getCell(static_cast<int>(cx),
+                                      static_cast<int>(ry));
+    switch (cell.content) {
+      case CellContent::WALL:  charGrid[ry][cx] = '#'; break;
+      case CellContent::MINE:  charGrid[ry][cx] = '@'; break;
+      case CellContent::TANK1: charGrid[ry][cx] = '1'; break;
+      case CellContent::TANK2: charGrid[ry][cx] = '2'; break;
+      default:                  charGrid[ry][cx] = ' '; break;
     }
+  }
+}
+ // mark “self”:
+charGrid[ all_tanks_[k].y ][ all_tanks_[k].x ] = '%';
+arena::MySatelliteView satView(
+    charGrid, static_cast<int>(rows_),
+    static_cast<int>(cols_),
+    all_tanks_[k].x, all_tanks_[k].y
+);
+
+// 2) Dispatch to the correct Player
+if (all_tanks_[k].player_index == 1) {
+  player1_->updateTankWithBattleInfo(
+      *all_tank_algorithms_[k], satView
+  );
+} else {
+  player2_->updateTankWithBattleInfo(
+      *all_tank_algorithms_[k], satView
+  );
+}
+
+// 3) Record that this tank’s action was GetBattleInfo
+actions[k] = common::ActionRequest::GetBattleInfo;
+
+    }
+    else {
+        actions[k] = req;
+    }
+}
+
 
     // --- (2) Rotations ---
     applyTankRotations(actions);

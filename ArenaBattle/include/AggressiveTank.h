@@ -1,22 +1,25 @@
-// In AggressiveTank.h:
 #pragma once
-#include "TankAlgorithm.h"
+
+#include "common/TankAlgorithm.h"
 #include "MyBattleInfo.h"
 
-class AggressiveTank : public TankAlgorithm {
+namespace arena {
+
+/**
+ * An aggressive strategy: shoot any enemy directly in front (if we have shells),
+ * otherwise move forward.  Internally tracks shellsRemaining_ each turn.
+ */
+class AggressiveTank : public common::TankAlgorithm {
 public:
     AggressiveTank(int playerIndex, int tankIndex);
     ~AggressiveTank() override;
 
-    // override the base‐class method
-    void updateBattleInfo(const common::BattleInfo& info) override;
+    void updateBattleInfo(common::BattleInfo &baseInfo) override;
     common::ActionRequest getAction() override;
 
 private:
-    // store a reference/copy of the last‐received MyBattleInfo
-    MyBattleInfo lastInfo_;
-
-    // track shells ourselves (same as lastInfo_.shellsRemaining,
-    // but we decrement on every Shoot)
-    int shellsRemaining_ = 0;
+    MyBattleInfo lastInfo_;   ///< The most recent snapshot of the board and our own state
+    int          shellsRemaining_ = 0;
 };
+
+} // namespace arena

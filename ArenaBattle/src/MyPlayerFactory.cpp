@@ -1,25 +1,20 @@
-#include "MyPlayerFactory.h"
+#include "MyPlayerFactory.h"  // include the project header
 
-namespace arena {
-
-std::unique_ptr<common::Player> MyPlayerFactory::create(
-    int player_index,
-    std::size_t x,
-    std::size_t y,
-    std::size_t max_steps,
-    std::size_t num_shells
-) const {
-    // x == rows, y == cols (passed in by GameManager), but
-    // we also have rows_ and cols_ stored here. Typically you'd verify:
-    //   if (x != rows_ || y != cols_) { /* handle mismatch */ }
-    // For now, just forward into MyPlayer’s constructor:
-    return std::make_unique<MyPlayer>(
-        player_index,
-        max_steps,
-        num_shells,
-        x,  // board rows
-        y   // board cols
-    );
-}
-
-} // namespace arena
+// Definition must match the 'const' qualifier in the declaration:
+// std::unique_ptr<common::Player> arena::MyPlayerFactory::create(
+//     int            player_index,
+//     std::size_t    rows,
+//     std::size_t    cols,
+//     std::size_t    max_steps,
+//     std::size_t    num_shells
+// ) const {
+//     if (player_index == 1) {
+//         return std::make_unique<Player1>(
+//             player_index, rows, cols, max_steps, num_shells
+//         );
+//     } else {
+//         return std::make_unique<Player2>(
+//             player_index, rows, cols, max_steps, num_shells
+//         );
+//     }
+// }

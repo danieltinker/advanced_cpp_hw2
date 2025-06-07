@@ -1,16 +1,18 @@
 #include "MyTankAlgorithmFactory.h"
+// #include "AggressiveTank.h"
+// #include "EvasiveTank.h"
+// #include  "common/TankAlgorithm.h"
+// namespace common {
 
-namespace arena {
+// std::unique_ptr<common::TankAlgorithm>
+// MyTankAlgorithmFactory::create(int playerIndex, int tankIndex) const {
+//     if (playerIndex == 1) {
+//         // AggressiveTank derives from common::TankAlgorithm
+//         return std::make_unique<arena::AggressiveTank>(playerIndex, tankIndex);
+//     } else {
+//         // EvasiveTank derives from common::TankAlgorithm
+//         return std::make_unique<arena::EvasiveTank>(playerIndex, tankIndex);
+//     }
+// };
 
-std::unique_ptr<common::TankAlgorithm> MyTankAlgorithmFactory::create(
-    int player_index,
-    int tank_index) const
-{
-    // Pass num_shells_ as the third argument:
-    return std::make_unique<MyTankAlgorithm>(
-        player_index,
-        tank_index
-    );
-}
-
-} // namespace arena
+// } // namespace common

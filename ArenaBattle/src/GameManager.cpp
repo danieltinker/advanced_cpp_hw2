@@ -8,10 +8,10 @@
 using namespace arena;
 using namespace common;
 
-GameManager::GameManager(std::unique_ptr<PlayerFactory> pFac,
-                         std::unique_ptr<TankAlgorithmFactory> tFac)
-  : game_state_(std::move(pFac), std::move(tFac))
-{}
+// GameManager::GameManager(std::unique_ptr<PlayerFactory> pFac,
+//                          std::unique_ptr<TankAlgorithmFactory> tFac)
+//   : game_state_(std::move(pFac), std::move(tFac))
+// {}
 
 GameManager::~GameManager() = default;
 

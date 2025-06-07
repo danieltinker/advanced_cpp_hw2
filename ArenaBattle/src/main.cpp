@@ -57,7 +57,9 @@ int main(int argc, char** argv) {
     auto tankFac   = std::make_unique<MyTankAlgorithmFactory>(num_shells);
 
     // Step C: create GameManager, call readBoard, then run()
-    GameManager gm(std::move(playerFac), std::move(tankFac));
+    // GameManager gm(std::move(playerFac), std::move(tankFac));
+    GameManager gm(MyPlayerFactory{}, MyTankAlgorithmFactory{});
+
     gm.readBoard(map_file);
     gm.run();
 

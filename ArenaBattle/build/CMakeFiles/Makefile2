@@ -81,12 +81,12 @@ clean: CMakeFiles/tanks_game.dir/clean
 CMakeFiles/tanks_game.dir/all:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/tanks_game.dir/build.make CMakeFiles/tanks_game.dir/depend
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/tanks_game.dir/build.make CMakeFiles/tanks_game.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir="/Users/danielbaruch/Desktop/University/semester 2025B/advanced_programming/hw2/advanced_cpp_hw2/ArenaBattle/build/CMakeFiles" --progress-num=1,2,3,4,5,6,7,8,9,10,11,12,13,14 "Built target tanks_game"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir="/Users/danielbaruch/Desktop/University/semester 2025B/advanced_programming/hw2/advanced_cpp_hw2/ArenaBattle/build/CMakeFiles" --progress-num=1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17 "Built target tanks_game"
 .PHONY : CMakeFiles/tanks_game.dir/all
 
 # Build rule for subdir invocation for target.
 CMakeFiles/tanks_game.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start "/Users/danielbaruch/Desktop/University/semester 2025B/advanced_programming/hw2/advanced_cpp_hw2/ArenaBattle/build/CMakeFiles" 14
+	$(CMAKE_COMMAND) -E cmake_progress_start "/Users/danielbaruch/Desktop/University/semester 2025B/advanced_programming/hw2/advanced_cpp_hw2/ArenaBattle/build/CMakeFiles" 17
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 CMakeFiles/tanks_game.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start "/Users/danielbaruch/Desktop/University/semester 2025B/advanced_programming/hw2/advanced_cpp_hw2/ArenaBattle/build/CMakeFiles" 0
 .PHONY : CMakeFiles/tanks_game.dir/rule
