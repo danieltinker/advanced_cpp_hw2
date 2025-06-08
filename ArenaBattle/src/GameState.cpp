@@ -104,33 +104,40 @@ std::string GameState::advanceOneTurn() {
         }
     }
 
-    // 2) Rotations
+    // Step 2: Apply rotations
     applyTankRotations(actions);
-    // 3) Mines
+
+    // Step 3: Handle any tanks on mines
     handleTankMineCollisions();
-    // 4) Cooldowns
+
+    // Step 4: Update (unused) cooldowns
     updateTankCooldowns();
-    // 5) Backward legality
+
+    // Step 5: Confirm backward–move legality
     confirmBackwardMoves(ignored, actions);
-    // 6) Move tanks
-    // 7) Spawn shells
-    
-    // (8) Move all shells two sub‐steps each, checking mid‐step
+
+    // Step 6: Move all shells two sub-steps, checking mid-step collisions
     updateShellsWithOverrunCheck();
-    
-    // (9) Handle shell–shell and shell‐tank collisions
+
+    // Step 7: Resolve shell–shell and shell–tank collisions
     resolveShellCollisions();
+
+    // Step 8: Spawn new shells from shooting tanks
     handleShooting(ignored, actions);
-    
+
+    // Step 9: Move tanks (with head-on swaps and multi-tank collisions)
     updateTankPositionsOnBoard(ignored, killed, actions);
-    // (10) Drop destroyed shells and mark overlays
+
+    // Step 10: Drop destroyed shells and mark the survivors on the board
     filterRemainingShells();
 
-    // 10) Cleanup
+    // Step 11: Final cleanup (nothing to do here)
     cleanupDestroyedEntities();
-    // 11) End game?
+
+    // Step 12: Check for game-over conditions
     checkGameEndConditions();
-    // 12) Next turn
+
+    // Step 13: Increment turn counter
     ++currentStep_;
 
 
