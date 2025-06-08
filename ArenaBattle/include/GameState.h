@@ -53,6 +53,7 @@ private:
     bool handleShellMidStepCollision(int x, int y);
     void cleanupDestroyedEntities();
     void checkGameEndConditions();
+    void filterRemainingShells();
 
     std::unique_ptr<common::SatelliteView>
     createSatelliteViewFor(int queryX, int queryY) const;
@@ -83,6 +84,7 @@ private:
     std::unique_ptr<common::TankAlgorithmFactory> tank_factory_;
 
     struct Shell { int x, y, dir; };
+    
     std::vector<Shell> shells_;
     std::set<std::size_t> toRemove_;
     std::map<std::pair<int,int>, std::vector<std::size_t>> positionMap_;

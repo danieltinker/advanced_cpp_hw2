@@ -113,15 +113,18 @@ std::string GameState::advanceOneTurn() {
     // 5) Backward legality
     confirmBackwardMoves(ignored, actions);
     // 6) Move tanks
-    updateTankPositionsOnBoard(ignored, killed, actions);
     // 7) Spawn shells
-    handleShooting(ignored, actions);
-
-    // 8) Move shells
+    
+    // (8) Move all shells two sub‐steps each, checking mid‐step
     updateShellsWithOverrunCheck();
-            
-    // 9) Resolve collisions
+    
+    // (9) Handle shell–shell and shell‐tank collisions
     resolveShellCollisions();
+    handleShooting(ignored, actions);
+    
+    updateTankPositionsOnBoard(ignored, killed, actions);
+    // (10) Drop destroyed shells and mark overlays
+    filterRemainingShells();
 
     // 10) Cleanup
     cleanupDestroyedEntities();
@@ -273,10 +276,9 @@ void GameState::confirmBackwardMoves(std::vector<bool>& ignored,
             ignored[k]=true;
     }
 }
-
 //------------------------------------------------------------------------------
 // (6) updateTankPositionsOnBoard: move forward/backward, no wrap,
-//     plus handle head-on tank collisions.
+//     plus handle head‐on tank collisions and multi‐tank collisions.
 //------------------------------------------------------------------------------
 void GameState::updateTankPositionsOnBoard(std::vector<bool>& ignored,
                                            std::vector<bool>& killedThisTurn,
@@ -285,41 +287,43 @@ void GameState::updateTankPositionsOnBoard(std::vector<bool>& ignored,
     board_.clearTankMarks();
 
     const std::size_t N = all_tanks_.size();
-    // 1) Record old and intended new positions
+    // Remember original positions and compute intended new positions
     std::vector<std::pair<int,int>> oldPos(N), newPos(N);
     for (std::size_t k = 0; k < N; ++k) {
         oldPos[k] = { all_tanks_[k].x, all_tanks_[k].y };
-        // default: stay in place
-        newPos[k] = oldPos[k];
 
-        if (!all_tanks_[k].alive ||
-            ignored[k] ||
-            (actions[k] != common::ActionRequest::MoveForward &&
-             actions[k] != common::ActionRequest::MoveBackward))
+        if (!all_tanks_[k].alive
+            || ignored[k]
+            || (actions[k] != common::ActionRequest::MoveForward
+             && actions[k] != common::ActionRequest::MoveBackward))
         {
-            continue;
+            // no move
+            newPos[k] = oldPos[k];
+        } else {
+            // forward/backward delta
+            int dir = all_tanks_[k].direction;
+            if (actions[k] == common::ActionRequest::MoveBackward)
+                dir = (dir + 4) & 7;
+
+            int dx=0, dy=0;
+            switch (dir) {
+                case 0:  dy = -1; break;
+                case 1:  dx = +1; dy = -1; break;
+                case 2:  dx = +1; break;
+                case 3:  dx = +1; dy = +1; break;
+                case 4:  dy = +1; break;
+                case 5:  dx = -1; dy = +1; break;
+                case 6:  dx = -1; break;
+                case 7:  dx = -1; dy = -1; break;
+            }
+            int nx = all_tanks_[k].x + dx;
+            int ny = all_tanks_[k].y + dy;
+            board_.wrapCoords(nx, ny);
+            newPos[k] = { nx, ny };
         }
-        // compute direction, dx/dy
-        int dir = all_tanks_[k].direction;
-        if (actions[k] == common::ActionRequest::MoveBackward) dir = (dir + 4) & 7;
-        int dx = 0, dy = 0;
-        switch (dir) {
-        case 0: dy = -1; break;
-        case 1: dx = +1; dy = -1; break;
-        case 2: dx = +1; break;
-        case 3: dx = +1; dy = +1; break;
-        case 4: dy = +1; break;
-        case 5: dx = -1; dy = +1; break;
-        case 6: dx = -1; break;
-        case 7: dx = -1; dy = -1; break;
-        }
-        int nx = all_tanks_[k].x + dx;
-        int ny = all_tanks_[k].y + dy;
-        board_.wrapCoords(nx, ny);
-        newPos[k] = {nx, ny};
     }
 
-    // 2) Head-on swaps: if two tanks swap places, kill both
+    // 2a) Head‐on swap: two tanks exchanging places this tick → both die
     for (std::size_t i = 0; i < N; ++i) {
       for (std::size_t j = i+1; j < N; ++j) {
         if ( all_tanks_[i].alive && all_tanks_[j].alive
@@ -328,17 +332,18 @@ void GameState::updateTankPositionsOnBoard(std::vector<bool>& ignored,
         {
           killedThisTurn[i] = killedThisTurn[j] = true;
           all_tanks_[i].alive = all_tanks_[j].alive = false;
-          // clear their old cells
           board_.setCell(oldPos[i].first, oldPos[i].second, CellContent::EMPTY);
           board_.setCell(oldPos[j].first, oldPos[j].second, CellContent::EMPTY);
         }
       }
     }
 
-    // 3) Detect multi-tank collisions at same destination
+    // 2b) Multi‐tank collisions at same destination
     std::map<std::pair<int,int>, std::vector<std::size_t>> destMap;
     for (std::size_t k = 0; k < N; ++k) {
-      if (all_tanks_[k].alive && newPos[k] != oldPos[k]) {
+      if ( all_tanks_[k].alive
+        && newPos[k] != oldPos[k] )
+      {
         destMap[newPos[k]].push_back(k);
       }
     }
@@ -353,55 +358,55 @@ void GameState::updateTankPositionsOnBoard(std::vector<bool>& ignored,
       }
     }
 
-    // 4) Finally apply all non-colliding moves
+    // 3) Now apply every non‐colliding move
     for (std::size_t k = 0; k < N; ++k) {
-      if (!all_tanks_[k].alive) continue;
-      auto [ox,oy] = oldPos[k];
-      auto [nx,ny] = newPos[k];
+        if (!all_tanks_[k].alive)
+            continue;
 
-      if (nx == ox && ny == oy) {
-        // stayed put
-        board_.setCell(ox, oy,
-          all_tanks_[k].player_index==1
-            ? CellContent::TANK1
-            : CellContent::TANK2
-        );
-        continue;
-      }
-      if (killedThisTurn[k]) {
-        // already cleared in previous step
-        continue;
-      }
-      // wall check
-      if (board_.getCell(nx,ny).content == CellContent::WALL) {
-        ignored[k] = true;
-        board_.setCell(ox, oy,
-          all_tanks_[k].player_index==1
-            ? CellContent::TANK1
-            : CellContent::TANK2
-        );
-        continue;
-      }
-      // mine check
-      if (board_.getCell(nx,ny).content == CellContent::MINE) {
-        killedThisTurn[k] = true;
-        all_tanks_[k].alive = false;
+        auto [ox, oy] = oldPos[k];
+        auto [nx, ny] = newPos[k];
+
+        // stayed in place?
+        if (nx == ox && ny == oy) {
+            board_.setCell(ox, oy,
+                all_tanks_[k].player_index == 1
+                  ? CellContent::TANK1
+                  : CellContent::TANK2
+            );
+            continue;
+        }
+
+        // illegal: wall
+        if (board_.getCell(nx, ny).content == CellContent::WALL) {
+            ignored[k] = true;
+            board_.setCell(ox, oy,
+                all_tanks_[k].player_index == 1
+                  ? CellContent::TANK1
+                  : CellContent::TANK2
+            );
+            continue;
+        }
+
+        // mine → both die
+        if (board_.getCell(nx, ny).content == CellContent::MINE) {
+            killedThisTurn[k]   = true;
+            all_tanks_[k].alive = false;
+            board_.setCell(ox, oy, CellContent::EMPTY);
+            board_.setCell(nx, ny, CellContent::EMPTY);
+            continue;
+        }
+
+        // normal move
         board_.setCell(ox, oy, CellContent::EMPTY);
-        board_.setCell(nx, ny, CellContent::EMPTY);
-        continue;
-      }
-      // normal move
-      board_.setCell(ox, oy, CellContent::EMPTY);
-      all_tanks_[k].x = nx;
-      all_tanks_[k].y = ny;
-      board_.setCell(nx, ny,
-        all_tanks_[k].player_index==1
-          ? CellContent::TANK1
-          : CellContent::TANK2
-      );
+        all_tanks_[k].x = nx;
+        all_tanks_[k].y = ny;
+        board_.setCell(nx, ny,
+            all_tanks_[k].player_index == 1
+              ? CellContent::TANK1
+              : CellContent::TANK2
+        );
     }
 }
-
 
 void GameState::handleShooting(std::vector<bool>& ignored,
                                const std::vector<ActionRequest>& A)
@@ -439,103 +444,67 @@ void GameState::updateShellsWithOverrunCheck() {
     positionMap_.clear();
     board_.clearShellMarks();
 
-    std::vector<Shell> survivors;
-    survivors.reserve(shells_.size());
-
-    for (auto &sh : shells_) {
-        // precompute the delta for this direction
-        int dx=0, dy=0;
-        switch (sh.dir) {
-        case 0:  dy = -1; break;
-        case 1:  dx = +1; dy = -1; break;
-        case 2:  dx = +1; break;
-        case 3:  dx = +1; dy = +1; break;
-        case 4:  dy = +1; break;
-        case 5:  dx = -1; dy = +1; break;
-        case 6:  dx = -1; break;
-        case 7:  dx = -1; dy = -1; break;
+    for (std::size_t i = 0; i < shells_.size(); ++i) {
+        int dx = 0, dy = 0;
+        switch (shells_[i].dir) {
+            case 0:  dy = -1; break;    // Up
+            case 1:  dx = +1; dy = -1; break; // Up‐Right
+            case 2:  dx = +1; break;    // Right
+            case 3:  dx = +1; dy = +1; break; // Down‐Right
+            case 4:  dy = +1; break;    // Down
+            case 5:  dx = -1; dy = +1; break; // Down‐Left
+            case 6:  dx = -1; break;    // Left
+            case 7:  dx = -1; dy = -1; break; // Up‐Left
         }
 
-        int cx = sh.x, cy = sh.y;
-        bool destroyed = false;
-
-        // two sub-steps:
-        for (int step = 0; step < 2 && !destroyed; ++step) {
-            int nx = cx + dx;
-            int ny = cy + dy;
+        // Move twice per tick, checking after each unit‐step
+        for (int step = 0; step < 2; ++step) {
+            int nx = shells_[i].x + dx;
+            int ny = shells_[i].y + dy;
             board_.wrapCoords(nx, ny);
 
-            Cell &cell = board_.getCell(nx, ny);
-            // (1) Wall?
-            if (cell.content == CellContent::WALL) {
-                if (++cell.wallHits >= 2)
-                    cell.content = CellContent::EMPTY;
-                destroyed = true;
+            // advance the shell
+            shells_[i].x = nx;
+            shells_[i].y = ny;
+
+            // if it hits a wall or a tank, handle it and mark shell for removal
+            if (handleShellMidStepCollision(nx, ny)) {
+                toRemove_.insert(i);
                 break;
             }
-            // (2) Tank?
-            if (cell.content == CellContent::TANK1 || cell.content == CellContent::TANK2) {
-                int pid = (cell.content == CellContent::TANK1 ? 1 : 2);
-                for (auto &ts : all_tanks_) {
-                    if (ts.alive && ts.player_index == pid &&
-                        ts.x == nx && ts.y == ny)
-                    {
-                        ts.alive = false;
-                        break;
-                    }
-                }
-                cell.content = CellContent::EMPTY;
-                destroyed = true;
-                break;
-            }
-            // (3) Otherwise advance the shell
-            cx = nx;
-            cy = ny;
-        }
 
-        if (!destroyed) {
-            // it survived both sub-steps
-            survivors.push_back({cx, cy, sh.dir});
-            positionMap_[{cx, cy}].push_back(survivors.size()-1);
+            // otherwise record for possible shell–shell collisions
+            positionMap_[{nx, ny}].push_back(i);
         }
     }
-
-    // now handle shell–shell collisions as before
-    for (auto const& [pos, idxs] : positionMap_) {
-        if (idxs.size() > 1) {
-            for (auto idx : idxs) toRemove_.insert(idx);
-        }
-    }
-
-    // build the final list of shells
-    std::vector<Shell> finalShells;
-    finalShells.reserve(survivors.size());
-    for (std::size_t i = 0; i < survivors.size(); ++i) {
-        if (!toRemove_.count(i)) {
-            auto &c = board_.getCell(survivors[i].x, survivors[i].y);
-            c.hasShellOverlay = true;
-            finalShells.push_back(survivors[i]);
-        }
-    }
-    shells_.swap(finalShells);
 }
 
 
 void GameState::resolveShellCollisions() {
-    for (auto const& kv : positionMap_) {
-        if (kv.second.size()>1)
-            for (auto idx : kv.second)
+    // if two or more shells occupy the same cell, they all die
+    for (auto const& entry : positionMap_) {
+        const auto& idxs = entry.second;
+        if (idxs.size() > 1) {
+            for (auto idx : idxs) {
                 toRemove_.insert(idx);
-    }
-    std::vector<Shell> survivors;
-    for (size_t i=0; i<shells_.size(); ++i) {
-        if (!toRemove_.count(i)) {
-            auto& cell = board_.getCell(shells_[i].x, shells_[i].y);
-            cell.hasShellOverlay = true;
-            survivors.push_back(shells_[i]);
+            }
         }
     }
-    shells_.swap(survivors);
+}
+
+void GameState::filterRemainingShells() {
+    std::vector<Shell> remaining;
+    remaining.reserve(shells_.size());
+    for (std::size_t i = 0; i < shells_.size(); ++i) {
+        // survivors are those not in toRemove_
+        if (toRemove_.count(i) == 0) {
+            // mark overlay
+            auto& cell = board_.getCell(shells_[i].x, shells_[i].y);
+            cell.hasShellOverlay = true;
+            remaining.push_back(shells_[i]);
+        }
+    }
+    shells_.swap(remaining);
 }
 
 //------------------------------------------------------------------------------
