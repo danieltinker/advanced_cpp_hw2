@@ -278,9 +278,16 @@ void GameState::confirmBackwardMoves(std::vector<bool>& ignored,
         case 6: dx=-1; break; case 7: dx=-1;dy=-1; break;
         }
         int nx=all_tanks_[k].x+dx, ny=all_tanks_[k].y+dy;
-        board_.wrapCoords(nx,ny);
-        if (board_.getCell(nx,ny).content==CellContent::WALL)
-            ignored[k]=true;
+        // board_.wrapCoords(nx,ny);
+        // if (board_.getCell(nx,ny).content==CellContent::WALL)
+        //     ignored[k]=true;
+        // No wrap: backward into OOB or wall is illegal
+        if (nx < 0 || nx >= static_cast<int>(cols_)
+         || ny < 0 || ny >= static_cast<int>(rows_)
+         || board_.getCell(nx,ny).content == CellContent::WALL)
+        {
+            ignored[k] = true;
+        }
     }
 }
 //------------------------------------------------------------------------------
@@ -325,8 +332,19 @@ void GameState::updateTankPositionsOnBoard(std::vector<bool>& ignored,
             }
             int nx = all_tanks_[k].x + dx;
             int ny = all_tanks_[k].y + dy;
-            board_.wrapCoords(nx, ny);
-            newPos[k] = { nx, ny };
+            // board_.wrapCoords(nx, ny);
+            // newPos[k] = { nx, ny };
+            // Tanks do NOT wrap: out‐of‐bounds or into a wall = illegal
+            if (nx < 0 || nx >= static_cast<int>(cols_)
+             || ny < 0 || ny >= static_cast<int>(rows_)
+             || board_.getCell(nx, ny).content == CellContent::WALL)
+            {
+              // stay in place (we’ll stamp oldPos later)
+              newPos[k] = oldPos[k];
+              ignored[k] = true;  
+            } else {
+              newPos[k] = { nx, ny };
+            }
         }
     }
 
