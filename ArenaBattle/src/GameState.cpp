@@ -394,6 +394,26 @@ void GameState::updateTankPositionsOnBoard(std::vector<bool>& ignored,
             continue;
         }
 
+        // --- NEW: mutual shell‐tank destruction ---
+        {
+            bool collidedWithShell = false;
+            for (size_t s = 0; s < shells_.size(); ++s) {
+                if (shells_[s].x == nx && shells_[s].y == ny) {
+                    // kill tank
+                    all_tanks_[k].alive = false;
+                    killedThisTurn[k]   = true;
+                    // clear its old cell
+                    board_.setCell(ox, oy, CellContent::EMPTY);
+                    // remove that shell
+                    shells_.erase(shells_.begin() + s);
+                    collidedWithShell = true;
+                    break;
+                }
+            }
+            if (collidedWithShell)
+                continue;  // tank is dead, skip the rest
+        }
+
         // mine → both die
         if (board_.getCell(nx, ny).content == CellContent::MINE) {
             killedThisTurn[k]   = true;

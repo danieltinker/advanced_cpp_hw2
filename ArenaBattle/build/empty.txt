@@ -2,6 +2,6 @@ Empty
 Rows = 1
 Cols = 6
 MaxSteps = 10
-NumShells = 0
+NumShells = 1
 
-1....2
+2....1
