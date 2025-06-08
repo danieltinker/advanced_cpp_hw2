@@ -74,6 +74,7 @@ private:
         bool          alive;
         std::size_t   shells_left;
         bool          wantsBackward;
+        int shootCooldown;
     };
     std::vector<TankState> all_tanks_;
     std::vector<std::vector<std::size_t>> tankIdMap_;

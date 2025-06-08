@@ -40,7 +40,8 @@ void GameState::initialize(const Board& board,
             {
                 int pidx = (cell.content==CellContent::TANK1?1:2);
                 int tidx = nextTankIndex_[pidx]++;
-                TankState ts{pidx,tidx,int(c),int(r),(pidx==1?6:2),true,num_shells_,false};
+                TankState ts{pidx,tidx,int(c),int(r),(pidx==1?6:2),true,num_shells_,false,0};
+                
                 all_tanks_.push_back(ts);
                 tankIdMap_[pidx][tidx] = all_tanks_.size()-1;
             }
@@ -137,8 +138,12 @@ std::string GameState::advanceOneTurn() {
     // Step 12: Check for game-over conditions
     checkGameEndConditions();
 
-    // Step 13: Increment turn counter
+    // Step 13: Increment turn counter drop cooldowns
     ++currentStep_;
+    for (auto& ts : all_tanks_) {
+        if (ts.shootCooldown > 0) 
+            --ts.shootCooldown;
+    }
 
 
 std::ostringstream oss;
@@ -470,14 +475,24 @@ void GameState::handleShooting(std::vector<bool>& ignored,
             shells_.push_back({sx,sy,ts.direction});
     };
 
-    for (size_t k=0; k<all_tanks_.size(); ++k) {
-        if (!all_tanks_[k].alive || A[k]!=ActionRequest::Shoot) continue;
-        if (all_tanks_[k].shells_left==0) {
-            ignored[k]=true;
+    for (size_t k = 0; k < all_tanks_.size(); ++k) {
+        auto& ts = all_tanks_[k];
+        if (!ts.alive || A[k] != ActionRequest::Shoot) continue;
+
+        // 1) still cooling down?
+        if (ts.shootCooldown > 0) {
+            ignored[k] = true;
             continue;
         }
-        all_tanks_[k].shells_left--;
-        spawn(all_tanks_[k]);
+        // 2) out of ammo?
+        if (ts.shells_left == 0) {
+            ignored[k] = true;
+            continue;
+        }
+        // 3) fire!
+        ts.shells_left--;
+        ts.shootCooldown = 4;    // set 4‐turn cooldown
+        spawn(ts);
     }
 }
 //------------------------------------------------------------------------------
