@@ -1,7 +1,7 @@
 Empty
 Rows = 1
 Cols = 12
-MaxSteps = 20
-NumShells = 0
+MaxSteps = 40
+NumShells = 20
 
-.....12.....
+2..........1

@@ -1,8 +1,41 @@
-GetBattleInfo, GetBattleInfo
-MoveForward, MoveForward
-MoveForward, MoveForward
-MoveForward, MoveForward
-MoveForward, MoveForward
-MoveForward, MoveForward
-MoveForward (killed), MoveForward (killed)
-Tie, both players have zero tanks
+Shoot, Shoot
+Shoot (ignored), Shoot (ignored)
+Shoot (ignored), Shoot (ignored)
+Shoot (ignored), Shoot (ignored)
+Shoot, Shoot
+Shoot (ignored), Shoot (ignored)
+Shoot (ignored), Shoot (ignored)
+Shoot (ignored), Shoot (ignored)
+Shoot, Shoot
+Shoot (ignored), Shoot (ignored)
+Shoot (ignored), Shoot (ignored)
+Shoot (ignored), Shoot (ignored)
+Shoot, Shoot
+Shoot (ignored), Shoot (ignored)
+Shoot (ignored), Shoot (ignored)
+Shoot (ignored), Shoot (ignored)
+Shoot, Shoot
+Shoot (ignored), Shoot (ignored)
+Shoot (ignored), Shoot (ignored)
+Shoot (ignored), Shoot (ignored)
+Shoot, Shoot
+Shoot (ignored), Shoot (ignored)
+Shoot (ignored), Shoot (ignored)
+Shoot (ignored), Shoot (ignored)
+Shoot, Shoot
+Shoot (ignored), Shoot (ignored)
+Shoot (ignored), Shoot (ignored)
+Shoot (ignored), Shoot (ignored)
+Shoot, Shoot
+Shoot (ignored), Shoot (ignored)
+Shoot (ignored), Shoot (ignored)
+Shoot (ignored), Shoot (ignored)
+Shoot, Shoot
+Shoot (ignored), Shoot (ignored)
+Shoot (ignored), Shoot (ignored)
+Shoot (ignored), Shoot (ignored)
+Shoot, Shoot
+Shoot (ignored), Shoot (ignored)
+Shoot (ignored), Shoot (ignored)
+Shoot (ignored), Shoot (ignored)
+Tie, reached max steps=40, player1 has 1, player2 has 1

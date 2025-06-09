@@ -527,41 +527,76 @@ void GameState::handleShooting(std::vector<bool>& ignored,
 // (8) updateShellsWithOverrunCheck:
 //     move each shell in two unit-steps, checking for tank/wall at each step
 //------------------------------------------------------------------------------
+//------------------------------------------------------------------------------
+// (6.5) updateShellsWithOverrunCheck:
+//     move each shell in two unit-steps, checking for wall/tank collisions
+//     and also if two shells cross through each other.
 void GameState::updateShellsWithOverrunCheck() {
     toRemove_.clear();
     positionMap_.clear();
     board_.clearShellMarks();
 
-    for (std::size_t i = 0; i < shells_.size(); ++i) {
+    const size_t S = shells_.size();
+    // 1) snapshot old positions and deltas
+    std::vector<std::pair<int,int>> oldPos(S);
+    std::vector<std::pair<int,int>> delta(S);
+    for (size_t i = 0; i < S; ++i) {
+        oldPos[i] = { shells_[i].x, shells_[i].y };
         int dx = 0, dy = 0;
         switch (shells_[i].dir) {
-            case 0:  dy = -1; break;    // Up
-            case 1:  dx = +1; dy = -1; break; // Up‐Right
-            case 2:  dx = +1; break;    // Right
-            case 3:  dx = +1; dy = +1; break; // Down‐Right
-            case 4:  dy = +1; break;    // Down
-            case 5:  dx = -1; dy = +1; break; // Down‐Left
-            case 6:  dx = -1; break;    // Left
-            case 7:  dx = -1; dy = -1; break; // Up‐Left
+          case 0:  dy = -1; break;
+          case 1:  dx = +1; dy = -1; break;
+          case 2:  dx = +1; break;
+          case 3:  dx = +1; dy = +1; break;
+          case 4:  dy = +1; break;
+          case 5:  dx = -1; dy = +1; break;
+          case 6:  dx = -1; break;
+          case 7:  dx = -1; dy = -1; break;
         }
+        delta[i] = {dx, dy};
+    }
 
-        // Move twice per tick, checking after each unit‐step
-        for (int step = 0; step < 2; ++step) {
-            int nx = shells_[i].x + dx;
-            int ny = shells_[i].y + dy;
+    // 2) perform two sub-steps simultaneously
+    for (int step = 0; step < 2; ++step) {
+        for (size_t i = 0; i < shells_.size(); ++i) {
+            if (toRemove_.count(i)) continue;  // already dying
+
+            // compute this shell's next position
+            int nx = shells_[i].x + delta[i].first;
+            int ny = shells_[i].y + delta[i].second;
             board_.wrapCoords(nx, ny);
+
+            // 2a) crossing-paths check
+            for (size_t j = 0; j < shells_.size(); ++j) {
+                if (i == j || toRemove_.count(j)) continue;
+                // j's old and would-be new pos
+                auto [oxj, oyj] = oldPos[j];
+                int nxj = oxj + delta[j].first;
+                int nyj = oyj + delta[j].second;
+                board_.wrapCoords(nxj, nyj);
+                // if i’s new == j’s old AND j’s new == i’s old → cross
+                if (nx == oxj && ny == oyj
+                 && nxj == oldPos[i].first
+                 && nyj == oldPos[i].second)
+                {
+                    toRemove_.insert(i);
+                    toRemove_.insert(j);
+                    break;
+                }
+            }
+            if (toRemove_.count(i)) continue;
 
             // advance the shell
             shells_[i].x = nx;
             shells_[i].y = ny;
 
-            // if it hits a wall or a tank, handle it and mark shell for removal
+            // 2b) tank/wall mid-step collision
             if (handleShellMidStepCollision(nx, ny)) {
                 toRemove_.insert(i);
-                break;
+                continue;
             }
 
-            // otherwise record for possible shell–shell collisions
+            // 2c) record for same-cell collisions
             positionMap_[{nx, ny}].push_back(i);
         }
     }
