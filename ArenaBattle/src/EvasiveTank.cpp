@@ -1,23 +1,22 @@
 // src/EvasiveTank.cpp
 #include "EvasiveTank.h"
 #include "common/ActionRequest.h"
-#include <limits>
-#include <cmath>
 
 using namespace arena;
 using namespace common;
 
 EvasiveTank::EvasiveTank(int playerIndex, int /*tankIndex*/)
   : lastInfo_{1,1},
-    direction_(playerIndex == 1 ? 2 : 6),  // P1 faces right(2), P2 left(6)
-    needView_(true)
+    direction_(playerIndex == 1 ? 2 : 6),
+    needView_(true),
+    enemyChar_(playerIndex == 1 ? '2' : '1')
 {}
 
 void EvasiveTank::updateBattleInfo(BattleInfo& baseInfo) {
-    lastInfo_   = static_cast<MyBattleInfo&>(baseInfo);
+    lastInfo_ = static_cast<MyBattleInfo&>(baseInfo);
 }
 
-ActionRequest EvasiveTank::getAction() {
+common::ActionRequest EvasiveTank::getAction() {
     const int R = int(lastInfo_.rows), C = int(lastInfo_.cols);
     const int sx = int(lastInfo_.selfX), sy = int(lastInfo_.selfY);
 
@@ -28,6 +27,20 @@ ActionRequest EvasiveTank::getAction() {
     }
     needView_ = true;
 
+    // 1a) Edge‐case: backward wrap lands on an enemy tank → refresh view
+    {
+        int backDir = (direction_ + 4) & 7;
+        int bx = sx + DX[backDir], by = sy + DY[backDir];
+        // wrap around toroidally
+        bx = (bx % C + C) % C;
+        by = (by % R + R) % R;
+        char c = lastInfo_.grid[by][bx];
+        if (c == enemyChar_) {
+            // avoid stepping onto them blindly
+            return ActionRequest::GetBattleInfo;
+        }
+    }
+
     // 2) Gather shell positions
     std::vector<std::pair<int,int>> shells;
     for (int y = 0; y < R; ++y) {
@@ -37,65 +50,57 @@ ActionRequest EvasiveTank::getAction() {
         }
     }
 
-    // 3) Enumerate candidate actions & score safety
-    struct Cand { ActionRequest act; int nx, ny, nd; int safety; };
+    // 3) Score each candidate action by min(turns to impact)
+    struct Cand { ActionRequest act; int nx, ny, nd, score; };
     std::vector<Cand> cands;
     cands.reserve(7);
 
-    auto torDist = [&](int x, int y, int sx, int sy){
-        int dx = abs(x - sx); dx = std::min(dx, C - dx);
-        int dy = abs(y - sy); dy = std::min(dy, R - dy);
-        int cheb = std::max(dx,dy);
-        return (cheb + 1) / 2;  // shells move 2 cells/turn
-    };
-
-    auto scoreSafety = [&](int nx, int ny){
-        int best = std::numeric_limits<int>::max();
+    // returns ceil(Chebyshev/2)
+    auto danger = [&](int x, int y){
+        int d = std::numeric_limits<int>::max();
         for (auto &sh : shells) {
-            int d = torDist(nx,ny, sh.first, sh.second);
-            best = std::min(best, d);
+            int dx = abs(sh.first - x);
+            dx = std::min(dx, C - dx);
+            int dy = abs(sh.second - y);
+            dy = std::min(dy, R - dy);
+            int cheb = std::max(dx,dy);
+            d = std::min(d, (cheb + 1)/2);
         }
-        // if no shells, super safe
-        return shells.empty() ? std::numeric_limits<int>::max() : best;
+        return shells.empty() ? std::numeric_limits<int>::max() : d;
     };
 
-    // Helper to push a candidate
-    auto tryCand = [&](ActionRequest act, int nx, int ny, int nd){
-        // Check legality: if move, ensure inbounds and not WALL/MINE
+    auto tryMove = [&](ActionRequest act, int nx, int ny, int nd){
+        // legality: moves must avoid walls/mines; rotations & do-nothing always legal
         if (act == ActionRequest::MoveForward ||
             act == ActionRequest::MoveBackward)
         {
-            if (nx < 0 || nx >= C || ny < 0 || ny >= R)
-                return;
-            char c = lastInfo_.grid[ny][nx];
-            if (c == '#' || c == '@') return;
+            if (nx < 0 || nx >= C || ny < 0 || ny >= R) return;
+            char cc = lastInfo_.grid[ny][nx];
+            if (cc == '#' || cc == '@') return;
         }
-        int saf = scoreSafety(nx,ny);
-        cands.push_back({act,nx,ny,nd,saf});
+        cands.push_back({act, nx, ny, nd, danger(nx,ny)});
     };
 
-    // a) MoveForward
+    // MoveForward
+    tryMove(ActionRequest::MoveForward,
+            sx+DX[direction_], sy+DY[direction_], direction_);
+    // MoveBackward
     {
-        int nx = sx + DX[direction_], ny = sy + DY[direction_];
-        tryCand(ActionRequest::MoveForward, nx, ny, direction_);
+        int d2=(direction_+4)&7;
+        tryMove(ActionRequest::MoveBackward,
+                sx+DX[d2],       sy+DY[d2],
+                direction_);
     }
-    // b) MoveBackward
-    {
-        int d2 = (direction_ + 4) & 7;
-        int nx = sx + DX[d2], ny = sy + DY[d2];
-        tryCand(ActionRequest::MoveBackward, nx, ny, direction_);
-    }
-    // c) Rotations
-    tryCand(ActionRequest::RotateLeft90,  sx, sy, (direction_+6)&7);
-    tryCand(ActionRequest::RotateRight90, sx, sy, (direction_+2)&7);
-    tryCand(ActionRequest::RotateLeft45,  sx, sy, (direction_+7)&7);
-    tryCand(ActionRequest::RotateRight45, sx, sy, (direction_+1)&7);
-    // d) DoNothing
-    tryCand(ActionRequest::DoNothing, sx, sy, direction_);
+    // Rotations
+    tryMove(ActionRequest::RotateLeft45,  sx, sy, (direction_+7)&7);
+    tryMove(ActionRequest::RotateRight45, sx, sy, (direction_+1)&7);
+    tryMove(ActionRequest::RotateLeft90,  sx, sy, (direction_+6)&7);
+    tryMove(ActionRequest::RotateRight90, sx, sy, (direction_+2)&7);
+    // DoNothing
+    tryMove(ActionRequest::DoNothing, sx, sy, direction_);
 
-    // 4) Pick the candidate with highest safety
-    // Tie‐break order: (MoveBackward, MoveForward, Rot45L, Rot45R, Rot90L, Rot90R, DoNothing)
-    static const ActionRequest order[] = {
+    // 4) Pick max safety; tie‐break order favors backward, forward, Rot45L, Rot45R, Rot90L, Rot90R, DoNothing
+    static constexpr ActionRequest order[] = {
       ActionRequest::MoveBackward,
       ActionRequest::MoveForward,
       ActionRequest::RotateLeft45,
@@ -104,19 +109,20 @@ ActionRequest EvasiveTank::getAction() {
       ActionRequest::RotateRight90,
       ActionRequest::DoNothing
     };
-    ActionRequest bestAct = ActionRequest::DoNothing;
-    int bestSafety = -1;
+
+    ActionRequest best = ActionRequest::DoNothing;
+    int bestScore = -1;
     for (auto &c : cands) {
-        if (c.safety > bestSafety ||
-           (c.safety == bestSafety &&
+        if (c.score > bestScore ||
+           (c.score == bestScore &&
             std::find(std::begin(order),std::end(order),c.act) <
-            std::find(std::begin(order),std::end(order),bestAct)))
+            std::find(std::begin(order),std::end(order),best)))
         {
-            bestSafety = c.safety;
-            bestAct    = c.act;
-            direction_ = c.nd;  // update facing for next turn
+            bestScore = c.score;
+            best      = c.act;
+            direction_ = c.nd;
         }
     }
 
-    return bestAct;
+    return best;
 }

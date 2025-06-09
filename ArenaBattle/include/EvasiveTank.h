@@ -15,9 +15,9 @@ public:
 private:
     MyBattleInfo lastInfo_;
     int          direction_;  // 0..7
-    bool         needView_;   // fetch view at start of turn
+    bool         needView_;   // always fetch fresh view each turn
+    char         enemyChar_;  // '1' or '2'
 
-    // For safety scoring
     static constexpr int DX[8] = { 0, +1, +1, +1, 0, -1, -1, -1 };
     static constexpr int DY[8] = {-1, -1,  0, +1,+1, +1,  0, -1 };
 };
