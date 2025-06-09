@@ -101,14 +101,19 @@ void GameManager::run() {
         std::exit(1);
     }
 
-    std::size_t turn = 0;
+
+    // 1) Print initlized board to console
+    std::cout << "=== Start Position " << " ===\n";
+    game_state_.printBoard();
+
+    std::size_t turn = 1;
     while (!game_state_.isGameOver()) {
         // 1) Print board to console
         std::cout << "=== Turn " << turn << " ===\n";
-        game_state_.printBoard();
-
+        
         // 2) Advance and capture actions
         std::string actions = game_state_.advanceOneTurn();
+        game_state_.printBoard();
 
         // 3) Log actions line to file (no console print)
         ofs << actions << "\n";
