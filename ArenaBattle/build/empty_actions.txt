@@ -3,19 +3,6 @@ MoveForward, MoveForward
 MoveForward, MoveForward
 MoveForward, MoveForward
 MoveForward, MoveForward
-MoveForward (ignored), MoveForward
-MoveForward (ignored), MoveForward
-MoveForward (ignored), MoveForward (ignored)
-MoveForward (ignored), MoveForward (ignored)
-MoveForward (ignored), MoveForward (ignored)
-MoveForward (ignored), MoveForward (ignored)
-MoveForward (ignored), MoveForward (ignored)
-MoveForward (ignored), MoveForward (ignored)
-MoveForward (ignored), MoveForward (ignored)
-MoveForward (ignored), MoveForward (ignored)
-MoveForward (ignored), MoveForward (ignored)
-MoveForward (ignored), MoveForward (ignored)
-MoveForward (ignored), MoveForward (ignored)
-MoveForward (ignored), MoveForward (ignored)
-MoveForward (ignored), MoveForward (ignored)
-Tie, reached max steps=20, player1 has 1, player2 has 1
+MoveForward, MoveForward
+MoveForward (killed), MoveForward (killed)
+Tie, both players have zero tanks

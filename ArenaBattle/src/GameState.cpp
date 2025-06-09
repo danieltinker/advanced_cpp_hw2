@@ -268,33 +268,40 @@ void GameState::updateTankCooldowns() {
     // unused
 }
 
+//------------------------------------------------------------------------------
+// 5) Confirm backward–move legality (now with wrapping)
 void GameState::confirmBackwardMoves(std::vector<bool>& ignored,
                                      const std::vector<ActionRequest>& A)
 {
-    for (size_t k=0; k<all_tanks_.size(); ++k) {
-        if (!all_tanks_[k].alive || A[k]!=ActionRequest::MoveBackward)
+    for (size_t k = 0; k < all_tanks_.size(); ++k) {
+        if (!all_tanks_[k].alive || A[k] != ActionRequest::MoveBackward)
             continue;
-        int back = (all_tanks_[k].direction+4)&7;
-        int dx=0,dy=0;
-        switch(back) {
-        case 0: dy=-1; break; case 1: dx=1;dy=-1; break;
-        case 2: dx=1; break;  case 3: dx=1;dy=1; break;
-        case 4: dy=1; break;  case 5: dx=-1;dy=1; break;
-        case 6: dx=-1; break; case 7: dx=-1;dy=-1; break;
+
+        // compute backward direction
+        int back = (all_tanks_[k].direction + 4) & 7;
+        int dx = 0, dy = 0;
+        switch (back) {
+        case 0: dy = -1; break;
+        case 1: dx = +1; dy = -1; break;
+        case 2: dx = +1; break;
+        case 3: dx = +1; dy = +1; break;
+        case 4: dy = +1; break;
+        case 5: dx = -1; dy = +1; break;
+        case 6: dx = -1; break;
+        case 7: dx = -1; dy = -1; break;
         }
-        int nx=all_tanks_[k].x+dx, ny=all_tanks_[k].y+dy;
-        // board_.wrapCoords(nx,ny);
-        // if (board_.getCell(nx,ny).content==CellContent::WALL)
-        //     ignored[k]=true;
-        // No wrap: backward into OOB or wall is illegal
-        if (nx < 0 || nx >= static_cast<int>(cols_)
-         || ny < 0 || ny >= static_cast<int>(rows_)
-         || board_.getCell(nx,ny).content == CellContent::WALL)
-        {
+
+        int nx = all_tanks_[k].x + dx;
+        int ny = all_tanks_[k].y + dy;
+        // wrap around
+        board_.wrapCoords(nx, ny);
+        // illegal if there's a wall after wrapping
+        if (board_.getCell(nx, ny).content == CellContent::WALL) {
             ignored[k] = true;
         }
     }
 }
+
 //------------------------------------------------------------------------------
 // (6) updateTankPositionsOnBoard: move forward/backward, no wrap,
 //     plus handle head‐on tank collisions and multi‐tank collisions.
@@ -303,53 +310,52 @@ void GameState::updateTankPositionsOnBoard(std::vector<bool>& ignored,
                                            std::vector<bool>& killedThisTurn,
                                            const std::vector<common::ActionRequest>& actions)
 {
-    board_.clearTankMarks();
+     board_.clearTankMarks();
 
-    const std::size_t N = all_tanks_.size();
-    // Remember original positions and compute intended new positions
+    const size_t N = all_tanks_.size();
     std::vector<std::pair<int,int>> oldPos(N), newPos(N);
-    for (std::size_t k = 0; k < N; ++k) {
+
+    // 1) compute oldPos & newPos (with wrapping)
+    for (size_t k = 0; k < N; ++k) {
         oldPos[k] = { all_tanks_[k].x, all_tanks_[k].y };
 
         if (!all_tanks_[k].alive
-            || ignored[k]
-            || (actions[k] != common::ActionRequest::MoveForward
-             && actions[k] != common::ActionRequest::MoveBackward))
+         || ignored[k]
+         || (actions[k] != ActionRequest::MoveForward
+          && actions[k] != ActionRequest::MoveBackward))
         {
-            // no move
             newPos[k] = oldPos[k];
-        } else {
-            // forward/backward delta
-            int dir = all_tanks_[k].direction;
-            if (actions[k] == common::ActionRequest::MoveBackward)
-                dir = (dir + 4) & 7;
+            continue;
+        }
 
-            int dx=0, dy=0;
-            switch (dir) {
-                case 0:  dy = -1; break;
-                case 1:  dx = +1; dy = -1; break;
-                case 2:  dx = +1; break;
-                case 3:  dx = +1; dy = +1; break;
-                case 4:  dy = +1; break;
-                case 5:  dx = -1; dy = +1; break;
-                case 6:  dx = -1; break;
-                case 7:  dx = -1; dy = -1; break;
-            }
-            int nx = all_tanks_[k].x + dx;
-            int ny = all_tanks_[k].y + dy;
-            // board_.wrapCoords(nx, ny);
-            // newPos[k] = { nx, ny };
-            // Tanks do NOT wrap: out‐of‐bounds or into a wall = illegal
-            if (nx < 0 || nx >= static_cast<int>(cols_)
-             || ny < 0 || ny >= static_cast<int>(rows_)
-             || board_.getCell(nx, ny).content == CellContent::WALL)
-            {
-              // stay in place (we’ll stamp oldPos later)
-              newPos[k] = oldPos[k];
-              ignored[k] = true;  
-            } else {
-              newPos[k] = { nx, ny };
-            }
+        // figure out dx,dy
+        int dir = all_tanks_[k].direction;
+        if (actions[k] == ActionRequest::MoveBackward)
+            dir = (dir + 4) & 7;
+
+        int dx = 0, dy = 0;
+        switch (dir) {
+        case 0: dy = -1; break;
+        case 1: dx = +1; dy = -1; break;
+        case 2: dx = +1; break;
+        case 3: dx = +1; dy = +1; break;
+        case 4: dy = +1; break;
+        case 5: dx = -1; dy = +1; break;
+        case 6: dx = -1; break;
+        case 7: dx = -1; dy = -1; break;
+        }
+
+        int nx = all_tanks_[k].x + dx;
+        int ny = all_tanks_[k].y + dy;
+        // wrap around the board edges
+        board_.wrapCoords(nx, ny);
+
+        // if after wrapping there's a wall, treat as ignored
+        if (board_.getCell(nx, ny).content == CellContent::WALL) {
+            newPos[k] = oldPos[k];
+            ignored[k] = true;
+        } else {
+            newPos[k] = { nx, ny };
         }
     }
 
