@@ -6,24 +6,20 @@
 
 namespace arena {
 
-/**
- * Evasive: on first call → GetBattleInfo;
- * thereafter, if a shell (‘*’) is adjacent, MoveBackward;
- * if a wall or mine is directly ahead, RotateLeft90;
- * otherwise MoveForward.
- */
 class EvasiveTank : public common::TankAlgorithm {
 public:
     EvasiveTank(int playerIndex, int tankIndex);
-    ~EvasiveTank() override = default;
-
-    void                  updateBattleInfo(common::BattleInfo &baseInfo) override;
+    void updateBattleInfo(common::BattleInfo& baseInfo) override;
     common::ActionRequest getAction() override;
 
 private:
-    MyBattleInfo          lastInfo_;       // last snapshot + self pos
-    std::size_t           shellsLeft_ = SIZE_MAX; // sentinel
-    int                   direction_;      // 0..7
+    MyBattleInfo lastInfo_;
+    int          direction_;  // 0..7
+    bool         needView_;   // fetch view at start of turn
+
+    // For safety scoring
+    static constexpr int DX[8] = { 0, +1, +1, +1, 0, -1, -1, -1 };
+    static constexpr int DY[8] = {-1, -1,  0, +1,+1, +1,  0, -1 };
 };
 
 } // namespace arena
