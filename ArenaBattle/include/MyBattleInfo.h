@@ -10,7 +10,7 @@ struct MyBattleInfo : public common::BattleInfo {
     std::vector<std::vector<char>> grid;
     std::size_t selfX, selfY;      // tank’s own coord
     std::size_t shellsRemaining;   // <-- engine’s ammo count
-
+  
     MyBattleInfo(std::size_t r, std::size_t c)
       : rows(r)
       , cols(c)

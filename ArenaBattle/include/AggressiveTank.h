@@ -1,28 +1,27 @@
-// include/AggressiveTank.h
 #pragma once
-
 #include "common/TankAlgorithm.h"
 #include "MyBattleInfo.h"
+#include <deque>
 
 namespace arena {
 
-/**
- * Aggressive: on first call to getAction() → GetBattleInfo;
- * thereafter, shoot anything directly ahead (if shellsLeft_>0),
- * otherwise MoveForward.
- */
 class AggressiveTank : public common::TankAlgorithm {
 public:
     AggressiveTank(int playerIndex, int tankIndex);
-    ~AggressiveTank() override = default;
-
-    void                  updateBattleInfo(common::BattleInfo &baseInfo) override;
+    void updateBattleInfo(common::BattleInfo& baseInfo) override;
     common::ActionRequest getAction() override;
 
 private:
-    MyBattleInfo          lastInfo_;       // last snapshot + self pos
-    std::size_t           shellsLeft_ = SIZE_MAX; // init sentinel
-    int                   direction_;      // 0..7, our own facing
+    MyBattleInfo                         lastInfo_;
+    int                                  shellsLeft_;
+    char                                 enemyChar_;
+    int                                  direction_;
+    int                                  viewCooldown_;   // turns until next GetBattleInfo
+    bool                                 justShot_;       // force view after a shot
+    std::deque<common::ActionRequest>    actionQueue_;
+
+    static constexpr int DX[8] = { 0, +1, +1, +1, 0, -1, -1, -1 };
+    static constexpr int DY[8] = {-1, -1,  0, +1,+1, +1,  0, -1 };
 };
 
 } // namespace arena

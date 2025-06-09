@@ -1,51 +1,8 @@
-Shoot, Shoot, Shoot, Shoot, Shoot, Shoot, Shoot
-Shoot (ignored), Shoot (ignored), Shoot (ignored), Shoot (ignored), Shoot (ignored), Shoot (ignored), Shoot (ignored)
-Shoot (ignored), Shoot (ignored), Shoot (ignored), Shoot (ignored), Shoot (ignored), Shoot (ignored), Shoot (ignored)
-Shoot (ignored), Shoot (ignored), Shoot (ignored), Shoot (ignored), Shoot (ignored), Shoot (ignored), Shoot (ignored)
-Shoot, Shoot, Shoot, Shoot, Shoot, Shoot, Shoot
-Shoot (ignored), Shoot (ignored), Shoot (ignored), Shoot (ignored), Shoot (ignored), Shoot (ignored), Shoot (ignored)
-Shoot (ignored), Shoot (ignored), Shoot (ignored), Shoot (ignored), Shoot (ignored), Shoot (ignored), Shoot (ignored)
-Shoot (ignored), Shoot (ignored), Shoot (ignored), Shoot (ignored), Shoot (ignored), Shoot (ignored), Shoot (ignored)
-Shoot, Shoot, Shoot, Shoot, Shoot, Shoot, Shoot
-Shoot (ignored), Shoot (ignored), Shoot (ignored), Shoot (ignored), Shoot (ignored), Shoot (ignored), Shoot (ignored)
-Shoot (ignored), Shoot (ignored), Shoot (ignored), Shoot (ignored), Shoot (ignored), Shoot (ignored), Shoot (ignored)
-Shoot (ignored), Shoot (ignored), Shoot (ignored), Shoot (ignored), Shoot (ignored), Shoot (ignored), Shoot (ignored)
-Shoot, Shoot, Shoot, Shoot, Shoot, Shoot, Shoot
-Shoot (ignored), Shoot (ignored), Shoot (ignored), Shoot (ignored), Shoot (ignored), Shoot (ignored), Shoot (ignored)
-Shoot (ignored), Shoot (ignored), Shoot (ignored), Shoot (ignored), Shoot (ignored), Shoot (ignored), Shoot (ignored)
-Shoot (ignored), Shoot (ignored), Shoot (ignored), Shoot (ignored), Shoot (ignored), Shoot (ignored), Shoot (ignored)
-Shoot, Shoot, Shoot, Shoot, Shoot, Shoot, Shoot
-Shoot (ignored), Shoot (ignored), Shoot (ignored), Shoot (ignored), Shoot (ignored), Shoot (ignored), Shoot (ignored)
-Shoot (ignored), Shoot (ignored), Shoot (ignored), Shoot (ignored), Shoot (ignored), Shoot (ignored), Shoot (ignored)
-Shoot (killed), Shoot (ignored), Shoot (ignored), Shoot (ignored), Shoot (ignored), Shoot (ignored), Shoot (ignored)
-killed, Shoot, Shoot, Shoot, Shoot, Shoot, Shoot
-killed, Shoot (ignored), Shoot (ignored), Shoot (ignored), Shoot (ignored), Shoot (ignored), Shoot (ignored)
-killed, Shoot (ignored), Shoot (ignored), Shoot (ignored), Shoot (ignored), Shoot (ignored), Shoot (ignored)
-killed, Shoot (ignored), Shoot (ignored), Shoot (ignored), Shoot (ignored), Shoot (ignored), Shoot (ignored)
-killed, Shoot, Shoot, Shoot, Shoot, Shoot, Shoot
-killed, Shoot (ignored), Shoot (ignored), Shoot (ignored), Shoot (ignored), Shoot (ignored), Shoot (ignored)
-killed, Shoot (ignored), Shoot (ignored), Shoot (ignored), Shoot (ignored), Shoot (ignored), Shoot (ignored)
-killed, Shoot (ignored), Shoot (killed), Shoot (killed), Shoot (killed), Shoot (ignored), Shoot (ignored)
-killed, Shoot, killed, killed, killed, Shoot, Shoot
-killed, Shoot (ignored), killed, killed, killed, Shoot (ignored), Shoot (ignored)
-killed, Shoot (ignored), killed, killed, killed, Shoot (ignored), Shoot (ignored)
-killed, Shoot (ignored), killed, killed, killed, Shoot (ignored), Shoot (ignored)
-killed, Shoot, killed, killed, killed, Shoot, Shoot
-killed, Shoot (ignored), killed, killed, killed, Shoot (ignored), Shoot (ignored)
-killed, Shoot (ignored), killed, killed, killed, Shoot (ignored), Shoot (ignored)
-killed, Shoot (killed), killed, killed, killed, Shoot (ignored), Shoot (ignored)
-killed, killed, killed, killed, killed, Shoot, Shoot
-killed, killed, killed, killed, killed, Shoot (ignored), Shoot (ignored)
-killed, killed, killed, killed, killed, Shoot (ignored), Shoot (ignored)
-killed, killed, killed, killed, killed, Shoot (ignored), Shoot (ignored)
-killed, killed, killed, killed, killed, Shoot, Shoot
-killed, killed, killed, killed, killed, Shoot (ignored), Shoot (ignored)
-killed, killed, killed, killed, killed, Shoot (ignored), Shoot (ignored)
-killed, killed, killed, killed, killed, Shoot (ignored), Shoot (ignored)
-killed, killed, killed, killed, killed, Shoot, Shoot
-killed, killed, killed, killed, killed, Shoot (ignored), Shoot (ignored)
-killed, killed, killed, killed, killed, Shoot (ignored), Shoot (ignored)
-killed, killed, killed, killed, killed, Shoot (ignored), Shoot (ignored)
-killed, killed, killed, killed, killed, Shoot, Shoot
-killed, killed, killed, killed, killed, Shoot (ignored), Shoot (ignored)
-Tie, reached max steps=50, player1 has 1, player2 has 1
+GetBattleInfo, GetBattleInfo, GetBattleInfo, GetBattleInfo, GetBattleInfo
+Shoot, MoveForward, MoveForward, MoveForward, MoveForward
+GetBattleInfo, MoveForward (killed), MoveForward, MoveForward, MoveForward
+RotateRight45, killed, MoveForward (killed), MoveForward (killed), MoveForward
+MoveForward, killed, killed, killed, MoveForward
+RotateLeft45, killed, killed, killed, MoveForward
+Shoot, killed, killed, killed, MoveForward (killed)
+Player 1 won with 1 tanks still alive
