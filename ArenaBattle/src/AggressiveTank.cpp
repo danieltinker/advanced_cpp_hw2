@@ -22,7 +22,7 @@ void AggressiveTank::updateBattleInfo(BattleInfo &baseInfo) {
 ActionRequest AggressiveTank::getAction() {
     // 1) First time ever: ask for shell count
     if (shellsLeft_ == SIZE_MAX) {
-        return ActionRequest::Shoot;
+        return ActionRequest::GetBattleInfo;
     }
 
     // 2) Scan our entire row for any opponent ('1' or '2'), excluding ourselves ("%")
@@ -40,5 +40,5 @@ ActionRequest AggressiveTank::getAction() {
     }
 
     // 3) No target in row (or no ammo) → move straight ahead
-    return ActionRequest::Shoot;
+    return ActionRequest::MoveForward;
 }

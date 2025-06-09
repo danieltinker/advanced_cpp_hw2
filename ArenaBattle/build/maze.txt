@@ -1,8 +1,8 @@
 Maze
 Rows = 7
 Cols = 7
-MaxSteps = 5
-NumShells = 2
+MaxSteps = 50
+NumShells = 200
 
 .##...2
 1##.##.

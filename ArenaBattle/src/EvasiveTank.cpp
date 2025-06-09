@@ -30,7 +30,7 @@ void EvasiveTank::updateBattleInfo(BattleInfo &baseInfo) {
 ActionRequest EvasiveTank::getAction() {
     // turn 0: get shell count
     if (shellsLeft_ == SIZE_MAX) {
-        return ActionRequest::Shoot;
+        return ActionRequest::GetBattleInfo;
     }
 
     // (1) if any adjacent cell has a shell overlay '*', back up
@@ -58,5 +58,5 @@ ActionRequest EvasiveTank::getAction() {
     }
 
     // (3) otherwise drive forward
-    return ActionRequest::Shoot;
+    return ActionRequest::MoveForward;
 }
