@@ -353,40 +353,61 @@ void GameState::updateTankPositionsOnBoard(std::vector<bool>& ignored,
         }
     }
 
-    // 2a) Head‐on swap: two tanks exchanging places this tick → both die
+    // 2a) Head-on swaps: two tanks exchanging places → both die
     for (std::size_t i = 0; i < N; ++i) {
       for (std::size_t j = i+1; j < N; ++j) {
-        if ( all_tanks_[i].alive && all_tanks_[j].alive
-          && newPos[i] == oldPos[j]
-          && newPos[j] == oldPos[i] )
-        {
+        if (!all_tanks_[i].alive || !all_tanks_[j].alive) continue;
+        if (killedThisTurn[i] || killedThisTurn[j])        continue;
+        if (newPos[i] == oldPos[j] && newPos[j] == oldPos[i]) {
           killedThisTurn[i] = killedThisTurn[j] = true;
           all_tanks_[i].alive = all_tanks_[j].alive = false;
+          // clear both old positions
           board_.setCell(oldPos[i].first, oldPos[i].second, CellContent::EMPTY);
           board_.setCell(oldPos[j].first, oldPos[j].second, CellContent::EMPTY);
         }
       }
     }
 
-    // 2b) Multi‐tank collisions at same destination
+    // 2b) Moving-into-stationary: a mover steps onto someone who stayed put → both die
+    for (std::size_t k = 0; k < N; ++k) {
+      if (!all_tanks_[k].alive                   ) continue;  // dead already
+      if (killedThisTurn[k]                      ) continue;  // marked in 2a
+      if (newPos[k] == oldPos[k]) continue;                 // didn’t move
+      for (std::size_t j = 0; j < N; ++j) {
+        if (j == k)                                             continue;
+        if (!all_tanks_[j].alive                              ) continue;  // dead
+        if (killedThisTurn[j]                                 ) continue;  // marked
+        if (newPos[j] != oldPos[j]) continue;                   // j must be stationary
+        if (newPos[k] == oldPos[j]) {
+          // k moved into j’s square
+          killedThisTurn[k] = killedThisTurn[j] = true;
+          all_tanks_[k].alive = all_tanks_[j].alive = false;
+          board_.setCell(oldPos[k].first, oldPos[k].second, CellContent::EMPTY);
+          board_.setCell(oldPos[j].first, oldPos[j].second, CellContent::EMPTY);
+        }
+      }
+    }
+
+    // 2c) Multi-tank collisions at same destination: any cell with ≥2 movers → all die
     std::map<std::pair<int,int>, std::vector<std::size_t>> destMap;
     for (std::size_t k = 0; k < N; ++k) {
-      if ( all_tanks_[k].alive
-        && newPos[k] != oldPos[k] )
-      {
-        destMap[newPos[k]].push_back(k);
-      }
+      if (!all_tanks_[k].alive 
+       || killedThisTurn[k] 
+       || newPos[k] == oldPos[k]) continue;
+      destMap[newPos[k]].push_back(k);
     }
     for (auto const& [pos, vec] : destMap) {
       if (vec.size() > 1) {
         for (auto k : vec) {
-          killedThisTurn[k] = true;
+          if (!all_tanks_[k].alive || killedThisTurn[k]) continue;
+          killedThisTurn[k]   = true;
           all_tanks_[k].alive = false;
-          auto [ox,oy] = oldPos[k];
-          board_.setCell(ox, oy, CellContent::EMPTY);
+          // clear their old position
+          board_.setCell(oldPos[k].first, oldPos[k].second, CellContent::EMPTY);
         }
       }
     }
+
 
     // 3) Now apply every non‐colliding move
     for (std::size_t k = 0; k < N; ++k) {
@@ -427,6 +448,7 @@ void GameState::updateTankPositionsOnBoard(std::vector<bool>& ignored,
                     killedThisTurn[k]   = true;
                     // clear its old cell
                     board_.setCell(ox, oy, CellContent::EMPTY);
+                    board_.setCell(nx, ny, CellContent::EMPTY);
                     // remove that shell
                     shells_.erase(shells_.begin() + s);
                     collidedWithShell = true;

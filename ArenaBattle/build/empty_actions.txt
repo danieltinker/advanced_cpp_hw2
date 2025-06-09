@@ -1,10 +1,6 @@
-GetBattleInfo, GetBattleInfo
-Shoot, MoveForward
-Shoot (ignored), MoveForward
-Shoot (ignored), MoveForward
-Shoot (ignored), MoveForward
-Shoot, MoveForward (ignored)
-MoveForward, MoveForward (ignored)
-MoveForward, MoveForward (ignored)
-MoveForward, MoveForward (killed)
+GetBattleInfo, GetBattleInfo, GetBattleInfo, GetBattleInfo, GetBattleInfo
+Shoot, MoveForward, MoveForward, MoveForward, MoveForward
+Shoot (ignored), MoveForward, MoveForward, MoveForward (killed), MoveForward (killed)
+Shoot (ignored), MoveForward, MoveForward, killed, killed
+Shoot (ignored), MoveForward (killed), MoveForward (killed), killed, killed
 Player 1 won with 1 tanks still alive
