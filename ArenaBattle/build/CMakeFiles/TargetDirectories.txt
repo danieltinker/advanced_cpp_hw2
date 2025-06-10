@@ -1,3 +1,0 @@
-/Users/danielbaruch/Desktop/University/semester 2025B/advanced_programming/hw2/advanced_cpp_hw2/ArenaBattle/build/CMakeFiles/tanks_game.dir
-/Users/danielbaruch/Desktop/University/semester 2025B/advanced_programming/hw2/advanced_cpp_hw2/ArenaBattle/build/CMakeFiles/edit_cache.dir
-/Users/danielbaruch/Desktop/University/semester 2025B/advanced_programming/hw2/advanced_cpp_hw2/ArenaBattle/build/CMakeFiles/rebuild_cache.dir

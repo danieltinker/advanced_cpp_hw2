@@ -1,23 +1,42 @@
-# Makefile for ArenaBattle “tanks_game”
+# Top‐level Makefile
+
+# Compiler and flags
 CXX       := g++
 CXXFLAGS  := -std=c++20 -Wall -Wextra -Werror -pedantic \
-              -Iinclude -Icommon -I.
+             -Iinclude -Icommon -I.
 
+# Directories
 SRCDIR    := src
-SOURCES   := $(wildcard $(SRCDIR)/*.cpp) 
-OBJECTS   := $(SOURCES:.cpp=.o)
-TARGET    := tanks_game
+COMMONDIR := common
+OBJDIR    := build
 
-.PHONY: all clean
+# Sources and objects
+SRCS  := $(wildcard $(SRCDIR)/*.cpp) $(wildcard $(COMMONDIR)/*.cpp)
+OBJS  := $(patsubst %.cpp,$(OBJDIR)/%.o,$(notdir $(SRCS)))
 
-all: $(TARGET)
+# Default target
+all: tanks_game
 
-$(TARGET): $(OBJECTS)
-	$(CXX) $(CXXFLAGS) -o $@ $^
+# Link executable
+tanks_game: $(OBJS)
+	$(CXX) $(CXXFLAGS) $^ -o $@
 
-# compile each .cpp → .o in-place
-%.o: %.cpp
-	$(CXX) $(CXXFLAGS) -c -o $@ $<
+# Compile src/*.cpp → build/filename.o
+$(OBJDIR)/%.o: $(SRCDIR)/%.cpp | $(OBJDIR)
+	$(CXX) $(CXXFLAGS) -c $< -o $@
 
+# Compile common/*.cpp → build/filename.o
+$(OBJDIR)/%.o: $(COMMONDIR)/%.cpp | $(OBJDIR)
+	$(CXX) $(CXXFLAGS) -c $< -o $@
+
+# Ensure build directory exists
+$(OBJDIR):
+	mkdir -p $(OBJDIR)
+
+# Clean up
+.PHONY: clean
 clean:
-	rm -f $(SRCDIR)/*.o $(TARGET)
+	rm -rf $(OBJDIR) tanks_game
+
+# Phony targets
+.PHONY: all

@@ -57,11 +57,12 @@ Grid characters:
 # Game Log 
 Logs Tanks operations of each tank heres an example for 4 tank (2 tanks for each player)
 ---------------------------------------------------------------------------------------
-<row-1>: <TankAI(1,1),TankAI(1,2),...,tank(2,1),tank(2,2),
+<row-1>: <TankAI(1,1),TankAI(1,2),...,tank(2,1),tank(2,2)
 <row-2>: <TankAI(1,1),TankAI(1,2),...,tank(2,1),tank(2,2)
-...
+  ...
 <row-last-round>: <TankAI(1,1),TankAI(1,2),...,tank(2,1),tank(2,2)
 <game_result_message>
+<row-2>:
 ---------------------------------------------------------------------------------------
 Raw Text:
 ---------------------------------------------------------------------------------------
@@ -84,25 +85,42 @@ Tie, both players have zero tanks
 Code Tree Directory Structure:
 ------------------------------
 ArenaBattle/
-    build/
-        Makefile
-    common/                  • shared interfaces (Player, TankAlgorithm, BattleInfo, SatelliteView, etc)
-    include/
-        Board.h              • grid and cell logic
-        GameState.h          • core simulation steps
-        GameManager.h        • I/O + game loop
-        MyBattleInfo.h       • concrete BattleInfo for AIs
-        MySatelliteView.h    • concrete SatelliteView for AIs
-        MyPlayerFactory.h    • instantiates Player1/2
-        MyTankAlgorithmFactory.h
-        EvasiveTank.h
-        AggressiveTank.h
-        utils.h              • parseKeyValue helper
-        Player1.h
-        Player2.h
-        Tank.h                 !!!! unused??? TODO: Remove that,
-
-    src/
-        *.cpp                • implementations
-        main.cpp             • parses headers, builds factories, runs manager
-
+├── build/
+│   ├── *.o [after-make-build]
+├── common/
+│   ├── ActionRequest.h
+│   ├── TankAlgorithm.h
+│   ├── BattleInfo.h
+│   ├── SatelliteView.h
+│   ├── Player.h
+│   ├── PlayerFactory.h
+│   └── TankAlgorithmFactory.h
+├── include/
+│   ├── Board.h
+│   ├── GameState.h
+│   ├── GameManager.h
+│   ├── MyTankAlgorithm.h
+│   ├── MyBattleInfo.h
+│   ├── AggressiveTank.h
+│   ├── EvasiveTank.h
+│   ├── MyPlayerFactory.h
+│   ├── MyTankAlgorithmFactory.h
+│   ├── Player1.h
+│   └── Player2.h
+│   └── MySatelliteView.h
+|   |__ utils.h
+└── src/
+    ├── AggressiveTank.cpp
+    ├── EvasiveTank.cpp
+    ├── GameManager.cpp
+    ├── Player1.cpp
+    ├── Player2.cpp
+    ├── MyTankAlgorithm.cpp
+    ├── MyBattleInfo.cpp
+    ├── MySatelliteView.cpp
+    ├── Board.cpp
+    ├── GameState.cpp
+    ├── utils.cpp
+    ├── MyTankAlgorithmFactory.cpp
+    ├── MyPlayerFactory.cpp
+    └── main.cpp

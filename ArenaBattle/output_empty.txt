@@ -1,0 +1,3 @@
+GetBattleInfo, GetBattleInfo
+MoveBackward (killed), RotateRight45 (killed)
+Tie, both players have zero tanks
