@@ -12,11 +12,10 @@ namespace arena {
 */
 class Tank {
 public:
-    // Constructor: (playerIndex, initial x, initial y, maxSteps—unused here, but stored, numShells)
+    // Constructor: (playerIndex, initial x, initial y, numShells)
     Tank(int playerIndex,
          std::size_t x,
          std::size_t y,
-         std::size_t maxSteps,
          std::size_t numShells);
 
     ~Tank();
@@ -45,7 +44,6 @@ public:
 private:
     int playerIndex_;
     std::size_t x_, y_;
-    std::size_t maxSteps_;
     std::size_t shellsRemaining_;
     int cooldown_;
     bool alive_;

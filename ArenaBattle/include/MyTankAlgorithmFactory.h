@@ -12,9 +12,6 @@ class MyTankAlgorithmFactory : public TankAlgorithmFactory {
 public:
     // Default ctor
     MyTankAlgorithmFactory() = default;
-    // Also support size_t ctor in case main uses it
-    explicit MyTankAlgorithmFactory(std::size_t num_shells)
-        : num_shells_(num_shells) {}
 
     ~MyTankAlgorithmFactory() override = default;
 
@@ -33,8 +30,6 @@ public:
         }
     }
 
-private:
-    std::size_t num_shells_ = 0;
 };
 
 } // namespace common

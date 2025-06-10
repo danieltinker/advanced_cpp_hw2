@@ -13,9 +13,6 @@ class MyPlayerFactory : public common::PlayerFactory {
 public:
     // Default ctor so you can do MyPlayerFactory{} in main
     MyPlayerFactory() = default;
-    // Optionally, still allow old ctor if you need it elsewhere
-    MyPlayerFactory(std::size_t rows, std::size_t cols)
-        : rows_(rows), cols_(cols) {}
 
     ~MyPlayerFactory() override = default;
 
@@ -40,8 +37,8 @@ public:
 
 private:
     // no longer required; create() uses its parameters
-    std::size_t rows_ = 0;
-    std::size_t cols_ = 0;
+    // std::size_t rows_ = 0;
+    // std::size_t cols_ = 0;
 };
 
 } // namespace arena

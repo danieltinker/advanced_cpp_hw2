@@ -1,3 +1,6 @@
 GetBattleInfo, GetBattleInfo
-MoveBackward (killed), RotateRight45 (killed)
+RotateRight45, MoveBackward
+RotateRight45, GetBattleInfo
+RotateRight45, MoveForward
+MoveForward (killed), GetBattleInfo (killed)
 Tie, both players have zero tanks

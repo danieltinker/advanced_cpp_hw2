@@ -1,13 +1,13 @@
-Maze
+Walls
 Rows = 7
 Cols = 7
 MaxSteps = 20
-NumShells = 200
+NumShells = 2
 
-1##....
+1##...2
 .##.##.
 ..###..
 ..###..
 ..###..
 .##.##.
-......2
+2...##1

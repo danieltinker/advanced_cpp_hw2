@@ -4,7 +4,7 @@ project(ArenaBattle LANGUAGES CXX)
 # Use C++20 and enable strict warnings
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
-# add_compile_options(-Wall -Wextra -Werror -pedantic)
+add_compile_options(-Wall -Wextra -Werror -pedantic)
 
 include_directories(
     ${CMAKE_SOURCE_DIR}/include

@@ -6,5 +6,5 @@ CXX_DEFINES =
 
 CXX_INCLUDES = -I"/Users/danielbaruch/Desktop/University/semester 2025B/advanced_programming/hw2/advanced_cpp_hw2/ArenaBattle/include" -I"/Users/danielbaruch/Desktop/University/semester 2025B/advanced_programming/hw2/advanced_cpp_hw2/ArenaBattle/common" -I"/Users/danielbaruch/Desktop/University/semester 2025B/advanced_programming/hw2/advanced_cpp_hw2/ArenaBattle"
 
-CXX_FLAGS =  -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX13.3.sdk -std=gnu++2a
+CXX_FLAGS =  -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX13.3.sdk -Wall -Wextra -Werror -pedantic -std=gnu++2a
 

@@ -46,8 +46,8 @@ int main(int argc, char** argv) {
     in.close();
 
     // Build the two factories:
-    auto playerFac = std::make_unique<MyPlayerFactory>(rows, cols);
-    auto tankFac   = std::make_unique<common::MyTankAlgorithmFactory>(num_shells);
+    auto playerFac = std::make_unique<MyPlayerFactory>();
+    auto tankFac   = std::make_unique<common::MyTankAlgorithmFactory>();
 
     // Construct, initialize, and run:
     GameManager gm(std::move(playerFac), std::move(tankFac));

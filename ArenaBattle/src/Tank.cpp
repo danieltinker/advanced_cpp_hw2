@@ -6,12 +6,10 @@ namespace arena {
 Tank::Tank(int playerIndex,
            std::size_t x,
            std::size_t y,
-           std::size_t maxSteps,
            std::size_t numShells)
     : playerIndex_(playerIndex),
       x_(x),
       y_(y),
-      maxSteps_(maxSteps),
       shellsRemaining_(numShells),
       cooldown_(0),
       alive_(true),

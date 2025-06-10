@@ -1,39 +1,7 @@
-GetBattleInfo, GetBattleInfo, GetBattleInfo, GetBattleInfo
-Shoot, MoveBackward (ignored), MoveBackward, MoveBackward
-GetBattleInfo, GetBattleInfo, GetBattleInfo, GetBattleInfo
-Shoot (ignored), MoveBackward (killed), MoveForward, MoveBackward
-GetBattleInfo, killed, GetBattleInfo, GetBattleInfo
-RotateRight45, killed, MoveBackward, MoveForward
-RotateRight45, killed, GetBattleInfo, GetBattleInfo
-Shoot, killed, MoveForward, MoveBackward (killed)
-GetBattleInfo, killed, GetBattleInfo, killed
-Shoot (ignored), killed, MoveBackward, killed
-GetBattleInfo, killed, GetBattleInfo, killed
-RotateLeft45, killed, MoveForward, killed
-MoveForward, killed, GetBattleInfo, killed
-RotateLeft45, killed, MoveBackward, killed
-MoveForward, killed, GetBattleInfo, killed
-RotateLeft45, killed, MoveForward, killed
-MoveForward, killed, GetBattleInfo, killed
-RotateRight45, killed, MoveBackward, killed
-MoveForward, killed, GetBattleInfo, killed
-MoveForward (ignored), killed, MoveForward, killed
-RotateRight45, killed, GetBattleInfo, killed
-Shoot, killed, MoveBackward, killed
-GetBattleInfo, killed, GetBattleInfo, killed
-RotateLeft45, killed, MoveForward, killed
-MoveForward (ignored), killed, GetBattleInfo, killed
-MoveForward (ignored), killed, MoveBackward, killed
-RotateRight45, killed, GetBattleInfo, killed
-Shoot, killed, MoveForward, killed
-GetBattleInfo, killed, GetBattleInfo, killed
-RotateRight45, killed, MoveBackward, killed
-RotateRight45, killed, GetBattleInfo, killed
-MoveForward, killed, MoveForward, killed
-RotateRight45, killed, GetBattleInfo, killed
-MoveForward, killed, MoveBackward, killed
-Shoot, killed, GetBattleInfo, killed
-GetBattleInfo, killed, MoveForward, killed
-RotateRight45, killed, GetBattleInfo, killed
-RotateRight45 (killed), killed, MoveBackward, killed
-Player 2 won with 1 tanks still alive
+GetBattleInfo, GetBattleInfo
+RotateRight45, MoveForward
+Shoot, GetBattleInfo
+GetBattleInfo, MoveBackward
+RotateRight45, GetBattleInfo
+MoveForward (killed), MoveForward (killed)
+Tie, both players have zero tanks
