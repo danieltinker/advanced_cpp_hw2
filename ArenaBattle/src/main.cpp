@@ -17,35 +17,48 @@ int main(int argc, char** argv) {
     }
     const std::string map_file = argv[1];
 
-    // Open the file to read just the header values:
     std::ifstream in(map_file);
     if (!in) {
         std::cerr << "Cannot open map file: " << map_file << "\n";
         return 1;
     }
+
     std::string line;
-
-    // Skip the map’s title line:
-    std::getline(in, line);
-
     std::size_t max_steps = 0, num_shells = 0, rows = 0, cols = 0;
 
-    // Read and parse each header line in turn:
-    std::getline(in, line);
-    parseKeyValue(line, "MaxSteps",  max_steps);
+    // 1) Line 1: title (ignored, but must exist)
+    if (!std::getline(in, line)) {
+        std::cerr << "Invalid map file: missing title line\n";
+        return 1;
+    }
 
-    std::getline(in, line);
-    parseKeyValue(line, "NumShells", num_shells);
+    // 2) Line 2: MaxSteps = <NUM>
+    if (!std::getline(in, line) || !parseKeyValue(line, "MaxSteps", max_steps)) {
+        std::cerr << "Invalid header (MaxSteps): \"" << line << "\"\n";
+        return 1;
+    }
 
-    std::getline(in, line);
-    parseKeyValue(line, "Rows",      rows);
+    // 3) Line 3: NumShells = <NUM>
+    if (!std::getline(in, line) || !parseKeyValue(line, "NumShells", num_shells)) {
+        std::cerr << "Invalid header (NumShells): \"" << line << "\"\n";
+        return 1;
+    }
 
-    std::getline(in, line);
-    parseKeyValue(line, "Cols",      cols);
+    // 4) Line 4: Rows = <NUM>
+    if (!std::getline(in, line) || !parseKeyValue(line, "Rows", rows)) {
+        std::cerr << "Invalid header (Rows): \"" << line << "\"\n";
+        return 1;
+    }
+
+    // 5) Line 5: Cols = <NUM>
+    if (!std::getline(in, line) || !parseKeyValue(line, "Cols", cols)) {
+        std::cerr << "Invalid header (Cols): \"" << line << "\"\n";
+        return 1;
+    }
 
     in.close();
 
-    // Build the two factories:
+    // Build the two factories with the parsed parameters
     auto playerFac = std::make_unique<MyPlayerFactory>();
     auto tankFac   = std::make_unique<common::MyTankAlgorithmFactory>();
 
