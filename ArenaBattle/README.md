@@ -55,12 +55,13 @@ Grid characters:
 - if a tank is trying to move into a wall on the turn of its destruction it will die as well.
 
 # Game Log 
-Logs Tanks operations of each tank heres an example for 4 tank (2 tanks for each player)
+Logs Tanks operations (in the order the tanks reads from the board)
+e.g. 4 tank (2 tanks for each player):
 ---------------------------------------------------------------------------------------
-<row-1>: <TankAI(1,1),TankAI(1,2),...,tank(2,1),tank(2,2)
-<row-2>: <TankAI(1,1),TankAI(1,2),...,tank(2,1),tank(2,2)
+<row-1>: <TankAI(1,0),TankAI(1,1),...,TankAI(2,0),TankAI(2,1)
+<row-2>: <TankAI(1,0),TankAI(1,1),...,TankAI(2,0),TankAI(2,1)
   ...
-<row-last-round>: <TankAI(1,1),TankAI(1,2),...,tank(2,1),tank(2,2)
+<row-last-round>: <TankAI(1,0),TankAI(1,1),...,TankAI(2,0),TankAI(2,1)
 <game_result_message>
 <row-2>:
 ---------------------------------------------------------------------------------------
@@ -79,7 +80,7 @@ Tie, both players have zero tanks
 ---------------------------------------------------------------------------------------
 
 # Input Error Case
-
+Printing an error message
 
 # Code Structure
 Code Tree Directory Structure:
