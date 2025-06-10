@@ -2647,13 +2647,10 @@ CMakeFiles/tanks_game.dir/src/GameManager.cpp.o
  /Users/danielbaruch/Desktop/University/semester 2025B/advanced_programming/hw2/advanced_cpp_hw2/ArenaBattle/include/MySatelliteView.h
  /Users/danielbaruch/Desktop/University/semester 2025B/advanced_programming/hw2/advanced_cpp_hw2/ArenaBattle/common/SatelliteView.h
  /Users/danielbaruch/Desktop/University/semester 2025B/advanced_programming/hw2/advanced_cpp_hw2/ArenaBattle/common/Player.h
- /Users/danielbaruch/Desktop/University/semester 2025B/advanced_programming/hw2/advanced_cpp_hw2/ArenaBattle/common/BattleInfo.h
- /Users/danielbaruch/Desktop/University/semester 2025B/advanced_programming/hw2/advanced_cpp_hw2/ArenaBattle/common/ActionRequest.h
  /Users/danielbaruch/Desktop/University/semester 2025B/advanced_programming/hw2/advanced_cpp_hw2/ArenaBattle/common/TankAlgorithm.h
+ /Users/danielbaruch/Desktop/University/semester 2025B/advanced_programming/hw2/advanced_cpp_hw2/ArenaBattle/common/ActionRequest.h
+ /Users/danielbaruch/Desktop/University/semester 2025B/advanced_programming/hw2/advanced_cpp_hw2/ArenaBattle/common/BattleInfo.h
  /Users/danielbaruch/Desktop/University/semester 2025B/advanced_programming/hw2/advanced_cpp_hw2/ArenaBattle/common/PlayerFactory.h
- /Users/danielbaruch/Desktop/University/semester 2025B/advanced_programming/hw2/advanced_cpp_hw2/ArenaBattle/include/Player1.h
- /Users/danielbaruch/Desktop/University/semester 2025B/advanced_programming/hw2/advanced_cpp_hw2/ArenaBattle/include/MyBattleInfo.h
- /Users/danielbaruch/Desktop/University/semester 2025B/advanced_programming/hw2/advanced_cpp_hw2/ArenaBattle/include/Player2.h
  /Users/danielbaruch/Desktop/University/semester 2025B/advanced_programming/hw2/advanced_cpp_hw2/ArenaBattle/common/TankAlgorithmFactory.h
  /Library/Developer/CommandLineTools/SDKs/MacOSX13.3.sdk/usr/include/c++/v1/fstream
  /Library/Developer/CommandLineTools/SDKs/MacOSX13.3.sdk/usr/include/c++/v1/__locale
@@ -3414,14 +3411,12 @@ CMakeFiles/tanks_game.dir/src/GameState.cpp.o
  /Users/danielbaruch/Desktop/University/semester 2025B/advanced_programming/hw2/advanced_cpp_hw2/ArenaBattle/include/MySatelliteView.h
  /Users/danielbaruch/Desktop/University/semester 2025B/advanced_programming/hw2/advanced_cpp_hw2/ArenaBattle/common/SatelliteView.h
  /Users/danielbaruch/Desktop/University/semester 2025B/advanced_programming/hw2/advanced_cpp_hw2/ArenaBattle/common/Player.h
- /Users/danielbaruch/Desktop/University/semester 2025B/advanced_programming/hw2/advanced_cpp_hw2/ArenaBattle/common/BattleInfo.h
- /Users/danielbaruch/Desktop/University/semester 2025B/advanced_programming/hw2/advanced_cpp_hw2/ArenaBattle/common/ActionRequest.h
  /Users/danielbaruch/Desktop/University/semester 2025B/advanced_programming/hw2/advanced_cpp_hw2/ArenaBattle/common/TankAlgorithm.h
+ /Users/danielbaruch/Desktop/University/semester 2025B/advanced_programming/hw2/advanced_cpp_hw2/ArenaBattle/common/ActionRequest.h
+ /Users/danielbaruch/Desktop/University/semester 2025B/advanced_programming/hw2/advanced_cpp_hw2/ArenaBattle/common/BattleInfo.h
  /Users/danielbaruch/Desktop/University/semester 2025B/advanced_programming/hw2/advanced_cpp_hw2/ArenaBattle/common/PlayerFactory.h
- /Users/danielbaruch/Desktop/University/semester 2025B/advanced_programming/hw2/advanced_cpp_hw2/ArenaBattle/include/Player1.h
- /Users/danielbaruch/Desktop/University/semester 2025B/advanced_programming/hw2/advanced_cpp_hw2/ArenaBattle/include/MyBattleInfo.h
- /Users/danielbaruch/Desktop/University/semester 2025B/advanced_programming/hw2/advanced_cpp_hw2/ArenaBattle/include/Player2.h
  /Users/danielbaruch/Desktop/University/semester 2025B/advanced_programming/hw2/advanced_cpp_hw2/ArenaBattle/common/TankAlgorithmFactory.h
+ /Users/danielbaruch/Desktop/University/semester 2025B/advanced_programming/hw2/advanced_cpp_hw2/ArenaBattle/include/MyBattleInfo.h
  /Library/Developer/CommandLineTools/SDKs/MacOSX13.3.sdk/usr/include/c++/v1/iostream
  /Library/Developer/CommandLineTools/SDKs/MacOSX13.3.sdk/usr/include/c++/v1/ios
  /Library/Developer/CommandLineTools/SDKs/MacOSX13.3.sdk/usr/include/c++/v1/__locale
@@ -4569,9 +4564,9 @@ CMakeFiles/tanks_game.dir/src/MyPlayerFactory.cpp.o
  /Library/Developer/CommandLineTools/SDKs/MacOSX13.3.sdk/usr/include/assert.h
  /Users/danielbaruch/Desktop/University/semester 2025B/advanced_programming/hw2/advanced_cpp_hw2/ArenaBattle/common/PlayerFactory.h
  /Users/danielbaruch/Desktop/University/semester 2025B/advanced_programming/hw2/advanced_cpp_hw2/ArenaBattle/common/Player.h
- /Users/danielbaruch/Desktop/University/semester 2025B/advanced_programming/hw2/advanced_cpp_hw2/ArenaBattle/common/BattleInfo.h
- /Users/danielbaruch/Desktop/University/semester 2025B/advanced_programming/hw2/advanced_cpp_hw2/ArenaBattle/common/ActionRequest.h
  /Users/danielbaruch/Desktop/University/semester 2025B/advanced_programming/hw2/advanced_cpp_hw2/ArenaBattle/common/TankAlgorithm.h
+ /Users/danielbaruch/Desktop/University/semester 2025B/advanced_programming/hw2/advanced_cpp_hw2/ArenaBattle/common/ActionRequest.h
+ /Users/danielbaruch/Desktop/University/semester 2025B/advanced_programming/hw2/advanced_cpp_hw2/ArenaBattle/common/BattleInfo.h
  /Users/danielbaruch/Desktop/University/semester 2025B/advanced_programming/hw2/advanced_cpp_hw2/ArenaBattle/common/SatelliteView.h
  /Users/danielbaruch/Desktop/University/semester 2025B/advanced_programming/hw2/advanced_cpp_hw2/ArenaBattle/include/Player1.h
  /Users/danielbaruch/Desktop/University/semester 2025B/advanced_programming/hw2/advanced_cpp_hw2/ArenaBattle/include/MyBattleInfo.h
@@ -6094,9 +6089,9 @@ CMakeFiles/tanks_game.dir/src/Player1.cpp.o
  /Users/danielbaruch/Desktop/University/semester 2025B/advanced_programming/hw2/advanced_cpp_hw2/ArenaBattle/src/Player1.cpp
  /Users/danielbaruch/Desktop/University/semester 2025B/advanced_programming/hw2/advanced_cpp_hw2/ArenaBattle/include/Player1.h
  /Users/danielbaruch/Desktop/University/semester 2025B/advanced_programming/hw2/advanced_cpp_hw2/ArenaBattle/common/Player.h
- /Users/danielbaruch/Desktop/University/semester 2025B/advanced_programming/hw2/advanced_cpp_hw2/ArenaBattle/common/BattleInfo.h
- /Users/danielbaruch/Desktop/University/semester 2025B/advanced_programming/hw2/advanced_cpp_hw2/ArenaBattle/common/ActionRequest.h
  /Users/danielbaruch/Desktop/University/semester 2025B/advanced_programming/hw2/advanced_cpp_hw2/ArenaBattle/common/TankAlgorithm.h
+ /Users/danielbaruch/Desktop/University/semester 2025B/advanced_programming/hw2/advanced_cpp_hw2/ArenaBattle/common/ActionRequest.h
+ /Users/danielbaruch/Desktop/University/semester 2025B/advanced_programming/hw2/advanced_cpp_hw2/ArenaBattle/common/BattleInfo.h
  /Users/danielbaruch/Desktop/University/semester 2025B/advanced_programming/hw2/advanced_cpp_hw2/ArenaBattle/common/SatelliteView.h
  /Library/Developer/CommandLineTools/SDKs/MacOSX13.3.sdk/usr/include/c++/v1/cstddef
  /Library/Developer/CommandLineTools/SDKs/MacOSX13.3.sdk/usr/include/c++/v1/__assert
@@ -6742,9 +6737,9 @@ CMakeFiles/tanks_game.dir/src/Player2.cpp.o
  /Users/danielbaruch/Desktop/University/semester 2025B/advanced_programming/hw2/advanced_cpp_hw2/ArenaBattle/src/Player2.cpp
  /Users/danielbaruch/Desktop/University/semester 2025B/advanced_programming/hw2/advanced_cpp_hw2/ArenaBattle/include/Player2.h
  /Users/danielbaruch/Desktop/University/semester 2025B/advanced_programming/hw2/advanced_cpp_hw2/ArenaBattle/common/Player.h
- /Users/danielbaruch/Desktop/University/semester 2025B/advanced_programming/hw2/advanced_cpp_hw2/ArenaBattle/common/BattleInfo.h
- /Users/danielbaruch/Desktop/University/semester 2025B/advanced_programming/hw2/advanced_cpp_hw2/ArenaBattle/common/ActionRequest.h
  /Users/danielbaruch/Desktop/University/semester 2025B/advanced_programming/hw2/advanced_cpp_hw2/ArenaBattle/common/TankAlgorithm.h
+ /Users/danielbaruch/Desktop/University/semester 2025B/advanced_programming/hw2/advanced_cpp_hw2/ArenaBattle/common/ActionRequest.h
+ /Users/danielbaruch/Desktop/University/semester 2025B/advanced_programming/hw2/advanced_cpp_hw2/ArenaBattle/common/BattleInfo.h
  /Users/danielbaruch/Desktop/University/semester 2025B/advanced_programming/hw2/advanced_cpp_hw2/ArenaBattle/common/SatelliteView.h
  /Library/Developer/CommandLineTools/SDKs/MacOSX13.3.sdk/usr/include/c++/v1/cstddef
  /Library/Developer/CommandLineTools/SDKs/MacOSX13.3.sdk/usr/include/c++/v1/__assert
@@ -8093,13 +8088,10 @@ CMakeFiles/tanks_game.dir/src/main.cpp.o
  /Users/danielbaruch/Desktop/University/semester 2025B/advanced_programming/hw2/advanced_cpp_hw2/ArenaBattle/include/MySatelliteView.h
  /Users/danielbaruch/Desktop/University/semester 2025B/advanced_programming/hw2/advanced_cpp_hw2/ArenaBattle/common/SatelliteView.h
  /Users/danielbaruch/Desktop/University/semester 2025B/advanced_programming/hw2/advanced_cpp_hw2/ArenaBattle/common/Player.h
- /Users/danielbaruch/Desktop/University/semester 2025B/advanced_programming/hw2/advanced_cpp_hw2/ArenaBattle/common/BattleInfo.h
- /Users/danielbaruch/Desktop/University/semester 2025B/advanced_programming/hw2/advanced_cpp_hw2/ArenaBattle/common/ActionRequest.h
  /Users/danielbaruch/Desktop/University/semester 2025B/advanced_programming/hw2/advanced_cpp_hw2/ArenaBattle/common/TankAlgorithm.h
+ /Users/danielbaruch/Desktop/University/semester 2025B/advanced_programming/hw2/advanced_cpp_hw2/ArenaBattle/common/ActionRequest.h
+ /Users/danielbaruch/Desktop/University/semester 2025B/advanced_programming/hw2/advanced_cpp_hw2/ArenaBattle/common/BattleInfo.h
  /Users/danielbaruch/Desktop/University/semester 2025B/advanced_programming/hw2/advanced_cpp_hw2/ArenaBattle/common/PlayerFactory.h
- /Users/danielbaruch/Desktop/University/semester 2025B/advanced_programming/hw2/advanced_cpp_hw2/ArenaBattle/include/Player1.h
- /Users/danielbaruch/Desktop/University/semester 2025B/advanced_programming/hw2/advanced_cpp_hw2/ArenaBattle/include/MyBattleInfo.h
- /Users/danielbaruch/Desktop/University/semester 2025B/advanced_programming/hw2/advanced_cpp_hw2/ArenaBattle/include/Player2.h
  /Users/danielbaruch/Desktop/University/semester 2025B/advanced_programming/hw2/advanced_cpp_hw2/ArenaBattle/common/TankAlgorithmFactory.h
  /Users/danielbaruch/Desktop/University/semester 2025B/advanced_programming/hw2/advanced_cpp_hw2/ArenaBattle/include/utils.h
  /Library/Developer/CommandLineTools/SDKs/MacOSX13.3.sdk/usr/include/c++/v1/sstream
@@ -8159,6 +8151,9 @@ CMakeFiles/tanks_game.dir/src/main.cpp.o
  /Library/Developer/CommandLineTools/SDKs/MacOSX13.3.sdk/usr/include/c++/v1/__bsd_locale_defaults.h
  /Library/Developer/CommandLineTools/SDKs/MacOSX13.3.sdk/usr/include/c++/v1/iostream
  /Users/danielbaruch/Desktop/University/semester 2025B/advanced_programming/hw2/advanced_cpp_hw2/ArenaBattle/include/MyPlayerFactory.h
+ /Users/danielbaruch/Desktop/University/semester 2025B/advanced_programming/hw2/advanced_cpp_hw2/ArenaBattle/include/Player1.h
+ /Users/danielbaruch/Desktop/University/semester 2025B/advanced_programming/hw2/advanced_cpp_hw2/ArenaBattle/include/MyBattleInfo.h
+ /Users/danielbaruch/Desktop/University/semester 2025B/advanced_programming/hw2/advanced_cpp_hw2/ArenaBattle/include/Player2.h
  /Users/danielbaruch/Desktop/University/semester 2025B/advanced_programming/hw2/advanced_cpp_hw2/ArenaBattle/include/MyTankAlgorithmFactory.h
  /Users/danielbaruch/Desktop/University/semester 2025B/advanced_programming/hw2/advanced_cpp_hw2/ArenaBattle/include/AggressiveTank.h
  /Library/Developer/CommandLineTools/SDKs/MacOSX13.3.sdk/usr/include/c++/v1/deque

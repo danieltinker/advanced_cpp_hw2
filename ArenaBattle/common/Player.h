@@ -1,10 +1,7 @@
 #pragma once
 
-#include "common/BattleInfo.h"
-#include "common/ActionRequest.h"
 #include "common/TankAlgorithm.h"
 #include "common/SatelliteView.h"
-// namespace arena { class TankAlgorithm; }
 
 namespace common {
 

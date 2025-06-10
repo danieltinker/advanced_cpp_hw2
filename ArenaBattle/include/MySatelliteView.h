@@ -3,7 +3,6 @@
 
 #include "common/SatelliteView.h"
 #include <vector>
-#include <cstddef>
 
 namespace arena {
 

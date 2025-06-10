@@ -3,8 +3,7 @@
 
 #include <memory>
 #include "Player.h"       // common::Player
-#include "Player1.h"      // should resolve via your INCLUDE paths
-#include "Player2.h"
+
 
 namespace common {
 class PlayerFactory {

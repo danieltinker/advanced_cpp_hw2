@@ -1,5 +1,4 @@
 #pragma once
-#include <memory>
 #include "TankAlgorithm.h"
 
 namespace common {

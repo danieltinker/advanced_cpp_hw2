@@ -2643,13 +2643,10 @@ CMakeFiles/tanks_game.dir/src/GameManager.cpp.o: ../src/GameManager.cpp \
   ../include/MySatelliteView.h \
   ../common/SatelliteView.h \
   ../common/Player.h \
-  ../common/BattleInfo.h \
-  ../common/ActionRequest.h \
   ../common/TankAlgorithm.h \
+  ../common/ActionRequest.h \
+  ../common/BattleInfo.h \
   ../common/PlayerFactory.h \
-  ../include/Player1.h \
-  ../include/MyBattleInfo.h \
-  ../include/Player2.h \
   ../common/TankAlgorithmFactory.h \
   /Library/Developer/CommandLineTools/SDKs/MacOSX13.3.sdk/usr/include/c++/v1/fstream \
   /Library/Developer/CommandLineTools/SDKs/MacOSX13.3.sdk/usr/include/c++/v1/__locale \
@@ -3409,14 +3406,12 @@ CMakeFiles/tanks_game.dir/src/GameState.cpp.o: ../src/GameState.cpp \
   ../include/MySatelliteView.h \
   ../common/SatelliteView.h \
   ../common/Player.h \
-  ../common/BattleInfo.h \
-  ../common/ActionRequest.h \
   ../common/TankAlgorithm.h \
+  ../common/ActionRequest.h \
+  ../common/BattleInfo.h \
   ../common/PlayerFactory.h \
-  ../include/Player1.h \
-  ../include/MyBattleInfo.h \
-  ../include/Player2.h \
   ../common/TankAlgorithmFactory.h \
+  ../include/MyBattleInfo.h \
   /Library/Developer/CommandLineTools/SDKs/MacOSX13.3.sdk/usr/include/c++/v1/iostream \
   /Library/Developer/CommandLineTools/SDKs/MacOSX13.3.sdk/usr/include/c++/v1/ios \
   /Library/Developer/CommandLineTools/SDKs/MacOSX13.3.sdk/usr/include/c++/v1/__locale \
@@ -4562,9 +4557,9 @@ CMakeFiles/tanks_game.dir/src/MyPlayerFactory.cpp.o: ../src/MyPlayerFactory.cpp 
   /Library/Developer/CommandLineTools/SDKs/MacOSX13.3.sdk/usr/include/assert.h \
   ../common/PlayerFactory.h \
   ../common/Player.h \
-  ../common/BattleInfo.h \
-  ../common/ActionRequest.h \
   ../common/TankAlgorithm.h \
+  ../common/ActionRequest.h \
+  ../common/BattleInfo.h \
   ../common/SatelliteView.h \
   ../include/Player1.h \
   ../include/MyBattleInfo.h \
@@ -6084,9 +6079,9 @@ CMakeFiles/tanks_game.dir/src/MyTankAlgorithmFactory.cpp.o: ../src/MyTankAlgorit
 CMakeFiles/tanks_game.dir/src/Player1.cpp.o: ../src/Player1.cpp \
   ../include/Player1.h \
   ../common/Player.h \
-  ../common/BattleInfo.h \
-  ../common/ActionRequest.h \
   ../common/TankAlgorithm.h \
+  ../common/ActionRequest.h \
+  ../common/BattleInfo.h \
   ../common/SatelliteView.h \
   /Library/Developer/CommandLineTools/SDKs/MacOSX13.3.sdk/usr/include/c++/v1/cstddef \
   /Library/Developer/CommandLineTools/SDKs/MacOSX13.3.sdk/usr/include/c++/v1/__assert \
@@ -6731,9 +6726,9 @@ CMakeFiles/tanks_game.dir/src/Player1.cpp.o: ../src/Player1.cpp \
 CMakeFiles/tanks_game.dir/src/Player2.cpp.o: ../src/Player2.cpp \
   ../include/Player2.h \
   ../common/Player.h \
-  ../common/BattleInfo.h \
-  ../common/ActionRequest.h \
   ../common/TankAlgorithm.h \
+  ../common/ActionRequest.h \
+  ../common/BattleInfo.h \
   ../common/SatelliteView.h \
   /Library/Developer/CommandLineTools/SDKs/MacOSX13.3.sdk/usr/include/c++/v1/cstddef \
   /Library/Developer/CommandLineTools/SDKs/MacOSX13.3.sdk/usr/include/c++/v1/__assert \
@@ -8080,13 +8075,10 @@ CMakeFiles/tanks_game.dir/src/main.cpp.o: ../src/main.cpp \
   ../include/MySatelliteView.h \
   ../common/SatelliteView.h \
   ../common/Player.h \
-  ../common/BattleInfo.h \
-  ../common/ActionRequest.h \
   ../common/TankAlgorithm.h \
+  ../common/ActionRequest.h \
+  ../common/BattleInfo.h \
   ../common/PlayerFactory.h \
-  ../include/Player1.h \
-  ../include/MyBattleInfo.h \
-  ../include/Player2.h \
   ../common/TankAlgorithmFactory.h \
   ../include/utils.h \
   /Library/Developer/CommandLineTools/SDKs/MacOSX13.3.sdk/usr/include/c++/v1/sstream \
@@ -8146,6 +8138,9 @@ CMakeFiles/tanks_game.dir/src/main.cpp.o: ../src/main.cpp \
   /Library/Developer/CommandLineTools/SDKs/MacOSX13.3.sdk/usr/include/c++/v1/__bsd_locale_defaults.h \
   /Library/Developer/CommandLineTools/SDKs/MacOSX13.3.sdk/usr/include/c++/v1/iostream \
   ../include/MyPlayerFactory.h \
+  ../include/Player1.h \
+  ../include/MyBattleInfo.h \
+  ../include/Player2.h \
   ../include/MyTankAlgorithmFactory.h \
   ../include/AggressiveTank.h \
   /Library/Developer/CommandLineTools/SDKs/MacOSX13.3.sdk/usr/include/c++/v1/deque \
@@ -8911,6 +8906,8 @@ CMakeFiles/tanks_game.dir/src/utils.cpp.o: ../src/utils.cpp \
 
 ../src/MySatelliteView.cpp:
 
+../include/Player2.h:
+
 /Library/Developer/CommandLineTools/SDKs/MacOSX13.3.sdk/usr/include/c++/v1/iostream:
 
 /Library/Developer/CommandLineTools/SDKs/MacOSX13.3.sdk/usr/include/c++/v1/__filesystem/u8path.h:
@@ -8980,8 +8977,6 @@ CMakeFiles/tanks_game.dir/src/utils.cpp.o: ../src/utils.cpp \
 /Library/Developer/CommandLineTools/SDKs/MacOSX13.3.sdk/usr/include/c++/v1/locale.h:
 
 /Library/Developer/CommandLineTools/SDKs/MacOSX13.3.sdk/usr/include/c++/v1/__locale:
-
-../include/Player2.h:
 
 ../include/GameState.h:
 
