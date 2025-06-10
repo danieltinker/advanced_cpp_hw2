@@ -18,21 +18,19 @@ A turn-based, toroidal grid “tank battle” simulator in C++20, where two play
 - C++20 compiler (e.g. clang or gcc).
 - CMake ≥ 3.10.
 
-# Building
-cd build
+# How To Run
 make
-
-# Usage
 ./tanks_game <map_file.txt>
 
 # Map File Format
 Plain text, e.g. basic.txt:
 ---------------------------
 <MapName>
-Rows = R
-Cols = C
 MaxSteps = M
 NumShells = S
+Rows = R
+Cols = C
+
 
 <grid row 0>
 <grid row 1>
