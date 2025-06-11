@@ -90,7 +90,7 @@ std::string GameState::advanceOneTurn() {
     std::vector<ActionRequest> actions(N, ActionRequest::DoNothing);
     std::vector<bool> ignored(N,false), killed(N,false);
 
-    // 1) Gather raw requests
+     // 1) Gather raw requests
     for (size_t k = 0; k < N; ++k) {
         auto& ts  = all_tanks_[k];
         auto& alg = *all_tank_algorithms_[k];
@@ -98,9 +98,31 @@ std::string GameState::advanceOneTurn() {
 
         ActionRequest req = alg.getAction();
         if (req == ActionRequest::GetBattleInfo) {
-            // … your existing snapshot + updateTankWithBattleInfo …
+            // build a visibility snapshot
+            std::vector<std::vector<char>> grid(rows_, std::vector<char>(cols_, ' '));
+            for (size_t yy = 0; yy < rows_; ++yy) {
+                for (size_t xx = 0; xx < cols_; ++xx) {
+                    const auto& cell = board_.getCell(int(xx), int(yy));
+                    grid[yy][xx] = (cell.content==CellContent::WALL ? '#' :
+                                    cell.content==CellContent::MINE ? '@' :
+                                    cell.content==CellContent::TANK1 ? '1' :
+                                    cell.content==CellContent::TANK2 ? '2' : ' ');
+                }
+            }
+            // mark the querying tank’s position specially
+            grid[ts.y][ts.x] = '%';
+
+            // construct the view and dispatch to the right player
+            MySatelliteView sv(grid, int(rows_), int(cols_), ts.x, ts.y);
+            if (ts.player_index == 1) {
+                player1_->updateTankWithBattleInfo(alg, sv);
+            } else {
+                player2_->updateTankWithBattleInfo(alg, sv);
+            }
+
             actions[k] = ActionRequest::GetBattleInfo;
-        } else {
+        }
+        else {
             actions[k] = req;
         }
     }

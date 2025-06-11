@@ -1,6 +1,8 @@
 #pragma once
+
 #include "common/TankAlgorithm.h"
 #include "MyBattleInfo.h"
+#include "ActionRequest.h"
 #include <deque>
 
 namespace arena {
@@ -8,20 +10,24 @@ namespace arena {
 class AggressiveTank : public common::TankAlgorithm {
 public:
     AggressiveTank(int playerIndex, int tankIndex);
-    void updateBattleInfo(common::BattleInfo& baseInfo) override;
+    void updateBattleInfo(common::BattleInfo& info) override;
     common::ActionRequest getAction() override;
 
 private:
-    MyBattleInfo                         lastInfo_;
-    int                                  shellsLeft_;
-    char                                 enemyChar_;
-    int                                  direction_;
-    int                                  viewCooldown_;   // turns until next GetBattleInfo
-    bool                                 justShot_;       // force view after a shot
-    std::deque<common::ActionRequest>    actionQueue_;
+    MyBattleInfo                            lastInfo_;
+    int                                      shellsLeft_{-1};
+    char                                     enemyChar_;
+    int                                      direction_;
+    bool                                     seenInfo_{false};
 
-    static constexpr int DX[8] = { 0, +1, +1, +1, 0, -1, -1, -1 };
-    static constexpr int DY[8] = {-1, -1,  0, +1,+1, +1,  0, -1 };
+    // algorithm‐level cooldown before next Shoot request
+    int                                      algoShootCooldown_{0};
+    static constexpr int                    ALG_SHOOT_CD = 4;
+
+    std::deque<common::ActionRequest>        plan_;
+
+    int  encode(int x,int y,int d) const;
+    void decode(int code,int& x,int& y,int& d) const;
 };
 
 } // namespace arena

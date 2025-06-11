@@ -1,11 +1,21 @@
 GetBattleInfo, GetBattleInfo
-GetBattleInfo, RotateRight90
+Shoot, MoveForward
 GetBattleInfo, GetBattleInfo
-GetBattleInfo, RotateRight90
+RotateRight90, MoveForward
+RotateRight90, GetBattleInfo
+RotateRight90, MoveForward
+RotateRight90, GetBattleInfo
+Shoot, MoveForward
 GetBattleInfo, GetBattleInfo
-GetBattleInfo, RotateRight90
+RotateRight90, RotateRight90
+RotateRight90, GetBattleInfo
+RotateRight90, RotateRight90
+RotateRight90, GetBattleInfo
+Shoot, RotateRight90
 GetBattleInfo, GetBattleInfo
-GetBattleInfo, RotateRight90
-GetBattleInfo, GetBattleInfo
-GetBattleInfo, RotateRight90
-Tie, reached max steps=10, player1 has 1, player2 has 1
+RotateRight90, RotateRight90
+RotateRight90, GetBattleInfo
+RotateRight90, MoveForward (ignored)
+RotateRight90, GetBattleInfo
+Shoot, MoveForward (ignored)
+Tie, reached max steps=20, player1 has 1, player2 has 1
