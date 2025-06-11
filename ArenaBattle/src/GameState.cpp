@@ -112,7 +112,7 @@ for (size_t k = 0; k < N; ++k) {
                 // cancel the delay
                 ts.backwardDelayCounter       = 0;
                 ts.lastActionBackwardExecuted = false;
-                actions[k] = ActionRequest::MoveForward;
+                actions[k] = ActionRequest::DoNothing;
                 ignored[k] = false;
             }
             else if (orig == ActionRequest::GetBattleInfo) {
