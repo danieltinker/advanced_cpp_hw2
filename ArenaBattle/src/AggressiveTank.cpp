@@ -229,7 +229,7 @@ bool AggressiveTank::lineOfSight(int sx, int sy, int dir, int &ds, int &wh) cons
         char c = lastInfo_.grid[y][x];
         if (c == '#') { ++wh; return false; }
         if (c == '@') return false;
-        if (c == '_'||c == '.'||c == '&') continue;
+        if (c == '_'||c == '.'||c == '%') continue;
         if ((playerIndex_==1 && c=='2') || (playerIndex_==2 && c=='1')) return true;
         return false;
     }
