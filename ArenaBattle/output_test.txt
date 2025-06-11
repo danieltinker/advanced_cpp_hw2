@@ -1,13 +1,21 @@
 GetBattleInfo, GetBattleInfo, GetBattleInfo, GetBattleInfo
-Shoot, RotateRight90, MoveForward, RotateRight90
-GetBattleInfo, GetBattleInfo (killed), GetBattleInfo, GetBattleInfo
-RotateLeft45, killed, MoveForward, RotateRight90
-RotateLeft45, killed, GetBattleInfo, GetBattleInfo
-RotateLeft45, killed, MoveForward, RotateRight90
-RotateLeft45, killed, GetBattleInfo, GetBattleInfo
-GetBattleInfo, killed, RotateRight90, RotateRight90
-Shoot, killed, GetBattleInfo, GetBattleInfo
-GetBattleInfo, killed, RotateRight90, RotateRight90
-RotateLeft45, killed, GetBattleInfo, GetBattleInfo
-RotateLeft45 (killed), killed, RotateRight90, RotateRight90
-Player 2 won with 2 tanks still alive
+GetBattleInfo, RotateRight90, MoveForward, RotateRight90
+GetBattleInfo, GetBattleInfo, GetBattleInfo, GetBattleInfo
+GetBattleInfo, RotateRight90, MoveForward, RotateRight90
+GetBattleInfo, GetBattleInfo, GetBattleInfo, GetBattleInfo
+GetBattleInfo, MoveForward, MoveForward, RotateRight90
+GetBattleInfo, GetBattleInfo, GetBattleInfo, GetBattleInfo
+GetBattleInfo, RotateRight90, RotateRight90, RotateRight90
+GetBattleInfo, GetBattleInfo, GetBattleInfo, GetBattleInfo
+GetBattleInfo, MoveForward (ignored), RotateRight90, RotateRight90
+GetBattleInfo, GetBattleInfo, GetBattleInfo, GetBattleInfo
+GetBattleInfo, MoveForward (ignored), RotateRight90, RotateRight90
+GetBattleInfo, GetBattleInfo, GetBattleInfo, GetBattleInfo
+GetBattleInfo, MoveForward (ignored), RotateRight90, MoveForward (ignored)
+GetBattleInfo, GetBattleInfo, GetBattleInfo, GetBattleInfo
+GetBattleInfo, MoveForward (ignored), MoveForward (ignored), MoveForward (ignored)
+GetBattleInfo, GetBattleInfo, GetBattleInfo, GetBattleInfo
+GetBattleInfo, MoveForward (ignored), MoveForward (ignored), MoveForward (ignored)
+GetBattleInfo, GetBattleInfo, GetBattleInfo, GetBattleInfo
+GetBattleInfo, MoveForward (ignored), MoveForward (ignored), MoveForward (ignored)
+Tie, reached max steps=20, player1 has 1, player2 has 3

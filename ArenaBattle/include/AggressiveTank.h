@@ -23,8 +23,11 @@ private:
     int                                     ticksSinceInfo_{0};
     static constexpr int                    REFRESH_INTERVAL = 5;
 
-    int                                     curX_{0}, curY_{0}, curDir_{0};
-
+    int                                     curX_{0};
+    int                                     curY_{0};
+    int                                     curDir_{0};
+    int                                     playerIndex_{0};   // track which side we are on
+    
     static constexpr int                    ROTATE_COST = 1;
     static constexpr int                    MOVE_COST   = 1;
     static constexpr int                    SHOOT_CD    = 4;
