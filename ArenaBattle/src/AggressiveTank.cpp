@@ -1,196 +1,120 @@
 #include "AggressiveTank.h"
-#include "ActionRequest.h"
-#include "utils.h"
 #include <queue>
-#include <vector>
 #include <limits>
+#include <algorithm>
 #include <iostream>
 
 using namespace arena;
 using namespace common;
 
-// 8‐direction deltas
-static constexpr int DX[8] = { 0, 1, 1, 1, 0, -1, -1, -1 };
-static constexpr int DY[8] = {-1,-1, 0, 1, 1,  1,  0, -1 };
+static constexpr int DX[8] = {0,1,1,1,0,-1,-1,-1};
+static constexpr int DY[8] = {-1,-1,0,1,1,1,0,-1};
 
 AggressiveTank::AggressiveTank(int playerIndex, int /*tankIndex*/)
-  : lastInfo_{1,1}
-  , shellsLeft_(-1)
-  , enemyChar_(playerIndex==1?'2':'1')
-  , direction_(playerIndex==1?2:6)
-{}
+  : lastInfo_(0,0), curDir_(playerIndex==1?2:6) {
+    std::cerr << "DEBUG: AggressiveTank init player=" << playerIndex << " dir=" << curDir_ << "\n";
+}
 
 void AggressiveTank::updateBattleInfo(BattleInfo& info) {
     lastInfo_ = static_cast<MyBattleInfo&>(info);
-    // Only initialize shellsLeft_ the very first time:
-    if (shellsLeft_ < 0) {
-        shellsLeft_ = int(lastInfo_.shellsRemaining);
-        std::cerr << "[Aggressive] Initial shellsLeft=" << shellsLeft_ << "\n";
-    }
-    seenInfo_ = true;
-}
-
-
-int AggressiveTank::encode(int x,int y,int d) const {
-    return (y * lastInfo_.cols + x) * 8 + d;
-}
-
-void AggressiveTank::decode(int code,int& x,int& y,int& d) const {
-    d = code % 8;
-    int idx = code / 8;
-    y = idx / lastInfo_.cols;
-    x = idx % lastInfo_.cols;
+    if(shellsLeft_<0) shellsLeft_=static_cast<int>(lastInfo_.shellsRemaining);
+    seenInfo_=true; ticksSinceInfo_=0;
+    curX_=static_cast<int>(lastInfo_.selfX);
+    curY_=static_cast<int>(lastInfo_.selfY);
+    plan_.clear();
+    std::cerr << "DEBUG: updateBattleInfo pos=("<<curX_<<","<<curY_<<") shells="<<shellsLeft_<<"\n";
 }
 
 common::ActionRequest AggressiveTank::getAction() {
-    std::cerr << "[Aggressive] Decision: pos=("
-              << lastInfo_.selfX<<","<<lastInfo_.selfY
-              <<") dir="<<direction_
-              <<" shells="<<shellsLeft_
-              <<" cd="<<algoShootCooldown_<<"\n";
-
-    // 1) If no info yet → get it
-    if (!seenInfo_) {
-        std::cerr<<" → Requesting GetBattleInfo\n";
-        return ActionRequest::GetBattleInfo;
-    }
-
-    // 1b) If we're in shoot cooldown and no plan, reposition instead of planning shoot
-    if (algoShootCooldown_ > 0 && plan_.empty()) {
-        --algoShootCooldown_;
-        std::cerr<<" → In shoot cooldown, repositioning\n";
-        // simple reposition: rotate 180° to face the enemy
-        direction_ = (direction_ + 4) & 7;
-        return ActionRequest::RotateRight90;  // two of these over two turns = 180°
-    }
-
-    // 2) If there’s a queued plan, execute it
-    if (!plan_.empty()) {
-        auto act = plan_.front();
-        plan_.pop_front();
-        std::cerr<<" → Executing plan action "<<actionToString(act)<<"\n";
-        if (act == ActionRequest::Shoot) {
-            // start our algo‐level cooldown
-            algoShootCooldown_ = ALG_SHOOT_CD;
-            seenInfo_          = false;
+    std::cerr<<"DEBUG: getAction seen="<<seenInfo_<<" ticks="<<ticksSinceInfo_<<" cd="<<algoCooldown_<<" plan="<<plan_.size()<<" pos=("<<curX_<<","<<curY_<<") dir="<<curDir_<<" shells="<<shellsLeft_<<"\n";
+    if(!seenInfo_) { std::cerr<<"DEBUG: ->GetBattleInfo no info\n"; return ActionRequest::GetBattleInfo; }
+    if(++ticksSinceInfo_>=REFRESH_INTERVAL) { seenInfo_=false; std::cerr<<"DEBUG: ->GetBattleInfo refresh\n"; return ActionRequest::GetBattleInfo; }
+    if(algoCooldown_>0) { --algoCooldown_; curDir_=(curDir_+7)%8; std::cerr<<"DEBUG: ->RotateLeft45 cd\n"; return ActionRequest::RotateLeft45; }
+    if(plan_.empty()) { std::cerr<<"DEBUG: computing plan\n"; computePlan(); }
+    if(!plan_.empty()) {
+        auto act=plan_.front(); plan_.pop_front();
+        std::cerr<<"DEBUG: act="<<static_cast<int>(act)<<"\n";
+        switch(act) {
+            case ActionRequest::RotateLeft45: curDir_=(curDir_+7)%8; break;
+            case ActionRequest::RotateRight45: curDir_=(curDir_+1)%8; break;
+            case ActionRequest::MoveForward: curX_+=DX[curDir_]; curY_+=DY[curDir_]; break;
+            case ActionRequest::MoveBackward: curX_-=DX[curDir_]; curY_-=DY[curDir_]; break;
+            case ActionRequest::Shoot: shellsLeft_--; algoCooldown_=SHOOT_CD; seenInfo_=false; break;
+            default: break;
         }
         return act;
     }
-
-    // 3) BFS‐plan to nearest shoot‐through‐walls vantage
-    {
-        std::cerr<<" → BFS planning\n";
-        int R = lastInfo_.rows, C = lastInfo_.cols;
-        int sx = lastInfo_.selfX, sy = lastInfo_.selfY;
-
-        int total = R*C*8;
-        std::vector<char>          visited(total,0);
-        std::vector<int>           parent(total,-1);
-        std::vector<ActionRequest> parentAct(total,ActionRequest::DoNothing);
-        std::queue<int>            q;
-
-        int start = encode(sx,sy,direction_);
-        visited[start] = 1;
-        parent[start]  = start;
-        q.push(start);
-
-        int bestState = -1, bestCost = std::numeric_limits<int>::max();
-
-        while (!q.empty() && bestState<0) {
-            int cur = q.front(); q.pop();
-            int x,y,d; decode(cur,x,y,d);
-
-            // scan along d through empties and walls
-            int wx=x, wy=y, walls=0;
-            while (true) {
-                wx += DX[d];
-                wy += DY[d];
-                if (wx<0||wx>=C||wy<0||wy>=R) break;
-                char c = lastInfo_.grid[wy][wx];
-                if (c=='@') { break; }       // mine blocks
-                if (c=='#') { walls++; continue; }
-                if (c==enemyChar_) {
-                    int cost = walls*2 + 1;
-                    std::cerr<<"    Enemy at ("<<wx<<","<<wy<<") cost="<<cost<<"\n";
-                    if (cost <= shellsLeft_) {
-                        bestState = cur;
-                        bestCost  = cost;
-                    }
-                }
-                // empty → keep scanning past it
-                continue;
-            }
-            if (bestState>=0) break;
-
-            // expand: R45
-            { int nd=(d+1)&7, id=encode(x,y,nd);
-              if (!visited[id]) {
-                  visited[id]=1; parent[id]=cur;
-                  parentAct[id]=ActionRequest::RotateRight45;
-                  q.push(id);
-              }
-            }
-            // expand: L45
-            { int nd=(d+7)&7, id=encode(x,y,nd);
-              if (!visited[id]) {
-                  visited[id]=1; parent[id]=cur;
-                  parentAct[id]=ActionRequest::RotateLeft45;
-                  q.push(id);
-              }
-            }
-            // expand: MoveForward
-            { int nx=x+DX[d], ny=y+DY[d];
-              if (nx>=0&&nx<C&&ny>=0&&ny<R
-                  && lastInfo_.grid[ny][nx]==' ')
-              {
-                  int id=encode(nx,ny,d);
-                  if (!visited[id]) {
-                      visited[id]=1; parent[id]=cur;
-                      parentAct[id]=ActionRequest::MoveForward;
-                      q.push(id);
-                  }
-              }
-            }
-        }
-
-        if (bestState < 0) {
-            std::cerr<<" → No shooting vantage → fallback GetBattleInfo\n";
-            seenInfo_ = false;
-            return ActionRequest::GetBattleInfo;
-        }
-
-        // reconstruct plan + Shoot
-        std::vector<ActionRequest> rev;
-        for (int st=bestState; parent[st]!=st; st=parent[st])
-            rev.push_back(parentAct[st]);
-        std::cerr<<" → Enqueue plan of "<<rev.size()<<"+Shoot steps\n";
-        for (auto it=rev.rbegin(); it!=rev.rend(); ++it) {
-            std::cerr<<"    step "<<actionToString(*it)<<"\n";
-            plan_.push_back(*it);
-            if (*it==ActionRequest::RotateRight45)
-                direction_=(direction_+1)&7;
-            else if (*it==ActionRequest::RotateLeft45)
-                direction_=(direction_+7)&7;
-        }
-        plan_.push_back(ActionRequest::Shoot);
-        shellsLeft_ -= bestCost;
-        std::cerr<<"    -> shellsLeft now="<<shellsLeft_<<"\n";
-    }
-
-    // 4) Execute the first step
-    if (!plan_.empty()) {
-        auto act = plan_.front();
-        plan_.pop_front();
-        std::cerr<<" → Exec "<<actionToString(act)<<"\n";
-        if (act==ActionRequest::Shoot) {
-            algoShootCooldown_ = ALG_SHOOT_CD;
-            seenInfo_          = false;
-        }
-        return act;
-    }
-
-    // fallback safety
-    std::cerr<<" → Safety fallback GetBattleInfo\n";
-    seenInfo_ = false;
+    seenInfo_=false; std::cerr<<"DEBUG: ->GetBattleInfo fallback\n";
     return ActionRequest::GetBattleInfo;
+}
+
+void AggressiveTank::computePlan() {
+    std::cerr<<"DEBUG: computePlan pos=("<<curX_<<","<<curY_<<") dir="<<curDir_<<" shells="<<shellsLeft_<<"\n";
+    int rows=(int)lastInfo_.rows, cols=(int)lastInfo_.cols;
+    int total=rows*cols*8;
+    const int INF=std::numeric_limits<int>::max();
+    std::vector<int> dist(total,INF), parent(total,-1);
+    std::vector<common::ActionRequest> via(total);
+    std::priority_queue<std::pair<int,int>,std::vector<std::pair<int,int>>,std::greater<>>pq;
+    int start=(curY_*cols+curX_)*8+curDir_;
+    dist[start]=0; pq.push({0,start});
+    int bestU=-1, bestT=INF;
+    while(!pq.empty()){
+        auto [t,u]=pq.top(); pq.pop(); if(t>dist[u]) continue;
+        int ux=(u/8)%cols, uy=(u/8)/cols, ud=u%8;
+        int walls=0; bool vis=false;
+        int tx=ux, ty=uy;
+        while(true){ tx+=DX[ud]; ty+=DY[ud];
+            if(tx<0||tx>=cols||ty<0||ty>=rows) break;
+            char c=lastInfo_.grid[ty][tx];
+            if(c=='#'){walls++;break;} 
+            if(c!='.') {vis=true;break;}
+        }
+        if(vis){ int cost=(walls*2+1);
+            if(cost<=shellsLeft_){int tt=t+ROTATE_COST+1;
+                if(tt<bestT){bestT=tt; bestU=u;
+                    std::cerr<<"DEBUG: found u="<<u<<" t="<<tt<<" walls="<<walls<<"\n";}}
+            break;
+        }
+        for(int delta:std::initializer_list<int>{-1,1}){
+            int nd=(ud+delta+8)%8, v=(uy*cols+ux)*8+nd;
+            int ct=t+ROTATE_COST;
+            if(ct<dist[v]){dist[v]=ct;parent[v]=u;via[v]=(delta<0?ActionRequest::RotateLeft45:ActionRequest::RotateRight45);pq.push({ct,v});}
+        }
+        int fx=ux+DX[ud], fy=uy+DY[ud];
+        if(isTraversable(fx,fy)){
+            int v=(fy*cols+fx)*8+ud, ct=t+MOVE_COST;
+            if(ct<dist[v]){dist[v]=ct;parent[v]=u;via[v]=ActionRequest::MoveForward;pq.push({ct,v});}
+        }
+    }
+    if(bestU<0){std::cerr<<"DEBUG: no shoot state\n";return;}
+    std::vector<common::ActionRequest> seq;
+    for(int v=bestU;v!=start;v=parent[v]) seq.push_back(via[v]);
+    std::reverse(seq.begin(),seq.end());
+    std::cerr<<"DEBUG: seq:";
+    for(auto &a:seq) std::cerr<<" "<<static_cast<int>(a);
+    std::cerr<<"\n";
+    for(auto &a:seq) plan_.push_back(a);
+    int ds, wh;
+    lineOfSight((bestU/8)%cols,(bestU/8)/cols,bestU%8,ds,wh);
+    std::cerr<<"DEBUG: shoot walls="<<wh<<" shots="<<(wh*2+1)<<"\n";
+    for(int i=0;i<wh*2;++i) plan_.push_back(ActionRequest::Shoot);
+    plan_.push_back(ActionRequest::Shoot);
+}
+
+bool AggressiveTank::lineOfSight(int sx,int sy,int dir,int& ds,int& wh) const{
+    ds=wh=0;
+    int rows=(int)lastInfo_.rows, cols=(int)lastInfo_.cols;
+    int x=sx, y=sy;
+    while(true){ x+=DX[dir]; y+=DY[dir]; ++ds;
+        if(x<0||x>=cols||y<0||y>=rows) return false;
+        char c=lastInfo_.grid[y][x];
+        if(c=='#'){++wh;return false;}
+        if(c!='.') return true;
+    }
+}
+
+bool AggressiveTank::isTraversable(int x,int y) const{
+    int rows=(int)lastInfo_.rows, cols=(int)lastInfo_.cols;
+    return x>=0&&x<cols&&y>=0&&y<rows&&lastInfo_.grid[y][x]=='.';
 }

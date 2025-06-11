@@ -1,33 +1,37 @@
+// AggressiveTank.h
 #pragma once
 
 #include "common/TankAlgorithm.h"
 #include "MyBattleInfo.h"
-#include "ActionRequest.h"
+#include "common/ActionRequest.h"
 #include <deque>
 
 namespace arena {
 
 class AggressiveTank : public common::TankAlgorithm {
 public:
-    AggressiveTank(int playerIndex, int tankIndex);
+    AggressiveTank(int playerIndex, int /*tankIndex*/);
     void updateBattleInfo(common::BattleInfo& info) override;
     common::ActionRequest getAction() override;
 
 private:
     MyBattleInfo                            lastInfo_;
-    int                                      shellsLeft_{-1};
-    char                                     enemyChar_;
-    int                                      direction_;
-    bool                                     seenInfo_{false};
+    int                                     shellsLeft_{-1};
+    bool                                    seenInfo_{false};
+    int                                     algoCooldown_{0};
+    std::deque<common::ActionRequest>       plan_;
+    int                                     ticksSinceInfo_{0};
+    static constexpr int                    REFRESH_INTERVAL = 5;
 
-    // algorithm‐level cooldown before next Shoot request
-    int                                      algoShootCooldown_{0};
-    static constexpr int                    ALG_SHOOT_CD = 4;
+    int                                     curX_{0}, curY_{0}, curDir_{0};
 
-    std::deque<common::ActionRequest>        plan_;
+    static constexpr int                    ROTATE_COST = 1;
+    static constexpr int                    MOVE_COST   = 1;
+    static constexpr int                    SHOOT_CD    = 4;
 
-    int  encode(int x,int y,int d) const;
-    void decode(int code,int& x,int& y,int& d) const;
+    void computePlan();
+    bool lineOfSight(int startX, int startY, int dir, int& distSteps, int& wallsHit) const;
+    bool isTraversable(int x, int y) const;
 };
 
 } // namespace arena
