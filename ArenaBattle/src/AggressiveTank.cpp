@@ -1,3 +1,5 @@
+
+// AggressiveTank.cpp
 #include "AggressiveTank.h"
 #include <queue>
 #include <limits>
@@ -67,7 +69,7 @@ void AggressiveTank::computePlan() {
         while(true){ tx+=DX[ud]; ty+=DY[ud];
             if(tx<0||tx>=cols||ty<0||ty>=rows) break;
             char c=lastInfo_.grid[ty][tx];
-            if(c=='#'){walls++;break;} 
+            if(c=='#'){ walls++; continue; } 
             if(c!='.') {vis=true;break;}
         }
         if(vis){ int cost=(walls*2+1);
@@ -76,12 +78,26 @@ void AggressiveTank::computePlan() {
                     std::cerr<<"DEBUG: found u="<<u<<" t="<<tt<<" walls="<<walls<<"\n";}}
             break;
         }
-        for(int delta:std::initializer_list<int>{-1,1}){
-            int nd=(ud+delta+8)%8, v=(uy*cols+ux)*8+nd;
-            int ct=t+ROTATE_COST;
-            if(ct<dist[v]){dist[v]=ct;parent[v]=u;via[v]=(delta<0?ActionRequest::RotateLeft45:ActionRequest::RotateRight45);pq.push({ct,v});}
+                // rotate 45° and 90°
+        for (auto delta : std::initializer_list<int>{-1, 1, -2, 2}) {
+            int nd = (ud + delta + 8) % 8;
+            int v = (uy * cols + ux) * 8 + nd;
+            int cost = t + ROTATE_COST;
+            if (cost < dist[v]) {
+                dist[v] = cost;
+                parent[v] = u;
+                common::ActionRequest act = (delta == -1
+                    ? ActionRequest::RotateLeft45
+                    : delta == 1
+                        ? ActionRequest::RotateRight45
+                        : delta == -2
+                            ? ActionRequest::RotateLeft90
+                            : ActionRequest::RotateRight90);
+                via[v] = act;
+                pq.push({cost, v});
+            }
         }
-        int fx=ux+DX[ud], fy=uy+DY[ud];
+        int fx = ux + DX[ud], fy = uy + DY[ud];
         if(isTraversable(fx,fy)){
             int v=(fy*cols+fx)*8+ud, ct=t+MOVE_COST;
             if(ct<dist[v]){dist[v]=ct;parent[v]=u;via[v]=ActionRequest::MoveForward;pq.push({ct,v});}
