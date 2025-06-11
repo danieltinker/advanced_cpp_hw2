@@ -1,3 +1,4 @@
+
 // AggressiveTank.cpp
 #include "AggressiveTank.h"
 #include <queue>
@@ -106,24 +107,22 @@ ActionRequest AggressiveTank::getAction() {
 
 std::vector<AggressiveTank::ShootState> AggressiveTank::findShootStates() const {
     std::vector<ShootState> out;
-    int rows = static_cast<int>(lastInfo_.grid.size());
-    if (rows == 0) return out;
-    int cols = static_cast<int>(lastInfo_.grid[0].size());
-
-    for (int y = 0; y < rows; ++y) {
-        for (int x = 0; x < cols; ++x) {
-            for (int d = 0; d < 8; ++d) {
-                int ds, wh;
-                if (lineOfSight(x, y, d, ds, wh)) {
-                    int cost = wh * 2 + 1;
-                    if (cost <= shellsLeft_) out.push_back({{x,y,d}, wh});
-                }
-            }
+    // Only consider shooting from our current position
+    int sx = curX_;
+    int sy = curY_;
+    int rows = static_cast<int>(lastInfo_.grid.size()); if (!rows) return out;
+    // int cols = static_cast<int>(lastInfo_.grid[0].size());
+    // Test each direction from current cell
+    for (int d = 0; d < 8; ++d) {
+        int ds, wh;
+        if (lineOfSight(sx, sy, d, ds, wh)) {
+            // ds is distance steps until enemy, wh is walls count
+            // Only shoot if there is an enemy (ds>=0) or need to clear a wall (wh>0)
+            out.push_back({{sx, sy, d}, wh});
         }
     }
     return out;
 }
-
 std::vector<ActionRequest> AggressiveTank::planPathTo(const State& target) {
     int rows = static_cast<int>(lastInfo_.grid.size()); if (rows == 0) return {};
     int cols = static_cast<int>(lastInfo_.grid[0].size());
@@ -219,26 +218,41 @@ void AggressiveTank::computePlan() {
 }
 
 bool AggressiveTank::lineOfSight(int sx, int sy, int dir, int &ds, int &wh) const {
-    ds = wh = 0;
+    ds = 0;
+    wh = 0;
     int rows = static_cast<int>(lastInfo_.grid.size()); if (!rows) return false;
     int cols = static_cast<int>(lastInfo_.grid[0].size());
-    int x = sx, y = sy;
+    int x = sx;
+    int y = sy;
+    int walls = 0;
     while (true) {
-        x += DX[dir]; y += DY[dir]; ++ds;
+        x += DX[dir]; y += DY[dir];
         if (x < 0 || x >= cols || y < 0 || y >= rows) return false;
         char c = lastInfo_.grid[y][x];
-        if (c == '#') { ++wh; return false; }
-        if (c == '@') return false;
-        if (c == '_'||c == '.'||c == '%') continue;
-        if ((playerIndex_==1 && c=='2') || (playerIndex_==2 && c=='1')) return true;
+        if (c == '#') {
+            // count wall but continue to see if enemy behind it
+            walls++;
+            continue;
+        }
+        if (c == '@') return false; // mine blocks
+        if (c == '_' || c == '.' || c == '%') continue; // transparent ground/self
+        // friendly tank blocks the shot
+        if ((playerIndex_ == 1 && c == '1') || (playerIndex_ == 2 && c == '2'))
+            return false;
+        // enemy tank seen: record walls count as wh
+        if ((playerIndex_ == 1 && c == '2') || (playerIndex_ == 2 && c == '1')) {
+            ds = walls;
+            wh = walls;
+            return true;
+        }
         return false;
     }
 }
-
 bool AggressiveTank::isTraversable(int x, int y) const {
     int rows = static_cast<int>(lastInfo_.grid.size()); if (!rows) return false;
     int cols = static_cast<int>(lastInfo_.grid[0].size());
     if (x < 0 || y < 0 || x >= cols || y >= rows) return false;
     char c = lastInfo_.grid[y][x];
-    return (c == '_' || c == '.');
+    // allow moving onto empty ground or self position
+    return (c == '_' || c == '.' || c == '%');
 }
