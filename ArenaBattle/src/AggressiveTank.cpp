@@ -1,136 +1,191 @@
-
 // AggressiveTank.cpp
 #include "AggressiveTank.h"
 #include <queue>
-#include <limits>
 #include <algorithm>
-#include <iostream>
+#include <cmath>
+#include <limits>
 
-using namespace arena;
-using namespace common;
+namespace arena {
 
-static constexpr int DX[8] = {0,1,1,1,0,-1,-1,-1};
-static constexpr int DY[8] = {-1,-1,0,1,1,1,0,-1};
+AggressiveTank::AggressiveTank(int playerIndex, int /*tankIndex*/) noexcept
+    : common::TankAlgorithm()
+    , lastInfo_(0,0)
+    , ammo_(0)
+    , enemyId_(playerIndex == 1 ? '2' : '1')
+    , dir_(playerIndex == 1 ? 6 : 2)  // player1 faces left (6), player2 faces right (2)
+    , infoFetched_(false)
+    , turnsSinceFetch_(kRefreshTurns)
+{}
 
-AggressiveTank::AggressiveTank(int playerIndex, int /*tankIndex*/)
-  : lastInfo_(0,0), curDir_(playerIndex==1?2:6) {
-    std::cerr << "DEBUG: AggressiveTank init player=" << playerIndex << " dir=" << curDir_ << "\n";
-}
-
-void AggressiveTank::updateBattleInfo(BattleInfo& info) {
-    lastInfo_ = static_cast<MyBattleInfo&>(info);
-    if(shellsLeft_<0) shellsLeft_=static_cast<int>(lastInfo_.shellsRemaining);
-    seenInfo_=true; ticksSinceInfo_=0;
-    curX_=static_cast<int>(lastInfo_.selfX);
-    curY_=static_cast<int>(lastInfo_.selfY);
+void AggressiveTank::updateBattleInfo(common::BattleInfo& info) {
+    auto &mi = static_cast<MyBattleInfo&>(info);
+    lastInfo_        = mi;
+    ammo_            = static_cast<int>(mi.shellsRemaining);
+    turnsSinceFetch_ = 0;
     plan_.clear();
-    std::cerr << "DEBUG: updateBattleInfo pos=("<<curX_<<","<<curY_<<") shells="<<shellsLeft_<<"\n";
+    if (!infoFetched_) {
+        // Mark that initial info has been fetched
+        infoFetched_ = true;
+    }
 }
 
 common::ActionRequest AggressiveTank::getAction() {
-    std::cerr<<"DEBUG: getAction seen="<<seenInfo_<<" ticks="<<ticksSinceInfo_<<" cd="<<algoCooldown_<<" plan="<<plan_.size()<<" pos=("<<curX_<<","<<curY_<<") dir="<<curDir_<<" shells="<<shellsLeft_<<"\n";
-    if(!seenInfo_) { std::cerr<<"DEBUG: ->GetBattleInfo no info\n"; return ActionRequest::GetBattleInfo; }
-    if(++ticksSinceInfo_>=REFRESH_INTERVAL) { seenInfo_=false; std::cerr<<"DEBUG: ->GetBattleInfo refresh\n"; return ActionRequest::GetBattleInfo; }
-    if(algoCooldown_>0) { --algoCooldown_; curDir_=(curDir_+7)%8; std::cerr<<"DEBUG: ->RotateLeft45 cd\n"; return ActionRequest::RotateLeft45; }
-    if(plan_.empty()) { std::cerr<<"DEBUG: computing plan\n"; computePlan(); }
-    if(!plan_.empty()) {
-        auto act=plan_.front(); plan_.pop_front();
-        std::cerr<<"DEBUG: act="<<static_cast<int>(act)<<"\n";
-        switch(act) {
-            case ActionRequest::RotateLeft45: curDir_=(curDir_+7)%8; break;
-            case ActionRequest::RotateRight45: curDir_=(curDir_+1)%8; break;
-            case ActionRequest::MoveForward: curX_+=DX[curDir_]; curY_+=DY[curDir_]; break;
-            case ActionRequest::MoveBackward: curX_-=DX[curDir_]; curY_-=DY[curDir_]; break;
-            case ActionRequest::Shoot: shellsLeft_--; algoCooldown_=SHOOT_CD; seenInfo_=false; break;
-            default: break;
-        }
+    if (!infoFetched_) return common::ActionRequest::GetBattleInfo;
+    if (++turnsSinceFetch_ >= kRefreshTurns) {
+        infoFetched_ = false;
+        return common::ActionRequest::GetBattleInfo;
+    }
+    if (!plan_.empty()) {
+        auto act = plan_.front(); plan_.pop_front();
         return act;
     }
-    seenInfo_=false; std::cerr<<"DEBUG: ->GetBattleInfo fallback\n";
-    return ActionRequest::GetBattleInfo;
-}
 
-void AggressiveTank::computePlan() {
-    std::cerr<<"DEBUG: computePlan pos=("<<curX_<<","<<curY_<<") dir="<<curDir_<<" shells="<<shellsLeft_<<"\n";
-    int rows=(int)lastInfo_.rows, cols=(int)lastInfo_.cols;
-    int total=rows*cols*8;
-    const int INF=std::numeric_limits<int>::max();
-    std::vector<int> dist(total,INF), parent(total,-1);
-    std::vector<common::ActionRequest> via(total);
-    std::priority_queue<std::pair<int,int>,std::vector<std::pair<int,int>>,std::greater<>>pq;
-    int start=(curY_*cols+curX_)*8+curDir_;
-    dist[start]=0; pq.push({0,start});
-    int bestU=-1, bestT=INF;
-    while(!pq.empty()){
-        auto [t,u]=pq.top(); pq.pop(); if(t>dist[u]) continue;
-        int ux=(u/8)%cols, uy=(u/8)/cols, ud=u%8;
-        int walls=0; bool vis=false;
-        int tx=ux, ty=uy;
-        while(true){ tx+=DX[ud]; ty+=DY[ud];
-            if(tx<0||tx>=cols||ty<0||ty>=rows) break;
-            char c=lastInfo_.grid[ty][tx];
-            if(c=='#'){ walls++; continue; } 
-            if(c!='.') {vis=true;break;}
-        }
-        if(vis){ int cost=(walls*2+1);
-            if(cost<=shellsLeft_){int tt=t+ROTATE_COST+1;
-                if(tt<bestT){bestT=tt; bestU=u;
-                    std::cerr<<"DEBUG: found u="<<u<<" t="<<tt<<" walls="<<walls<<"\n";}}
-            break;
-        }
-                // rotate 45° and 90°
-        for (auto delta : std::initializer_list<int>{-1, 1, -2, 2}) {
-            int nd = (ud + delta + 8) % 8;
-            int v = (uy * cols + ux) * 8 + nd;
-            int cost = t + ROTATE_COST;
-            if (cost < dist[v]) {
-                dist[v] = cost;
-                parent[v] = u;
-                common::ActionRequest act = (delta == -1
-                    ? ActionRequest::RotateLeft45
-                    : delta == 1
-                        ? ActionRequest::RotateRight45
-                        : delta == -2
-                            ? ActionRequest::RotateLeft90
-                            : ActionRequest::RotateRight90);
-                via[v] = act;
-                pq.push({cost, v});
+    int sx = static_cast<int>(lastInfo_.selfX);
+    int sy = static_cast<int>(lastInfo_.selfY);
+    auto [tx, ty] = findNearestEnemy(sx, sy);
+
+    // SHOOT if clear line-of-sight to an enemy ('1' or '2'), not '%'
+    if (ammo_ > 0 && hasLineOfSight(sx, sy, tx, ty)) {
+        plan_.push_back(common::ActionRequest::Shoot);
+        --ammo_;
+    } else {
+        // Movement: A* path or fallback
+        auto path = findPath(sx, sy, tx, ty);
+        if (path.size() > 1) {
+            auto [nx, ny] = path[1];
+            int desired = chooseDirection(nx - sx, ny - sy);
+            if (desired != dir_) plan_.push_back(makeRotate(desired));
+            plan_.push_back(common::ActionRequest::MoveForward);
+        } else {
+            int dx = tx - sx, dy = ty - sy;
+            int desired = chooseDirection(dx, dy);
+            if (desired != dir_) plan_.push_back(makeRotate(desired));
+            int fx = sx + kDirOffsets[desired].first;
+            int fy = sy + kDirOffsets[desired].second;
+            if (inBounds(fx, fy) && lastInfo_.grid[fy][fx] == '.') {
+                plan_.push_back(common::ActionRequest::MoveForward);
             }
         }
-        int fx = ux + DX[ud], fy = uy + DY[ud];
-        if(isTraversable(fx,fy)){
-            int v=(fy*cols+fx)*8+ud, ct=t+MOVE_COST;
-            if(ct<dist[v]){dist[v]=ct;parent[v]=u;via[v]=ActionRequest::MoveForward;pq.push({ct,v});}
+    }
+
+    return plan_.empty()
+         ? common::ActionRequest::GetBattleInfo
+         : plan_.front();
+}
+
+bool AggressiveTank::hasLineOfSight(int x0, int y0, int x1, int y1) const noexcept {
+    int dx = std::abs(x1 - x0), sx = x0 < x1 ? 1 : -1;
+    int dy = -std::abs(y1 - y0), sy = y0 < y1 ? 1 : -1;
+    int err = dx + dy;
+    while (true) {
+        if (x0 == x1 && y0 == y1) return true;
+        if (!inBounds(x0, y0) || lastInfo_.grid[y0][x0] == '#') return false;
+        int e2 = 2 * err;
+        if (e2 >= dy) { err += dy; x0 += sx; }
+        if (e2 <= dx) { err += dx; y0 += sy; }
+    }
+}
+
+int AggressiveTank::chooseDirection(int dx, int dy) const noexcept {
+    int best = dir_, maxDot = std::numeric_limits<int>::min();
+    for (int d = 0; d < 8; ++d) {
+        auto [ox, oy] = kDirOffsets[d];
+        int dot = ox * dx + oy * dy;
+        if (dot > maxDot) { maxDot = dot; best = d; }
+    }
+    return best;
+}
+
+std::pair<int,int> AggressiveTank::findNearestEnemy(int sx, int sy) const noexcept {
+    int bestDist = std::numeric_limits<int>::max();
+    std::pair<int,int> target{sx, sy};
+    for (int y = 0; y < static_cast<int>(lastInfo_.rows); ++y) {
+        for (int x = 0; x < static_cast<int>(lastInfo_.cols); ++x) {
+            char c = lastInfo_.grid[y][x];
+            if ((enemyId_ == '1' && c == '1') || (enemyId_ == '2' && c == '2')) {
+                int d = std::abs(x - sx) + std::abs(y - sy);
+                if (d < bestDist) { bestDist = d; target = {x, y}; }
+            }
         }
     }
-    if(bestU<0){std::cerr<<"DEBUG: no shoot state\n";return;}
-    std::vector<common::ActionRequest> seq;
-    for(int v=bestU;v!=start;v=parent[v]) seq.push_back(via[v]);
-    std::reverse(seq.begin(),seq.end());
-    std::cerr<<"DEBUG: seq:";
-    for(auto &a:seq) std::cerr<<" "<<static_cast<int>(a);
-    std::cerr<<"\n";
-    for(auto &a:seq) plan_.push_back(a);
-    int ds, wh;
-    lineOfSight((bestU/8)%cols,(bestU/8)/cols,bestU%8,ds,wh);
-    std::cerr<<"DEBUG: shoot walls="<<wh<<" shots="<<(wh*2+1)<<"\n";
-    for(int i=0;i<wh*2;++i) plan_.push_back(ActionRequest::Shoot);
-    plan_.push_back(ActionRequest::Shoot);
+    return target;
 }
 
-bool AggressiveTank::lineOfSight(int sx,int sy,int dir,int& ds,int& wh) const{
-    ds=wh=0;
-    int rows=(int)lastInfo_.rows, cols=(int)lastInfo_.cols;
-    int x=sx, y=sy;
-    while(true){ x+=DX[dir]; y+=DY[dir]; ++ds;
-        if(x<0||x>=cols||y<0||y>=rows) return false;
-        char c=lastInfo_.grid[y][x];
-        if(c=='#'){++wh;return false;}
-        if(c!='.') return true;
+std::vector<std::pair<int,int>> AggressiveTank::findPath(int sx, int sy, int tx, int ty) const {
+    int W = static_cast<int>(lastInfo_.cols), H = static_cast<int>(lastInfo_.rows);
+    auto idx = [&](int x, int y, int d) { return (y * W + x) * 8 + d; };
+    int total = W * H * 8;
+
+    struct Node { int cost, v; };
+    auto cmp = [](Node const &a, Node const &b) { return a.cost > b.cost; };
+    std::priority_queue<Node, std::vector<Node>, decltype(cmp)> pq(cmp);
+
+    std::vector<int> dist(total, std::numeric_limits<int>::max());
+    std::vector<int> prev(total, -1);
+    std::vector<common::ActionRequest> via(total);
+
+    for (int d = 0; d < 8; ++d) {
+        int v = idx(sx, sy, d);
+        dist[v] = 0;
+        pq.push({0, v});
     }
+    int goalV = -1;
+
+    while (!pq.empty()) {
+        auto [c, u] = pq.top(); pq.pop();
+        if (c != dist[u]) continue;
+        int d = u % 8;
+        int x = (u / 8) % W;
+        int y = (u / 8) / W;
+        if (x == tx && y == ty) { goalV = u; break; }
+        // Rotate neighbors
+        for (auto [delta, action] : std::array<std::pair<int, common::ActionRequest>, 4>{{
+            {-1, common::ActionRequest::RotateLeft45},
+            { 1, common::ActionRequest::RotateRight45},
+            {-2, common::ActionRequest::RotateLeft90},
+            { 2, common::ActionRequest::RotateRight90}
+        }}) {
+            int nd = (d + delta + 8) % 8;
+            int v2 = idx(x, y, nd);
+            int w = c + (std::abs(delta) == 2 ? kRotateCost90 : kRotateCost45);
+            if (w < dist[v2]) { dist[v2] = w; prev[v2] = u; via[v2] = action; pq.push({w, v2}); }
+        }
+        // Forward neighbor
+        auto [ox, oy] = kDirOffsets[d];
+        int nx = x + ox, ny = y + oy;
+        if (inBounds(nx, ny) && lastInfo_.grid[ny][nx] == '.') {
+            int v2 = idx(nx, ny, d);
+            int w = c + kMoveCost;
+            if (w < dist[v2]) { dist[v2] = w; prev[v2] = u; via[v2] = common::ActionRequest::MoveForward; pq.push({w, v2}); }
+        }
+    }
+
+    std::vector<std::pair<int,int>> path;
+    if (goalV >= 0) {
+        int v = goalV;
+        std::vector<common::ActionRequest> seq;
+        while (prev[v] >= 0) { seq.push_back(via[v]); v = prev[v]; }
+        std::reverse(seq.begin(), seq.end());
+        int cx = sx, cy = sy;
+        for (auto &a : seq) {
+            if (a == common::ActionRequest::MoveForward) {
+                auto [dx, dy] = kDirOffsets[v % 8];
+                cx += dx; cy += dy;
+                path.emplace_back(cx, cy);
+                break;
+            }
+        }
+    }
+    if (path.empty()) path.emplace_back(sx, sy);
+    return path;
 }
 
-bool AggressiveTank::isTraversable(int x,int y) const{
-    int rows=(int)lastInfo_.rows, cols=(int)lastInfo_.cols;
-    return x>=0&&x<cols&&y>=0&&y<rows&&lastInfo_.grid[y][x]=='.';
+common::ActionRequest AggressiveTank::makeRotate(int desiredDir) noexcept {
+    int diff = (desiredDir - dir_ + 8) % 8;
+    if (diff == 2) { dir_ = (dir_ + 2) % 8; return common::ActionRequest::RotateRight90; }
+    if (diff == 6) { dir_ = (dir_ + 6) % 8; return common::ActionRequest::RotateLeft90; }
+    if (diff <= 4) { dir_ = (dir_ + 1) % 8; return common::ActionRequest::RotateRight45; }
+    dir_ = (dir_ + 7) % 8; return common::ActionRequest::RotateLeft45;
 }
+
+} // namespace arena
