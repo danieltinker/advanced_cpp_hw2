@@ -89,29 +89,27 @@ std::string GameState::advanceOneTurn() {
             actions[k] = req;
         }
     }
-
-    // 1) Save the original algorithm requests for logging
+// ─── Just after “Gather raw requests” and before any rotations ─────────────────
+// 1) Snapshot the original requests for logging
 std::vector<ActionRequest> logActions = actions;
 
-// 2) Backward‐delay logic: schedule, block, and execute only on the final tick
+// 2) Backward‐delay logic (2 turns idle, 3rd turn executes)
 for (size_t k = 0; k < N; ++k) {
     auto& ts   = all_tanks_[k];
     auto  orig = logActions[k];
 
-    // — If we’re in the middle of a prior MoveBackward delay…
+    // (A) Mid‐delay from a previous MoveBackward?
     if (ts.backwardDelayCounter > 0) {
-        // decrement the counter
         --ts.backwardDelayCounter;
-
         if (ts.backwardDelayCounter == 0) {
-            // final tick → actually move backward
+            // 3rd turn → actually move backward
             ts.lastActionBackwardExecuted = true;
             actions[k] = ActionRequest::MoveBackward;
-            ignored[k] = false;
+            ignored[k] = true;
         } else {
-            // still waiting → only forward or info get through
+            // still in delay → only forward/info allowed
             if (orig == ActionRequest::MoveForward) {
-                // cancel the pending backward
+                // cancel the delay
                 ts.backwardDelayCounter       = 0;
                 ts.lastActionBackwardExecuted = false;
                 actions[k] = ActionRequest::MoveForward;
@@ -122,7 +120,6 @@ for (size_t k = 0; k < N; ++k) {
                 ignored[k] = false;
             }
             else {
-                // ignore everything else
                 actions[k] = ActionRequest::DoNothing;
                 ignored[k] = true;
             }
@@ -130,22 +127,23 @@ for (size_t k = 0; k < N; ++k) {
         continue;
     }
 
-    // — No pending delay: is this a new backward request?
+    // (B) No pending delay: new MoveBackward request?
     if (orig == ActionRequest::MoveBackward) {
-        // schedule 3 full ignored turns + 1 execution turn
+        // schedule exactly 2 idle turns then exec on the 3rd
         ts.backwardDelayCounter       = ts.lastActionBackwardExecuted ? 1 : 3;
         ts.lastActionBackwardExecuted = false;
 
-        // do nothing this turn (real MoveBackward fires later)
+        // do nothing this turn (exec will happen when counter→0)
         actions[k] = ActionRequest::DoNothing;
         ignored[k] = false;
         continue;
     }
 
-    // — Any other action simply clears the “just did backward” flag
+    // (C) All other actions clear the “just did backward” flag
     ts.lastActionBackwardExecuted = false;
-    // actions[k] remains as orig; ignored[k] stays false
+    // actions[k] remains orig; ignored[k] stays false
 }
+
 
     // 2) Rotations
     applyTankRotations(actions);

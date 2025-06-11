@@ -150,5 +150,5 @@ ActionRequest AggressiveTank::getAction() {
     // (6) otherwise rotate 90° right
     direction_=(direction_+2)&7;
     --viewCooldown_;
-    return ActionRequest::RotateRight90;
+    return ActionRequest::MoveBackward;
 }
