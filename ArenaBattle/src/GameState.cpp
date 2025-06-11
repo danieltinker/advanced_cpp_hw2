@@ -1,7 +1,7 @@
 #include "GameState.h"
 #include "Board.h"
 #include "MyBattleInfo.h"
-
+#include "utils.h"
 #include <iostream>
 #include <sstream>
 
@@ -40,7 +40,7 @@ void GameState::initialize(const Board& board,
             {
                 int pidx = (cell.content==CellContent::TANK1?1:2);
                 int tidx = nextTankIndex_[pidx]++;
-                TankState ts{pidx,tidx,int(c),int(r),(pidx==1?6:2),true,num_shells_,false,0};
+                TankState ts{pidx,tidx,int(c),int(r),(pidx==1?6:2),true,num_shells_,0,0,false};
                 
                 all_tanks_.push_back(ts);
                 tankIdMap_[pidx][tidx] = all_tanks_.size()-1;
@@ -75,7 +75,7 @@ std::string GameState::advanceOneTurn() {
     std::vector<ActionRequest> actions(N, ActionRequest::DoNothing);
     std::vector<bool> ignored(N,false), killed(N,false);
 
-    // 1) Gather actions
+    // 1) Gather raw requests
     for (size_t k = 0; k < N; ++k) {
         auto& ts  = all_tanks_[k];
         auto& alg = *all_tank_algorithms_[k];
@@ -83,111 +83,138 @@ std::string GameState::advanceOneTurn() {
 
         ActionRequest req = alg.getAction();
         if (req == ActionRequest::GetBattleInfo) {
-            // build snapshot grid
-            std::vector<std::vector<char>> grid(rows_, std::vector<char>(cols_, ' '));
-            for (size_t y=0; y<rows_; ++y)
-                for (size_t x=0; x<cols_; ++x) {
-                    const auto& cell = board_.getCell(int(x),int(y));
-                    grid[y][x] = (cell.content==CellContent::WALL?'#':
-                                  cell.content==CellContent::MINE?'@':
-                                  cell.content==CellContent::TANK1?'1':
-                                  cell.content==CellContent::TANK2?'2':' ');
-                }
-            grid[ts.y][ts.x] = '%';
-            MySatelliteView sv(grid,int(rows_),int(cols_), ts.x, ts.y);
-            if (ts.player_index==1)
-                player1_->updateTankWithBattleInfo(alg, sv);
-            else
-                player2_->updateTankWithBattleInfo(alg, sv);
+            // … your existing snapshot + updateTankWithBattleInfo …
             actions[k] = ActionRequest::GetBattleInfo;
         } else {
             actions[k] = req;
         }
     }
 
-    // Step 2: Apply rotations
-    applyTankRotations(actions);
+    // 1) Save the original algorithm requests for logging
+std::vector<ActionRequest> logActions = actions;
 
-    // Step 3: Handle any tanks on mines
-    handleTankMineCollisions();
-
-    // Step 4: Update (unused) cooldowns
-    updateTankCooldowns();
-
-    // Step 5: Confirm backward–move legality
-    confirmBackwardMoves(ignored, actions);
-
-    // Step 6: Move all shells two sub-steps, checking mid-step collisions
-    updateShellsWithOverrunCheck();
-
-    // Step 7: Resolve shell–shell and shell–tank collisions
-    resolveShellCollisions();
-
-    // Step 8: Spawn new shells from shooting tanks
-    handleShooting(ignored, actions);
-
-    // Step 9: Move tanks (with head-on swaps and multi-tank collisions)
-    updateTankPositionsOnBoard(ignored, killed, actions);
-
-    // Step 10: Drop destroyed shells and mark the survivors on the board
-    filterRemainingShells();
-
-    // Step 11: Final cleanup (nothing to do here)
-    cleanupDestroyedEntities();
-
-    // Step 12: Check for game-over conditions
-    checkGameEndConditions();
-
-    // Step 13: Increment turn counter drop cooldowns
-    ++currentStep_;
-    for (auto& ts : all_tanks_) {
-        if (ts.shootCooldown > 0) 
-            --ts.shootCooldown;
-    }
-
-
-std::ostringstream oss;
+// 2) Backward‐delay logic: schedule, block, and execute only on the final tick
 for (size_t k = 0; k < N; ++k) {
-    const auto act = actions[k];
-    const char* name = "DoNothing";
-    switch (act) {
-      case ActionRequest::MoveForward:    name = "MoveForward";   break;
-      case ActionRequest::MoveBackward:   name = "MoveBackward";  break;
-      case ActionRequest::RotateLeft90:   name = "RotateLeft90";  break;
-      case ActionRequest::RotateRight90:  name = "RotateRight90"; break;
-      case ActionRequest::RotateLeft45:   name = "RotateLeft45";  break;
-      case ActionRequest::RotateRight45:  name = "RotateRight45"; break;
-      case ActionRequest::Shoot:          name = "Shoot";         break;
-      case ActionRequest::GetBattleInfo:  name = "GetBattleInfo"; break;
-      case ActionRequest::DoNothing:      name = nullptr;         break;
-      default:                                                    break;
+    auto& ts   = all_tanks_[k];
+    auto  orig = logActions[k];
+
+    // — If we’re in the middle of a prior MoveBackward delay…
+    if (ts.backwardDelayCounter > 0) {
+        // decrement the counter
+        --ts.backwardDelayCounter;
+
+        if (ts.backwardDelayCounter == 0) {
+            // final tick → actually move backward
+            ts.lastActionBackwardExecuted = true;
+            actions[k] = ActionRequest::MoveBackward;
+            ignored[k] = false;
+        } else {
+            // still waiting → only forward or info get through
+            if (orig == ActionRequest::MoveForward) {
+                // cancel the pending backward
+                ts.backwardDelayCounter       = 0;
+                ts.lastActionBackwardExecuted = false;
+                actions[k] = ActionRequest::MoveForward;
+                ignored[k] = false;
+            }
+            else if (orig == ActionRequest::GetBattleInfo) {
+                actions[k] = ActionRequest::GetBattleInfo;
+                ignored[k] = false;
+            }
+            else {
+                // ignore everything else
+                actions[k] = ActionRequest::DoNothing;
+                ignored[k] = true;
+            }
+        }
+        continue;
     }
 
-    if (all_tanks_[k].alive) {
-        // they survived → just print their action (plus “(ignored)” if applicable)
-        oss << name;
-        if (ignored[k] &&
-           (act == ActionRequest::MoveForward ||
-            act == ActionRequest::MoveBackward ||
-            act == ActionRequest::Shoot))
-        {
-            oss << " (ignored)";
-        }
-    }
-    else {
-        if (!name) {
-            oss << "killed";
-        }
-        else {
-            oss << name;
-            oss << " (killed)";
-        }
+    // — No pending delay: is this a new backward request?
+    if (orig == ActionRequest::MoveBackward) {
+        // schedule 3 full ignored turns + 1 execution turn
+        ts.backwardDelayCounter       = ts.lastActionBackwardExecuted ? 1 : 3;
+        ts.lastActionBackwardExecuted = false;
+
+        // do nothing this turn (real MoveBackward fires later)
+        actions[k] = ActionRequest::DoNothing;
+        ignored[k] = false;
+        continue;
     }
 
-    if (k + 1 < N) oss << ", ";
+    // — Any other action simply clears the “just did backward” flag
+    ts.lastActionBackwardExecuted = false;
+    // actions[k] remains as orig; ignored[k] stays false
 }
 
-return oss.str();
+    // 2) Rotations
+    applyTankRotations(actions);
+    
+
+    // 3) Mines
+    handleTankMineCollisions();
+
+    // 4) Cooldowns (unused)
+    updateTankCooldowns();
+
+    // 5) Backward legality check
+    confirmBackwardMoves(ignored, actions);
+
+    // 6) Shell movement & collisions
+    updateShellsWithOverrunCheck();
+    resolveShellCollisions();
+
+    // 7) Shooting
+    handleShooting(ignored, actions);
+
+    // 8) Tank movement, collisions
+    updateTankPositionsOnBoard(ignored, killed, actions);
+
+    // 9) Cleanup shells & entities
+    filterRemainingShells();
+    cleanupDestroyedEntities();
+
+    // 10) End‐of‐game
+    checkGameEndConditions();
+
+    // 11) Advance step & drop shoot cooldowns
+    ++currentStep_;
+    for (auto& ts : all_tanks_)
+        if (ts.shootCooldown > 0) --ts.shootCooldown;
+
+    // ─── Logging: use the ORIGINAL requests ────────────────────────────────────
+    std::ostringstream oss;
+    for (size_t k = 0; k < N; ++k) {
+        const auto act = logActions[k];
+        const char* name = "DoNothing";
+        switch (act) {
+          case ActionRequest::MoveForward:    name = "MoveForward";   break;
+          case ActionRequest::MoveBackward:   name = "MoveBackward";  break;
+          case ActionRequest::RotateLeft90:   name = "RotateLeft90";  break;
+          case ActionRequest::RotateRight90:  name = "RotateRight90"; break;
+          case ActionRequest::RotateLeft45:   name = "RotateLeft45";  break;
+          case ActionRequest::RotateRight45:  name = "RotateRight45"; break;
+          case ActionRequest::Shoot:          name = "Shoot";         break;
+          case ActionRequest::GetBattleInfo:  name = "GetBattleInfo"; break;
+          default:                                                    break;
+        }
+
+        if (all_tanks_[k].alive) {
+            oss << name;
+            if (ignored[k] && act != ActionRequest::GetBattleInfo)
+            {
+                oss << " (ignored)";
+            }
+        } else {
+            // tank died this turn
+            if (act == ActionRequest::DoNothing)
+                oss << "killed";
+            else
+                oss << name << " (killed)";
+        }
+        if (k + 1 < N) oss << ", ";
+    }
+    return oss.str();
 }
 
 //------------------------------------------------------------------------------

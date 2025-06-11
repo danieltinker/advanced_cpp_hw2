@@ -1,7 +1,0 @@
-GetBattleInfo, GetBattleInfo
-RotateRight45, MoveForward
-Shoot, GetBattleInfo
-GetBattleInfo, MoveBackward
-RotateRight45, GetBattleInfo
-MoveForward (killed), MoveForward (killed)
-Tie, both players have zero tanks
