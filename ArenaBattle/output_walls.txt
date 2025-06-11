@@ -1,21 +1,21 @@
 GetBattleInfo, GetBattleInfo, GetBattleInfo, GetBattleInfo, GetBattleInfo, GetBattleInfo, GetBattleInfo, GetBattleInfo
-RotateRight45, RotateRight90, RotateRight90, DoNothing, DoNothing, MoveForward, DoNothing, RotateRight90
-MoveForward (killed), GetBattleInfo, MoveForward (ignored), GetBattleInfo, GetBattleInfo, MoveForward (killed), GetBattleInfo (killed), RotateRight90
-killed, RotateRight90, MoveForward (ignored), MoveBackward, MoveBackward (ignored), killed, MoveBackward (killed), RotateRight90
-killed, GetBattleInfo (killed), MoveForward (ignored), GetBattleInfo, GetBattleInfo, killed, killed, MoveForward (killed)
-killed, killed, MoveForward (ignored), DoNothing, DoNothing, killed, killed, killed
-killed, killed, MoveForward (ignored), GetBattleInfo, GetBattleInfo, killed, killed, killed
-killed, killed, MoveForward (ignored), MoveBackward, MoveBackward (ignored), killed, killed, killed
-killed, killed, MoveForward (ignored), GetBattleInfo, GetBattleInfo, killed, killed, killed
-killed, killed, MoveForward (ignored), DoNothing, DoNothing, killed, killed, killed
-killed, killed, MoveForward (ignored), GetBattleInfo, GetBattleInfo, killed, killed, killed
-killed, killed, GetBattleInfo, MoveBackward, MoveBackward (ignored), killed, killed, killed
-killed, killed, MoveForward (ignored), GetBattleInfo, GetBattleInfo, killed, killed, killed
-killed, killed, MoveForward (ignored), RotateRight90, RotateRight90, killed, killed, killed
-killed, killed, MoveForward (ignored), GetBattleInfo, GetBattleInfo, killed, killed, killed
-killed, killed, MoveForward (ignored), RotateRight90, DoNothing, killed, killed, killed
-killed, killed, MoveForward (ignored), GetBattleInfo, GetBattleInfo, killed, killed, killed
-killed, killed, MoveForward (ignored), DoNothing, MoveBackward (killed), killed, killed, killed
-killed, killed, MoveForward (ignored), GetBattleInfo, killed, killed, killed, killed
-killed, killed, MoveForward (ignored), MoveBackward, killed, killed, killed, killed
-Tie, reached max steps=20, player1 has 1, player2 has 1
+GetBattleInfo, RotateRight90, GetBattleInfo, RotateRight90, RotateRight90, GetBattleInfo, RotateRight90, GetBattleInfo
+GetBattleInfo, GetBattleInfo, GetBattleInfo, GetBattleInfo, GetBattleInfo, GetBattleInfo, GetBattleInfo, GetBattleInfo
+GetBattleInfo, RotateRight90, GetBattleInfo, RotateRight90, RotateRight90, GetBattleInfo, RotateRight90, GetBattleInfo
+GetBattleInfo, GetBattleInfo, GetBattleInfo, GetBattleInfo, GetBattleInfo, GetBattleInfo, GetBattleInfo, GetBattleInfo
+GetBattleInfo, RotateRight90, GetBattleInfo, RotateRight90, RotateRight90, GetBattleInfo, RotateRight90, GetBattleInfo
+GetBattleInfo, GetBattleInfo, GetBattleInfo, GetBattleInfo, GetBattleInfo, GetBattleInfo, GetBattleInfo, GetBattleInfo
+GetBattleInfo, RotateRight90, GetBattleInfo, RotateRight90, RotateRight90, GetBattleInfo, RotateRight90, GetBattleInfo
+GetBattleInfo, GetBattleInfo, GetBattleInfo, GetBattleInfo, GetBattleInfo, GetBattleInfo, GetBattleInfo, GetBattleInfo
+GetBattleInfo, RotateRight90, GetBattleInfo, RotateRight90, RotateRight90, GetBattleInfo, RotateRight90, GetBattleInfo
+GetBattleInfo, GetBattleInfo, GetBattleInfo, GetBattleInfo, GetBattleInfo, GetBattleInfo, GetBattleInfo, GetBattleInfo
+GetBattleInfo, RotateRight90, GetBattleInfo, RotateRight90, RotateRight90, GetBattleInfo, RotateRight90, GetBattleInfo
+GetBattleInfo, GetBattleInfo, GetBattleInfo, GetBattleInfo, GetBattleInfo, GetBattleInfo, GetBattleInfo, GetBattleInfo
+GetBattleInfo, RotateRight90, GetBattleInfo, RotateRight90, RotateRight90, GetBattleInfo, RotateRight90, GetBattleInfo
+GetBattleInfo, GetBattleInfo, GetBattleInfo, GetBattleInfo, GetBattleInfo, GetBattleInfo, GetBattleInfo, GetBattleInfo
+GetBattleInfo, RotateRight90, GetBattleInfo, RotateRight90, RotateRight90, GetBattleInfo, RotateRight90, GetBattleInfo
+GetBattleInfo, GetBattleInfo, GetBattleInfo, GetBattleInfo, GetBattleInfo, GetBattleInfo, GetBattleInfo, GetBattleInfo
+GetBattleInfo, RotateRight90, GetBattleInfo, RotateRight90, RotateRight90, GetBattleInfo, RotateRight90, GetBattleInfo
+GetBattleInfo, GetBattleInfo, GetBattleInfo, GetBattleInfo, GetBattleInfo, GetBattleInfo, GetBattleInfo, GetBattleInfo
+GetBattleInfo, RotateRight90, GetBattleInfo, RotateRight90, RotateRight90, GetBattleInfo, RotateRight90, GetBattleInfo
+Tie, reached max steps=20, player1 has 4, player2 has 4

@@ -1,9 +1,24 @@
 #include "GameState.h"
 #include "Board.h"
 #include "MyBattleInfo.h"
-#include "utils.h"
+// #include "utils.h"
 #include <iostream>
 #include <sstream>
+
+
+static const char* actionToString(common::ActionRequest a) {
+    switch (a) {
+      case common::ActionRequest::MoveForward:    return "MoveForward";
+      case common::ActionRequest::MoveBackward:   return "MoveBackward";
+      case common::ActionRequest::RotateLeft90:   return "RotateLeft90";
+      case common::ActionRequest::RotateRight90:  return "RotateRight90";
+      case common::ActionRequest::RotateLeft45:   return "RotateLeft45";
+      case common::ActionRequest::RotateRight45:  return "RotateRight45";
+      case common::ActionRequest::Shoot:          return "Shoot";
+      case common::ActionRequest::GetBattleInfo:  return "GetBattleInfo";
+      default:                                    return "DoNothing";
+    }
+}
 
 using namespace arena;
 using namespace common;
@@ -180,6 +195,21 @@ for (size_t k = 0; k < N; ++k) {
     for (auto& ts : all_tanks_)
         if (ts.shootCooldown > 0) --ts.shootCooldown;
 
+
+    // ─── Console print of each tank's decision and status ────────────────────────
+    std::cout << "=== Decisions ===\n"<<std::endl;
+    for (size_t k = 0; k < N; ++k) {
+        const char* actName = actionToString(logActions[k]);
+        bool wasIgnored     = ignored[k]
+        && logActions[k] != common::ActionRequest::GetBattleInfo;
+        std::cout << "  Tank[" << k << "]: "
+        << actName
+        << (wasIgnored ? " (ignored)" : " (accepted)")
+        << "\n";
+    }
+    std::cout << std::endl;
+    std::cout << "=== Board State: ===\n" << std::endl;
+    
     // ─── Logging: use the ORIGINAL requests ────────────────────────────────────
     std::ostringstream oss;
     for (size_t k = 0; k < N; ++k) {
