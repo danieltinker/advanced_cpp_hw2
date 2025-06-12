@@ -1,5 +1,5 @@
-Walls
-MaxSteps = 20
+Test
+MaxSteps = 10
 NumShells = 2
 Rows = 7
 Cols = 7

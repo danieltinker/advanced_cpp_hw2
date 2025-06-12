@@ -52,7 +52,7 @@ private:
     std::deque<common::ActionRequest>  plan_;
 
     // Tunable constants
-    static constexpr int REFRESH_INTERVAL = 5;
+    static constexpr int REFRESH_INTERVAL = 20;
     static constexpr int SHOOT_CD          = 5;
     static constexpr int MOVE_COST         = 1;
     static constexpr int ROTATE_COST       = 1;
