@@ -273,41 +273,76 @@ std::string GameState::getResultString() const { return resultStr_; }
 
 //------------------------------------------------------------------------------
 void GameState::printBoard() const {
+    // 1) Build a snapshot of the board with any moving shells overlaid
     auto gridCopy = board_.getGrid();
     for (auto const& sh : shells_)
         gridCopy[sh.y][sh.x].hasShellOverlay = true;
-    for (auto const& ts : all_tanks_)
-        if (ts.alive)
-            gridCopy[ts.y][ts.x].content = 
-                ts.player_index==1?CellContent::TANK1:CellContent::TANK2;
 
-    for (size_t r=0; r<rows_; ++r) {
-        for (size_t c=0; c<cols_; ++c) {
+    // 2) Mark each live tank on the grid
+    for (auto const& ts : all_tanks_) {
+        if (!ts.alive) continue;
+        gridCopy[ts.y][ts.x].content =
+            ts.player_index == 1 ? CellContent::TANK1 : CellContent::TANK2;
+    }
+
+    // 3) Print row by row
+    for (size_t r = 0; r < rows_; ++r) {
+        for (size_t c = 0; c < cols_; ++c) {
             const auto& cell = gridCopy[r][c];
-            switch(cell.content) {
-            case CellContent::WALL:  std::cout<<'#'; break;
-            case CellContent::MINE:  std::cout<<'@'; break;
-            case CellContent::EMPTY:
-                std::cout << (cell.hasShellOverlay? '*' : '_');
-                break;
-            case CellContent::TANK1:
-            case CellContent::TANK2: {
-                int pid = (cell.content==CellContent::TANK1?1:2);
-                int dir=0;
-                for (auto const& ts: all_tanks_) {
-                    if (ts.alive && ts.player_index==pid &&
-                        ts.x==int(c)&&ts.y==int(r)) { dir=ts.direction; break; }
+
+            // * Supercede everything: if there's a shell here, draw '*'
+            if (cell.hasShellOverlay) {
+                std::cout << '*';
+                continue;
+            }
+
+            switch (cell.content) {
+                case CellContent::WALL:
+                    std::cout << '#';
+                    break;
+
+                case CellContent::EMPTY:
+                    // empty ground
+                    std::cout << '_';
+                    break;
+
+                case CellContent::MINE:
+                    // if a shell landed on a mine, we’d already have shown '*'
+                    std::cout << '@';
+                    break;
+
+                case CellContent::TANK1:
+                case CellContent::TANK2: {
+                    // find that tank’s direction arrow
+                    int pid = (cell.content == CellContent::TANK1 ? 1 : 2);
+                    int dir = 0;
+                    for (auto const& ts : all_tanks_) {
+                        if (ts.alive
+                         && ts.player_index == pid
+                         && ts.x == int(c)
+                         && ts.y == int(r)) {
+                            dir = ts.direction;
+                            break;
+                        }
+                    }
+                    const char* arr = directionToArrow(dir);
+                    // color‐code tanks red/blue
+                    std::cout << (pid == 1 ? "\033[31m" : "\033[34m")
+                              << arr << "\033[0m";
+                    break;
                 }
-                const char* arr = directionToArrow(dir);
-                std::cout << (pid==1? "\033[31m": "\033[34m")
-                          << arr << "\033[0m";
-            } break;
+
+                default:
+                    // shouldn't happen
+                    std::cout << '?';
+                    break;
             }
         }
-        std::cout<<"\n";
+        std::cout << "\n";
     }
-    std::cout<<std::endl;
+    std::cout << std::endl;
 }
+
 
 //------------------------------------------------------------------------------
 const char* GameState::directionToArrow(int dir) {
