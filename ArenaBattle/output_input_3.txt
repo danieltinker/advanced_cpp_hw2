@@ -1,0 +1,6 @@
+GetBattleInfo, GetBattleInfo, GetBattleInfo, GetBattleInfo
+GetBattleInfo, RotateRight90, GetBattleInfo, RotateRight90
+Shoot, GetBattleInfo, Shoot, GetBattleInfo
+GetBattleInfo, RotateRight90 (killed), GetBattleInfo, RotateRight90
+GetBattleInfo, killed, GetBattleInfo, GetBattleInfo (killed)
+Player 1 won with 2 tanks still alive

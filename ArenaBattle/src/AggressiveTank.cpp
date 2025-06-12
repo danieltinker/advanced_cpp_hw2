@@ -236,22 +236,25 @@ std::vector<common::ActionRequest> AggressiveTank::buildShootSequence(int walls)
         s.push_back(ActionRequest::Shoot);
     return s;
 }
-
 std::vector<common::ActionRequest> AggressiveTank::fallbackRoam() const {
     int rows = lastInfo_.grid.size();
     int cols = rows ? lastInfo_.grid[0].size() : 0;
-    int fx = curX_ + DX[curDir_];
-    int fy = curY_ + DY[curDir_];
-    if(fx>=0&&fx<cols&&fy>=0&&fy<rows
-       && lastInfo_.grid[fy][fx] != '@'
-       && isTraversable(fx,fy))
-    {
-        std::cerr << "[ROAM] MoveForward to ("<<fx<<","<<fy<<")\n";
+
+    // compute wrap-around coords
+    int nx = (curX_ + DX[curDir_] + cols) % cols;
+    int ny = (curY_ + DY[curDir_] + rows) % rows;
+
+    // only step if not a mine and traversable
+    if (lastInfo_.grid[ny][nx] != '@' && isTraversable(nx, ny)) {
+        std::cerr << "[ROAM] MoveForward to (" << nx << "," << ny << ")\n";
         return { ActionRequest::MoveForward };
     }
-    std::cerr << "[ROAM] RotateRight45 (blocked)\n";
+
+    std::cerr << "[ROAM] RotateRight45 (blocked or mine at " << nx << "," << ny << ")\n";
     return { ActionRequest::RotateRight45 };
 }
+
+  
 
 void AggressiveTank::computePlan() {
     plan_.clear();
