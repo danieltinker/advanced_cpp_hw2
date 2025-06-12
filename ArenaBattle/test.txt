@@ -1,6 +1,6 @@
 Test
-MaxSteps = 10
-NumShells = 2
+MaxSteps = 30
+NumShells = 100
 Rows = 7
 Cols = 7
 

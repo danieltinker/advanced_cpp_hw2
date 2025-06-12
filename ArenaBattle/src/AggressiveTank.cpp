@@ -94,17 +94,35 @@ ActionRequest AggressiveTank::getAction() {
         plan_.pop_front();
         std::cerr << "DEBUG: act=" << static_cast<int>(act) << std::endl;
         switch (act) {
-            case ActionRequest::RotateLeft45:  curDir_ = (curDir_ + 7) % 8; break;
-            case ActionRequest::RotateRight45: curDir_ = (curDir_ + 1) % 8; break;
-            case ActionRequest::RotateLeft90:  curDir_ = (curDir_ + 6) % 8; break;
-            case ActionRequest::RotateRight90: curDir_ = (curDir_ + 2) % 8; break;
-            case ActionRequest::MoveForward:   curX_ += DX[curDir_]; curY_ += DY[curDir_]; break;
-            case ActionRequest::MoveBackward:  curX_ -= DX[curDir_]; curY_ -= DY[curDir_]; break;
+            case ActionRequest::RotateLeft45:
+                curDir_ = (curDir_ + 7) % 8;
+                break;
+            case ActionRequest::RotateRight45:
+                curDir_ = (curDir_ + 1) % 8;
+                break;
+            case ActionRequest::RotateLeft90:
+                curDir_ = (curDir_ + 6) % 8;
+                break;
+            case ActionRequest::RotateRight90:
+                curDir_ = (curDir_ + 2) % 8;
+                break;
+            case ActionRequest::MoveForward:
+                curX_ += DX[curDir_];
+                curY_ += DY[curDir_];
+                break;
+            case ActionRequest::MoveBackward:
+                curX_ -= DX[curDir_];
+                curY_ -= DY[curDir_];
+                break;
             case ActionRequest::Shoot:
                 --shellsLeft_;
                 algoCooldown_ = SHOOT_CD;
+                std::cerr << "DEBUG: shot fired, clearing plan and marking info stale" << std::endl;
+                seenInfo_ = false;
+                plan_.clear();
                 break;
-            default: break;
+            default:
+                break;
         }
         return act;
     }
@@ -118,7 +136,8 @@ std::vector<AggressiveTank::ShootState> AggressiveTank::findShootStates() const 
     std::vector<ShootState> out;
     int sx = curX_;
     int sy = curY_;
-    int rows = static_cast<int>(lastInfo_.grid.size()); if (!rows) return out;
+    int rows = static_cast<int>(lastInfo_.grid.size());
+    if (!rows) return out;
 
     for (int d = 0; d < 8; ++d) {
         int ds = 0, wh = 0;
@@ -130,21 +149,22 @@ std::vector<AggressiveTank::ShootState> AggressiveTank::findShootStates() const 
 }
 
 std::vector<ActionRequest> AggressiveTank::planPathTo(const State& target) {
-    int rows = static_cast<int>(lastInfo_.grid.size()); if (rows == 0) return {};
+    int rows = static_cast<int>(lastInfo_.grid.size());
+    if (rows == 0) return {};
     int cols = static_cast<int>(lastInfo_.grid[0].size());
     int total = rows * cols * 8;
-    const int INF = std::numeric_limits<int>::max()/2;
+    const int INF = std::numeric_limits<int>::max() / 2;
 
-    auto idx = [&](int x,int y,int d){ return (y*cols + x)*8 + d; };
-    int start = idx(curX_,curY_,curDir_);
-    int goal  = idx(target.x,target.y,target.dir);
+    auto idx = [&](int x, int y, int d) { return (y * cols + x) * 8 + d; };
+    int start = idx(curX_, curY_, curDir_);
+    int goal = idx(target.x, target.y, target.dir);
 
-    std::vector<int> g(total,INF), f(total,INF), parent(total,-1);
+    std::vector<int> g(total, INF), f(total, INF), parent(total, -1);
     std::vector<ActionRequest> via(total);
-    using P = std::pair<int,int>;
-    std::priority_queue<P,std::vector<P>,std::greater<>> open;
+    using P = std::pair<int, int>;
+    std::priority_queue<P, std::vector<P>, std::greater<>> open;
 
-    auto h = [&](int x,int y,int d){
+    auto h = [&](int x, int y, int d) {
         int md = std::abs(x - target.x) + std::abs(y - target.y);
         int rd = std::abs(d - target.dir);
         rd = std::min(rd, 8 - rd);
@@ -168,13 +188,13 @@ std::vector<ActionRequest> AggressiveTank::planPathTo(const State& target) {
 
         for (auto &pr : ROTATIONS) {
             int nd = (ud + pr.first + 8) % 8;
-            int v  = idx(ux, uy, nd);
+            int v = idx(ux, uy, nd);
             int ng = base + ROTATE_COST;
             if (ng < g[v]) {
-                g[v]      = ng;
+                g[v] = ng;
                 parent[v] = u;
-                via[v]    = pr.second;
-                f[v]      = ng + h(ux, uy, nd);
+                via[v] = pr.second;
+                f[v] = ng + h(ux, uy, nd);
                 open.push({f[v], v});
             }
         }
@@ -182,13 +202,13 @@ std::vector<ActionRequest> AggressiveTank::planPathTo(const State& target) {
         int fx = ux + DX[ud];
         int fy = uy + DY[ud];
         if (isTraversable(fx, fy)) {
-            int v  = idx(fx, fy, ud);
+            int v = idx(fx, fy, ud);
             int ng = base + MOVE_COST;
             if (ng < g[v]) {
-                g[v]      = ng;
+                g[v] = ng;
                 parent[v] = u;
-                via[v]    = ActionRequest::MoveForward;
-                f[v]      = ng + h(fx, fy, ud);
+                via[v] = ActionRequest::MoveForward;
+                f[v] = ng + h(fx, fy, ud);
                 open.push({f[v], v});
             }
         }
@@ -229,9 +249,7 @@ void AggressiveTank::computePlan() {
         char cell = lastInfo_.grid[ty][tx];
         char enemyChar = (playerIndex_ == 1 ? '2' : '1');
         std::cerr << "DEBUG: checking cell (" << tx << "," << ty << ") = '" << cell << "' against enemy '" << enemyChar << "'" << std::endl;
-        if (cell == enemyChar) {
-            realShoots.push_back(ss);
-        }
+        if (cell == enemyChar) realShoots.push_back(ss);
     }
     std::cerr << "DEBUG: realShoots size=" << realShoots.size() << std::endl;
     if (realShoots.empty()) {
@@ -244,7 +262,6 @@ void AggressiveTank::computePlan() {
         return da < db;
     });
     std::cerr << "DEBUG: best shoot at dir=" << best.st.dir << " ds=" << best.ds << " walls=" << best.walls << std::endl;
-    shoots = std::move(realShoots);
 
     for (auto &act : planPathTo(best.st)) plan_.push_back(act);
     for (auto &act : buildShootSequence(best.walls)) plan_.push_back(act);
@@ -266,7 +283,7 @@ bool AggressiveTank::lineOfSight(int sx, int sy, int dir, int &ds, int &wh) cons
         char c = lastInfo_.grid[y][x];
         if (c == '#') { walls++; continue; }
         if (c == '@') return false;
-        if (c == '_' || c == '.' || c == '%' || c == ' ') continue; // treat space as transparent ground
+        if (c == '_' || c == '.' || c == '%' || c == ' ') continue;
         if ((playerIndex_ == 1 && c == '1') || (playerIndex_ == 2 && c == '2')) return false;
         if ((playerIndex_ == 1 && c == '2') || (playerIndex_ == 2 && c == '1')) {
             ds = steps;
@@ -282,5 +299,5 @@ bool AggressiveTank::isTraversable(int x, int y) const {
     int cols = static_cast<int>(lastInfo_.grid[0].size());
     if (x < 0 || y < 0 || x >= cols || y >= rows) return false;
     char c = lastInfo_.grid[y][x];
-    return (c == '_' || c == '.' || c == '%' || c == ' '); // allow traversing spaces
+    return (c == '_' || c == '.' || c == '%' || c == ' ');
 }
