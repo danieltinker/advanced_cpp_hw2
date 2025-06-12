@@ -1,7 +1,7 @@
 Empty
-MaxSteps = 20
+MaxSteps = 40
 NumShells = 100
 Rows = 1
-Cols = 25
+Cols = 20
 
-#...1......2....#
+@@@@1......2@@@@#

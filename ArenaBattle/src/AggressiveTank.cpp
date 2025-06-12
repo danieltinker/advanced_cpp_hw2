@@ -16,10 +16,10 @@ const std::pair<int, ActionRequest> AggressiveTank::ROTATIONS[4] = {
 };
 
 static constexpr int DX[8] = {  0, 1, 1, 1,  0, -1, -1, -1 };
-static constexpr int DY[8] = { -1,-1, 0, 1,  1,  1,  0, -1 };
+static constexpr int DY[8] = { -1, -1, 0, 1,  1,  1,  0, -1 };
 
 AggressiveTank::AggressiveTank(int playerIndex, int /*tankIndex*/)
-    : lastInfo_(0,0)
+    : lastInfo_(0, 0)
     , playerIndex_(playerIndex)
     , curX_(0)
     , curY_(0)
@@ -64,12 +64,10 @@ bool AggressiveTank::needsInfo() {
         seenInfo_ = false;
         return true;
     }
-    if (plan_.empty()) {
-        if (algoCooldown_ > 0) {
-            --algoCooldown_;
-            seenInfo_ = false;
-            return true;
-        }
+    if (plan_.empty() && algoCooldown_ > 0) {
+        --algoCooldown_;
+        seenInfo_ = false;
+        return true;
     }
     return false;
 }
@@ -134,11 +132,8 @@ ActionRequest AggressiveTank::getAction() {
 
 std::vector<AggressiveTank::ShootState> AggressiveTank::findShootStates() const {
     std::vector<ShootState> out;
-    int sx = curX_;
-    int sy = curY_;
-    int rows = static_cast<int>(lastInfo_.grid.size());
-    if (!rows) return out;
-
+    int sx = curX_, sy = curY_;
+    if (lastInfo_.grid.empty()) return out;
     for (int d = 0; d < 8; ++d) {
         int ds = 0, wh = 0;
         if (lineOfSight(sx, sy, d, ds, wh)) {
@@ -150,42 +145,35 @@ std::vector<AggressiveTank::ShootState> AggressiveTank::findShootStates() const 
 
 std::vector<ActionRequest> AggressiveTank::planPathTo(const State& target) {
     int rows = static_cast<int>(lastInfo_.grid.size());
-    if (rows == 0) return {};
+    if (!rows) return {};
     int cols = static_cast<int>(lastInfo_.grid[0].size());
     int total = rows * cols * 8;
     const int INF = std::numeric_limits<int>::max() / 2;
-
     auto idx = [&](int x, int y, int d) { return (y * cols + x) * 8 + d; };
     int start = idx(curX_, curY_, curDir_);
     int goal = idx(target.x, target.y, target.dir);
-
     std::vector<int> g(total, INF), f(total, INF), parent(total, -1);
     std::vector<ActionRequest> via(total);
     using P = std::pair<int, int>;
     std::priority_queue<P, std::vector<P>, std::greater<>> open;
-
     auto h = [&](int x, int y, int d) {
         int md = std::abs(x - target.x) + std::abs(y - target.y);
         int rd = std::abs(d - target.dir);
         rd = std::min(rd, 8 - rd);
         return md * MOVE_COST + rd * ROTATE_COST;
     };
-
     g[start] = 0;
     f[start] = h(curX_, curY_, curDir_);
     open.push({f[start], start});
-
     while (!open.empty()) {
         auto [fv, u] = open.top();
         open.pop();
         if (u == goal) break;
         if (fv > f[u]) continue;
-
         int ux = (u / 8) % cols;
         int uy = (u / 8) / cols;
         int ud = u % 8;
         int base = g[u];
-
         for (auto &pr : ROTATIONS) {
             int nd = (ud + pr.first + 8) % 8;
             int v = idx(ux, uy, nd);
@@ -198,7 +186,6 @@ std::vector<ActionRequest> AggressiveTank::planPathTo(const State& target) {
                 open.push({f[v], v});
             }
         }
-
         int fx = ux + DX[ud];
         int fy = uy + DY[ud];
         if (isTraversable(fx, fy)) {
@@ -213,7 +200,6 @@ std::vector<ActionRequest> AggressiveTank::planPathTo(const State& target) {
             }
         }
     }
-
     std::vector<ActionRequest> seq;
     if (parent[goal] < 0) return seq;
     for (int v = goal; v != start; v = parent[v]) seq.push_back(via[v]);
@@ -229,40 +215,50 @@ std::vector<ActionRequest> AggressiveTank::buildShootSequence(int walls) const {
 }
 
 std::vector<ActionRequest> AggressiveTank::fallbackRoam() const {
-    int fx = curX_ + DX[curDir_];
-    int fy = curY_ + DY[curDir_];
-    if (isTraversable(fx, fy)) return {ActionRequest::MoveForward};
-    return {ActionRequest::RotateRight45};
+    int rows = static_cast<int>(lastInfo_.grid.size());
+    int cols = rows ? static_cast<int>(lastInfo_.grid[0].size()) : 0;
+    int fx = (curX_ + DX[curDir_] + cols) % cols;
+    int fy = (curY_ + DY[curDir_] + rows) % rows;
+    char cell = lastInfo_.grid[fy][fx];
+    if (cell != '@' && isTraversable(fx, fy)) {
+        return { ActionRequest::MoveForward };
+    }
+    return { ActionRequest::RotateRight45 };
 }
 
 void AggressiveTank::computePlan() {
     plan_.clear();
     auto shoots = findShootStates();
     std::cerr << "DEBUG: findShootStates found " << shoots.size() << " candidates:" << std::endl;
-    for (auto &ss : shoots) {
+    for (auto &ss : shoots)
         std::cerr << "    dir=" << ss.st.dir << " ds=" << ss.ds << " walls=" << ss.walls << std::endl;
-    }
     std::vector<ShootState> realShoots;
+    int rows = static_cast<int>(lastInfo_.grid.size());
+    int cols = rows ? static_cast<int>(lastInfo_.grid[0].size()) : 0;
     for (auto &ss : shoots) {
-        int tx = curX_ + ss.ds * DX[ss.st.dir];
-        int ty = curY_ + ss.ds * DY[ss.st.dir];
+        int tx = (curX_ + ss.ds * DX[ss.st.dir] + cols) % cols;
+        int ty = (curY_ + ss.ds * DY[ss.st.dir] + rows) % rows;
         char cell = lastInfo_.grid[ty][tx];
         char enemyChar = (playerIndex_ == 1 ? '2' : '1');
-        std::cerr << "DEBUG: checking cell (" << tx << "," << ty << ") = '" << cell << "' against enemy '" << enemyChar << "'" << std::endl;
-        if (cell == enemyChar) realShoots.push_back(ss);
+        std::cerr << "DEBUG: checking cell(" << tx << "," << ty << ")='" << cell << "' vs '" << enemyChar << "'" << std::endl;
+        if (cell == enemyChar)
+            realShoots.push_back(ss);
     }
     std::cerr << "DEBUG: realShoots size=" << realShoots.size() << std::endl;
     if (realShoots.empty()) {
-        for (auto &a : fallbackRoam()) plan_.push_back(a);
+        for (auto &a : fallbackRoam())
+            plan_.push_back(a);
         return;
     }
-    auto best = *std::min_element(realShoots.begin(), realShoots.end(), [&](auto &a, auto &b){
-        int da = std::abs(a.st.x - curX_) + std::abs(a.st.y - curY_);
-        int db = std::abs(b.st.x - curX_) + std::abs(b.st.y - curY_);
-        return da < db;
-    });
+    auto best = *std::min_element(
+        realShoots.begin(), realShoots.end(),
+        [&](auto &a, auto &b) {
+            int da = std::abs(a.st.x - curX_) + std::abs(a.st.y - curY_);
+            int db = std::abs(b.st.x - curX_) + std::abs(b.st.y - curY_);
+            return da < db;
+        }
+    );
     std::cerr << "DEBUG: best shoot at dir=" << best.st.dir << " ds=" << best.ds << " walls=" << best.walls << std::endl;
-
     for (auto &act : planPathTo(best.st)) plan_.push_back(act);
     for (auto &act : buildShootSequence(best.walls)) plan_.push_back(act);
 }
@@ -270,19 +266,21 @@ void AggressiveTank::computePlan() {
 bool AggressiveTank::lineOfSight(int sx, int sy, int dir, int &ds, int &wh) const {
     ds = 0;
     wh = 0;
-    int rows = static_cast<int>(lastInfo_.grid.size()); if (!rows) return false;
+    int rows = static_cast<int>(lastInfo_.grid.size());
+    if (!rows) return false;
     int cols = static_cast<int>(lastInfo_.grid[0].size());
-    int x = sx, y = sy;
+    int x = sx;
+    int y = sy;
     int steps = 0;
     int walls = 0;
     while (true) {
-        x += DX[dir];
-        y += DY[dir];
-        if (x < 0 || x >= cols || y < 0 || y >= rows) return false;
+        x = (x + DX[dir] + cols) % cols;
+        y = (y + DY[dir] + rows) % rows;
         steps++;
+        if (steps > rows * cols) return false;
         char c = lastInfo_.grid[y][x];
         if (c == '#') { walls++; continue; }
-        if (c == '@') return false;
+        if (c == '@') { /* mine is transparent for shooting */ continue; }
         if (c == '_' || c == '.' || c == '%' || c == ' ') continue;
         if ((playerIndex_ == 1 && c == '1') || (playerIndex_ == 2 && c == '2')) return false;
         if ((playerIndex_ == 1 && c == '2') || (playerIndex_ == 2 && c == '1')) {
@@ -295,7 +293,8 @@ bool AggressiveTank::lineOfSight(int sx, int sy, int dir, int &ds, int &wh) cons
 }
 
 bool AggressiveTank::isTraversable(int x, int y) const {
-    int rows = static_cast<int>(lastInfo_.grid.size()); if (!rows) return false;
+    int rows = static_cast<int>(lastInfo_.grid.size());
+    if (!rows) return false;
     int cols = static_cast<int>(lastInfo_.grid[0].size());
     if (x < 0 || y < 0 || x >= cols || y >= rows) return false;
     char c = lastInfo_.grid[y][x];
