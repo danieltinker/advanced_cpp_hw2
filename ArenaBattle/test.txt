@@ -1,5 +1,5 @@
 Test
-MaxSteps = 30
+MaxSteps = 100
 NumShells = 100
 Rows = 7
 Cols = 7
