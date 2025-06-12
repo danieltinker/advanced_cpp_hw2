@@ -1,21 +1,17 @@
 GetBattleInfo, GetBattleInfo, GetBattleInfo, GetBattleInfo
-Shoot, RotateRight90, MoveForward, RotateRight90
-GetBattleInfo, GetBattleInfo (killed), GetBattleInfo, GetBattleInfo
-GetBattleInfo, killed, MoveForward, RotateRight90
+GetBattleInfo, RotateRight90, MoveForward, RotateRight90
+Shoot, GetBattleInfo, GetBattleInfo, GetBattleInfo
+GetBattleInfo, RotateRight90 (killed), MoveForward, RotateRight90
 GetBattleInfo, killed, GetBattleInfo, GetBattleInfo
 GetBattleInfo, killed, MoveForward, RotateRight90
 GetBattleInfo, killed, GetBattleInfo, GetBattleInfo
 GetBattleInfo, killed, RotateRight90, RotateRight90
+GetBattleInfo, killed, GetBattleInfo, GetBattleInfo
+MoveForward, killed, RotateRight90, RotateRight90
 MoveForward, killed, GetBattleInfo, GetBattleInfo
-RotateLeft45, killed, RotateRight90, RotateRight90
-Shoot, killed, GetBattleInfo, GetBattleInfo
 GetBattleInfo, killed, RotateRight90, RotateRight90
-GetBattleInfo, killed, GetBattleInfo, GetBattleInfo
-GetBattleInfo, killed, RotateRight90, MoveForward (ignored)
-GetBattleInfo, killed, GetBattleInfo, GetBattleInfo
-GetBattleInfo, killed, MoveForward (ignored), MoveForward (ignored)
-GetBattleInfo, killed, GetBattleInfo, GetBattleInfo
-RotateRight90, killed, MoveForward (ignored), MoveForward (ignored)
+RotateRight45, killed, GetBattleInfo, GetBattleInfo
+RotateRight45, killed, RotateRight90, MoveForward (ignored)
 Shoot, killed, GetBattleInfo, GetBattleInfo (killed)
 GetBattleInfo, killed, MoveForward (ignored), killed
 GetBattleInfo, killed, GetBattleInfo, killed
@@ -23,7 +19,13 @@ GetBattleInfo, killed, MoveForward (ignored), killed
 GetBattleInfo, killed, GetBattleInfo, killed
 GetBattleInfo, killed, MoveForward (ignored), killed
 GetBattleInfo, killed, GetBattleInfo, killed
-RotateRight45, killed, MoveForward (ignored), killed
+MoveForward, killed, MoveForward (ignored), killed
 MoveForward, killed, GetBattleInfo, killed
-MoveForward (killed), killed, MoveForward (ignored), killed
-Player 2 won with 1 tanks still alive
+MoveForward, killed, MoveForward (ignored), killed
+GetBattleInfo, killed, GetBattleInfo, killed
+RotateRight45, killed, MoveForward (ignored), killed
+Shoot, killed, GetBattleInfo, killed
+GetBattleInfo, killed, MoveForward (ignored), killed
+GetBattleInfo, killed, GetBattleInfo, killed
+GetBattleInfo, killed, MoveForward (ignored), killed
+Tie, reached max steps=30, player1 has 1, player2 has 1
