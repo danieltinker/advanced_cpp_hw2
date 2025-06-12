@@ -1,15 +1,21 @@
 GetBattleInfo, GetBattleInfo
-Shoot, MoveForward
-GetBattleInfo, GetBattleInfo
-RotateLeft45, MoveForward
-RotateLeft45, GetBattleInfo
-RotateLeft45, MoveForward
-RotateLeft45, GetBattleInfo
+RotateRight45, MoveForward
+RotateRight45, GetBattleInfo
+RotateRight45, MoveForward
+RotateRight45, GetBattleInfo
 GetBattleInfo, MoveForward
-Shoot, GetBattleInfo
+RotateRight45, GetBattleInfo
+RotateRight45, MoveForward
+RotateRight45, GetBattleInfo
+RotateRight45, RotateRight90
+GetBattleInfo, GetBattleInfo
+RotateRight45, RotateRight90
+RotateRight45, GetBattleInfo
+RotateRight45, RotateRight90
+RotateRight45, GetBattleInfo
 GetBattleInfo, RotateRight90
-RotateLeft45, GetBattleInfo
-RotateLeft45, RotateRight90
-RotateLeft45, GetBattleInfo
-RotateLeft45, RotateRight90 (killed)
-Player 1 won with 1 tanks still alive
+RotateRight45, GetBattleInfo
+RotateRight45, MoveForward (ignored)
+RotateRight45, GetBattleInfo
+RotateRight45, MoveForward (ignored)
+Tie, reached max steps=20, player1 has 1, player2 has 1
